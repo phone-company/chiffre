@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "Chiffre",
+  "short_name": "Chiffre",
+  "description": "Verschlüsselte Notizen mit Ablaufdatum. Alles bleibt auf deinem Gerät.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a241c",
+  "theme_color": "#0f3b2e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

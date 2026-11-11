@@ -1,0 +1,21 @@
+# Schlüssel und Passwörter: niemals einchecken
+*.jks
+*.keystore
+*.p12
+keystore.properties
+
+# Gradle und Android Studio
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# fertige Pakete lädst du als Release hoch, nicht ins Repository
+*.apk
+*.aab
+
+.DS_Store

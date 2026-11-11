@@ -1,0 +1,195 @@
+package app.chiffre;
+
+import android.Manifest;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Erinnerung an abgelaufene Notizen und Vorwarnung vor dem automatischen Löschen.
+ *
+ * Gespeichert werden nur Zeitpunkte (Millisekunden) mit einer Art, nie Text oder Titel einer Notiz.
+ * Art "e": eine Notiz läuft ab, du entscheidest. Art "w": eine Notiz wird bald automatisch gelöscht.
+ * Die Meldungen sind immer neutral. Ein Alarm braucht keine zusätzliche Berechtigung
+ * (ungenau, kann um Minuten abweichen).
+ */
+final class Reminders {
+
+    private static final String PREFS = "chiffre_reminder";
+    private static final String KEY_ON = "on";
+    private static final String KEY_TIMES = "times";
+    private static final String CHANNEL_ID = "expiry";
+    private static final int ID_EXPIRED = 1;
+    private static final int ID_WARNING = 2;
+    private static final int MAX_ENTRIES = 500;
+
+    private Reminders() {}
+
+    /** Ein Zeitpunkt mit Art. */
+    static final class Entry implements Comparable<Entry> {
+        final long time;
+        final boolean warn;
+
+        Entry(long time, boolean warn) {
+            this.time = time;
+            this.warn = warn;
+        }
+
+        @Override
+        public int compareTo(Entry o) {
+            return Long.compare(time, o.time);
+        }
+    }
+
+    private static SharedPreferences prefs(Context c) {
+        return c.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    static boolean isEnabled(Context c) {
+        return prefs(c).getBoolean(KEY_ON, false);
+    }
+
+    static void setEnabled(Context c, boolean on) {
+        prefs(c).edit().putBoolean(KEY_ON, on).apply();
+        schedule(c);
+    }
+
+    /** Eintragsliste aus der Web-App, zum Beispiel "e1731000000000,w1731100000000". */
+    static void setTimes(Context c, String csv) {
+        prefs(c).edit().putString(KEY_TIMES, join(parse(csv))).apply();
+        schedule(c);
+    }
+
+    private static List<Entry> load(Context c) {
+        return parse(prefs(c).getString(KEY_TIMES, ""));
+    }
+
+    /** Ungültiges wird übersprungen. Eine Zahl ohne Buchstaben zählt als "e". */
+    static List<Entry> parse(String csv) {
+        List<Entry> out = new ArrayList<>();
+        if (csv == null || csv.isEmpty()) return out;
+        for (String part : csv.split(",")) {
+            String p = part.trim();
+            if (p.isEmpty()) continue;
+            boolean warn = false;
+            if (p.charAt(0) == 'w' || p.charAt(0) == 'e') {
+                warn = p.charAt(0) == 'w';
+                p = p.substring(1);
+            }
+            try {
+                long t = Long.parseLong(p);
+                if (t > 0) out.add(new Entry(t, warn));
+            } catch (NumberFormatException ignored) {
+                // überspringen
+            }
+            if (out.size() >= MAX_ENTRIES) break;
+        }
+        Collections.sort(out);
+        return out;
+    }
+
+    static String join(List<Entry> list) {
+        StringBuilder sb = new StringBuilder();
+        for (Entry e : list) {
+            if (sb.length() > 0) sb.append(',');
+            sb.append(e.warn ? 'w' : 'e').append(e.time);
+        }
+        return sb.toString();
+    }
+
+    private static PendingIntent alarmIntent(Context c) {
+        Intent i = new Intent(c, ReminderReceiver.class).setAction(ReminderReceiver.ACTION_ALARM);
+        return PendingIntent.getBroadcast(c, 0, i,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    /** Stellt den Alarm auf den nächsten künftigen Zeitpunkt, oder löscht ihn. */
+    static void schedule(Context c) {
+        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        PendingIntent pi = alarmIntent(c);
+        long now = System.currentTimeMillis();
+        long next = 0L;
+        if (isEnabled(c)) {
+            for (Entry e : load(c)) {
+                if (e.time > now) {
+                    next = e.time;
+                    break;
+                }
+            }
+        }
+        if (next == 0L) {
+            am.cancel(pi);
+            return;
+        }
+        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next, pi);
+    }
+
+    static boolean canNotify(Context c) {
+        if (Build.VERSION.SDK_INT >= 33
+                && c.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+        return nm != null && nm.areNotificationsEnabled();
+    }
+
+    /** Wird vom Alarm aufgerufen: meldet fällige Zeitpunkte und stellt den nächsten Alarm. */
+    static void onAlarm(Context c) {
+        long now = System.currentTimeMillis();
+        int expired = 0;
+        int warned = 0;
+        List<Entry> rest = new ArrayList<>();
+        for (Entry e : load(c)) {
+            if (e.time <= now) {
+                if (e.warn) warned++; else expired++;
+            } else {
+                rest.add(e);
+            }
+        }
+        prefs(c).edit().putString(KEY_TIMES, join(rest)).apply();
+        if ((expired > 0 || warned > 0) && isEnabled(c) && canNotify(c)) {
+            if (expired > 0) {
+                notifyText(c, ID_EXPIRED,
+                        expired > 1 ? R.string.notif_many : R.string.notif_one);
+            }
+            if (warned > 0) {
+                notifyText(c, ID_WARNING,
+                        warned > 1 ? R.string.notif_warn_many : R.string.notif_warn_one);
+            }
+        }
+        schedule(c);
+    }
+
+    private static void notifyText(Context c, int id, int textRes) {
+        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm == null) return;
+        nm.createNotificationChannel(new NotificationChannel(CHANNEL_ID,
+                c.getString(R.string.notif_channel), NotificationManager.IMPORTANCE_DEFAULT));
+
+        Intent open = c.getPackageManager().getLaunchIntentForPackage(c.getPackageName());
+        PendingIntent tap = open == null ? null : PendingIntent.getActivity(c, 0, open,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Notification.Builder b = new Notification.Builder(c, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_stat_chiffre)
+                .setContentTitle(c.getString(R.string.app_name))
+                .setContentText(c.getString(textRes))
+                .setVisibility(Notification.VISIBILITY_PRIVATE)
+                .setAutoCancel(true);
+        if (tap != null) b.setContentIntent(tap);
+        nm.notify(id, b.build());
+    }
+}

@@ -1,0 +1,5 @@
+Neu: Erinnerung. Auf Wunsch meldet Chiffre neutral, wenn eine Notiz abgelaufen ist, ohne den Text der Notiz zu zeigen.
+Neu: Pro Notiz wählbar, ob sie nach dem Ablauf nachfragt oder automatisch gelöscht wird. Bei automatischem Löschen warnt die Erinnerung vorher, die Vorwarnzeit ist einstellbar.
+Neu: Entsperren per Fingerabdruck, zusätzlich zum Passwort.
+Neu: Kurze Ablaufzeiten, 1 Stunde und 6 Stunden.
+Neu: Der Tresor lässt sich nur noch löschen, wenn du zur Bestätigung das Wort LÖSCHEN eintippst.

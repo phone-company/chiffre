@@ -1,0 +1,6 @@
+New: reminder. If you turn it on, Chiffre posts a neutral notification when a note has expired, without showing the note text.
+New: choose per note whether it asks after expiry or is deleted automatically. For automatic deletion the reminder warns you beforehand, and the lead time is adjustable.
+New: unlock with your fingerprint, in addition to the password.
+New: short expiry times, 1 hour and 6 hours.
+New: deleting the vault now requires typing the word LÖSCHEN to confirm.
+New: settings (fingerprint, reminder, backup) now live behind the menu button at the top right, so the main page is shorter.

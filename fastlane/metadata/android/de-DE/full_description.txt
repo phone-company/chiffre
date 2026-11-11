@@ -1,0 +1,13 @@
+Chiffre ist eine schlichte Notizapp mit einer Besonderheit: Jede Notiz bekommt beim Anlegen ein Verfallsdatum. Läuft es ab, fragt dich die App, ob die Notiz bleiben oder gelöscht werden soll. Auf Wunsch wird eine Notiz nach dem Ablauf auch ohne Nachfrage gelöscht, das legst du pro Notiz fest. So sammelt sich nicht jahrelang an, was längst erledigt ist.
+
+• Verschlüsselt mit deinem Passwort (AES-256-GCM, Schlüsselableitung per PBKDF2)
+• Kein Konto, keine Cloud, keine Werbung, keine Analyse
+• Kein Internet-Zugriff
+• Optional: neutrale Benachrichtigung, wenn eine Notiz abläuft oder bald automatisch gelöscht wird (ohne Text, abschaltbar)
+• Screenshots und die Vorschau in der App-Übersicht sind gesperrt
+• Sperrt sich nach 60 Sekunden im Hintergrund
+• Optional: Entsperren per Fingerabdruck zusätzlich zum Passwort
+• Verschlüsselte Sicherung als Datei, zum Wiederherstellen oder für den Umzug
+• Hell und dunkel. Die Oberfläche gibt es derzeit nur auf Deutsch.
+
+Wichtig: Das Passwort lässt sich nicht zurücksetzen. Ohne Passwort sind die Notizen nicht lesbar. Die Verschlüsselung nutzt Standardverfahren, wurde aber nicht unabhängig geprüft. Chiffre ist ein Hobbyprojekt, der Quellcode ist offen.

@@ -1,0 +1,1 @@
+Neu: Erinnerung. Auf Wunsch meldet Chiffre neutral, wenn eine Notiz abgelaufen ist, ohne den Text der Notiz zu zeigen.

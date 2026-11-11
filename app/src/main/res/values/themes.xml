@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Hell: Der WebView meldet der Seite dadurch "prefers-color-scheme: light". -->
+    <style name="Theme.Chiffre" parent="android:Theme.DeviceDefault.Light.NoActionBar">
+        <item name="android:windowBackground">@color/window_bg</item>
+        <item name="android:statusBarColor">@color/window_bg</item>
+        <item name="android:navigationBarColor">@color/window_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

@@ -1,0 +1,22 @@
+package app.chiffre;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+
+/** Empfängt den Alarm sowie Neustart und App-Update, bei denen Android Alarme verwirft. */
+public class ReminderReceiver extends BroadcastReceiver {
+
+    static final String ACTION_ALARM = "app.chiffre.notes.ALARM";
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        String action = intent == null ? null : intent.getAction();
+        if (ACTION_ALARM.equals(action)) {
+            Reminders.onAlarm(context);
+        } else if (Intent.ACTION_BOOT_COMPLETED.equals(action)
+                || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
+            Reminders.schedule(context);
+        }
+    }
+}

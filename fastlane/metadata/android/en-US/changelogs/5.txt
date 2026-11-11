@@ -1,0 +1,3 @@
+New: reminder. If you turn it on, Chiffre posts a neutral notification when a note has expired, without showing the note text.
+New: choose per note whether it asks after expiry or is deleted automatically. For automatic deletion the reminder warns you about 6 hours ahead.
+New: unlock with your fingerprint, in addition to the password.

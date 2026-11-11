@@ -1,0 +1,1 @@
+New: reminder. If you turn it on, Chiffre posts a neutral notification when a note has expired, without showing the note text.

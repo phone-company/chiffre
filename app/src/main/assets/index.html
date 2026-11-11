@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chiffre</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Verschlüsselte Notizen mit Ablaufdatum. Alles bleibt auf deinem Gerät.">
+<meta name="theme-color" content="#eef3ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a241c" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Chiffre">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+/* Layout: eine schmale Spalte fürs Handy. Oben Wortmarke und Sperre, darunter Eingabe, dann Abgelaufenes (falls vorhanden) vor den aktiven Notizen. Keine externen Schriften oder Anfragen. */
+:root {
+  color-scheme: light;
+  --bg: #eef3ef;
+  --surface: #ffffff;
+  --surface-2: #dfe9e3;
+  --line: #c8d7cf;
+  --fg: #10231b;
+  --muted: #54695e;
+  --accent: #0f3b2e;
+  --accent-fg: #ffffff;
+  --warn: #9a5200;
+  --danger: #b3261e;
+  --font-display: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a241c;
+    --surface: #0f3b2e;
+    --surface-2: #174a3a;
+    --line: #245a49;
+    --fg: #e8f3ec;
+    --muted: #9bbfae;
+    --accent: #7bd3a4;
+    --accent-fg: #06251a;
+    --warn: #f0b35a;
+    --danger: #ff8a80;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-top: max(20px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+h1, h2 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+[hidden] { display: none !important; }
+
+/* Header */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.brand h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+.count { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.top-actions { display: flex; gap: 8px; align-items: center; flex: none; }
+.btn.icon { width: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.sheet {
+  position: fixed; inset: 0; z-index: 10; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--bg);
+  padding-top: max(20px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Reiter */
+.tabs { display: flex; gap: 6px; padding: 4px; background: var(--surface-2); border-radius: 12px; }
+.tab { flex: 1; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font: 600 15px/1 var(--font-body); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--fg); }
+.badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--danger); color: var(--bg); font: 700 12px/20px var(--font-body); text-align: center; }
+.page { display: flex; flex-direction: column; gap: 20px; }
+@media (prefers-reduced-motion: no-preference) {
+  .page.from-right { animation: from-right 0.18s ease-out; }
+  .page.from-left { animation: from-left 0.18s ease-out; }
+  @keyframes from-right { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+  @keyframes from-left { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+}
+
+/* Buttons */
+.btn {
+  font: 500 15px/1 var(--font-body);
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
+.btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.danger { color: var(--danger); border-color: var(--danger); }
+.btn.danger.armed { background: var(--danger); color: var(--bg); }
+.btn.quiet { border-color: transparent; background: transparent; color: var(--muted); }
+.btn.small { min-height: 40px; padding: 0 12px; font-size: 14px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Forms */
+label.field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+input[type="password"], input[type="text"], input[type="date"], input[type="file"], textarea, select {
+  font: 400 16px/1.5 var(--font-body);
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+  padding: 10px 12px;
+}
+textarea { min-height: 96px; resize: vertical; }
+textarea.mono { font-family: var(--font-mono); font-size: 13px; min-height: 72px; }
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+/* Panels */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.panel.lock { padding: 24px 20px; gap: 16px; }
+.plain { padding: 0; border: 0; background: none; }
+.lead { color: var(--muted); font-size: 15px; }
+.msg { font-size: 14px; color: var(--danger); min-height: 1.4em; }
+.warnbox { font-size: 14px; color: var(--muted); border-left: 3px solid var(--warn); padding-left: 12px; }
+details.panel > summary { cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 18px; list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 28px; }
+details.panel > summary::-webkit-details-marker { display: none; }
+details.panel > summary::after { content: "+"; font-family: var(--font-mono); color: var(--muted); }
+details.panel[open] > summary::after { content: "–"; }
+details.panel[open] { gap: 14px; }
+.sep { border: 0; border-top: 1px solid var(--line); margin: 2px 0; width: 100%; }
+
+/* Expiry chips */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: 500 14px/1 var(--font-body);
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.row.end { justify-content: flex-end; }
+
+/* Notes */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.section-head h2 { font-size: 18px; font-weight: 700; }
+.section-head p { font-size: 14px; color: var(--muted); }
+.notes { display: flex; flex-direction: column; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.note.expired { border-color: var(--danger); }
+.note-main { width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 14px 16px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
+.note-text { white-space: pre-wrap; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.meta { display: flex; justify-content: space-between; gap: 12px; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.meta .state { color: var(--fg); }
+.meta .state.soon { color: var(--warn); }
+.meta .state.gone { color: var(--danger); }
+.bar { height: 4px; background: var(--surface-2); }
+.bar > i { display: block; height: 100%; background: var(--accent); }
+.bar > i.soon { background: var(--warn); }
+.bar > i.gone { background: var(--danger); }
+.note-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--line); }
+.note-actions { padding: 12px 16px 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+.sublabel { font-size: 13px; color: var(--muted); }
+.check { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 16px; color: var(--fg); cursor: pointer; }
+.check input { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+.empty { color: var(--muted); text-align: center; padding: 28px 12px; border: 1px dashed var(--line); border-radius: 12px; font-size: 15px; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px); z-index: 20; }
+@media (prefers-reduced-motion: no-preference) {
+  .toast { animation: pop 0.18s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="brand"><h1>Chiffre</h1><span class="count" id="count" hidden></span></div>
+    <div class="top-actions">
+      <button class="btn small icon" id="menuBtn" type="button" aria-label="Einstellungen" aria-haspopup="dialog" hidden>
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="btn small" id="lockBtn" type="button" hidden>Sperren</button>
+    </div>
+  </header>
+
+  <!-- Sperrbildschirm -->
+  <section id="lockView" class="panel lock" hidden>
+    <h2 id="lockTitle"></h2>
+    <p class="lead" id="lockLead"></p>
+    <form id="lockForm" class="panel plain" autocomplete="off">
+      <label class="field" for="pw">Passwort
+        <input type="password" id="pw" autocomplete="off" required>
+      </label>
+      <label class="field" id="pw2Wrap" for="pw2" hidden>Passwort wiederholen
+        <input type="password" id="pw2" autocomplete="off">
+      </label>
+      <p class="warnbox" id="setupWarn" hidden>Dieses Passwort lässt sich nicht zurücksetzen. Ohne Passwort sind die Notizen nicht lesbar. Gespeichert wird nur auf diesem Gerät. Mit einer Sicherung kannst du Notizen später auf ein anderes Gerät oder in eine neue Installation übertragen.</p>
+      <p class="msg" id="lockMsg" role="alert"></p>
+      <button class="btn primary" type="submit" id="lockSubmit"></button>
+    </form>
+    <button class="btn" type="button" id="bioBtn" hidden>Mit Fingerabdruck entsperren</button>
+    <div class="row">
+      <button class="btn quiet small" type="button" id="restoreToggle" hidden>Sicherung wiederherstellen</button>
+      <button class="btn quiet small danger" type="button" id="resetBtn" hidden>Tresor löschen</button>
+    </div>
+    <form id="wipeBox" class="panel plain" autocomplete="off" hidden>
+      <p class="warnbox">Damit werden alle Notizen unwiderruflich gelöscht. Zurückholen kannst du sie nur mit einer Sicherungsdatei. Tippe zur Bestätigung das Wort <strong>LÖSCHEN</strong> ein.</p>
+      <label class="field" for="wipeWord">Bestätigung
+        <input type="text" id="wipeWord" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      </label>
+      <div class="row">
+        <button class="btn danger" type="submit" id="wipeGo" disabled>Tresor endgültig löschen</button>
+        <button class="btn quiet" type="button" id="wipeCancel">Abbrechen</button>
+      </div>
+    </form>
+    <form id="restoreBox" class="panel plain" autocomplete="off" hidden>
+      <p class="lead">Wähle die Sicherungsdatei oder füge ihren Text ein. Dann gib das Passwort ein, das beim Erstellen der Sicherung galt.</p>
+      <label class="field" for="rFile">Sicherungsdatei
+        <input type="file" id="rFile" accept=".json,application/json,text/plain">
+      </label>
+      <label class="field" for="rPaste">oder Text der Sicherung
+        <textarea class="mono" id="rPaste" spellcheck="false"></textarea>
+      </label>
+      <label class="field" for="rPw">Passwort der Sicherung
+        <input type="password" id="rPw" autocomplete="off">
+      </label>
+      <p class="msg" id="rMsg" role="alert"></p>
+      <button class="btn primary" type="submit" id="rSubmit">Wiederherstellen</button>
+    </form>
+  </section>
+
+  <!-- App -->
+  <div id="appView" class="wrap" hidden>
+    <p class="warnbox" id="noStore" hidden>Dieser Browser erlaubt kein Speichern. Die Notizen bleiben nur, solange diese Seite offen ist.</p>
+
+    <div class="tabs" role="tablist" aria-label="Seiten">
+      <button class="tab" id="tabWrite" type="button" role="tab" aria-selected="true" aria-controls="pageWrite">Schreiben</button>
+      <button class="tab" id="tabNotes" type="button" role="tab" aria-selected="false" aria-controls="pageNotes">Notizen<span class="badge" id="tabBadge" hidden></span></button>
+    </div>
+
+    <div class="page" id="pageWrite" role="tabpanel" aria-labelledby="tabWrite">
+    <section class="panel" aria-labelledby="newTitle">
+      <h2 id="newTitle" style="font-size:18px">Neue Notiz</h2>
+      <label class="field" for="composer">Text
+        <textarea id="composer" placeholder="Was soll nur für kurze Zeit existieren?"></textarea>
+      </label>
+      <div>
+        <p class="sublabel" style="margin-bottom:8px">Verfällt nach</p>
+        <div class="chips" id="expiryChips" role="group" aria-label="Verfallszeit"></div>
+        <label class="field" id="customWrap" for="customDate" style="margin-top:10px" hidden>Datum
+          <input type="date" id="customDate">
+        </label>
+      </div>
+      <div>
+        <label class="check" for="autoNew"><input type="checkbox" id="autoNew"> Nach Ablauf automatisch löschen</label>
+        <p class="sublabel" id="autoHint">Ohne Häkchen fragt Chiffre beim Ablauf nach. Mit Häkchen wird die Notiz beim nächsten Öffnen der App ohne Nachfrage gelöscht.</p>
+      </div>
+      <div class="row end">
+        <button class="btn primary" type="button" id="addBtn" disabled>Verschlüsselt speichern</button>
+      </div>
+    </section>
+    </div>
+
+    <div class="page" id="pageNotes" role="tabpanel" aria-labelledby="tabNotes" hidden>
+    <section id="expiredSec" hidden>
+      <div class="section-head">
+        <h2>Abgelaufen</h2>
+        <p>Was soll damit passieren?</p>
+      </div>
+      <ul class="notes" id="expiredList"></ul>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Aktiv</h2>
+        <p>Bald ablaufende zuerst</p>
+      </div>
+      <ul class="notes" id="activeList"></ul>
+    </section>
+    </div>
+
+  </div>
+</main>
+
+<div class="sheet" id="menuSheet" role="dialog" aria-modal="true" aria-labelledby="menuTitle" hidden>
+  <div class="wrap">
+    <header class="top">
+      <h2 id="menuTitle" style="font-size:24px">Einstellungen</h2>
+      <button class="btn small" id="menuClose" type="button">Schließen</button>
+    </header>
+        <section class="panel" id="bioPanel" aria-labelledby="bioTitle" hidden>
+          <h2 id="bioTitle" style="font-size:18px">Fingerabdruck</h2>
+          <p class="lead" id="bioLead"></p>
+          <form id="bioForm" class="panel plain" autocomplete="off">
+            <label class="field" for="bioPw">Passwort zur Bestätigung
+              <input type="password" id="bioPw" autocomplete="off">
+            </label>
+            <button class="btn primary" type="submit" id="bioOn">Fingerabdruck einrichten</button>
+          </form>
+          <button class="btn" type="button" id="bioOff" hidden>Fingerabdruck ausschalten</button>
+          <p class="msg" id="bioMsg" role="alert"></p>
+        </section>
+
+        <section class="panel" id="remindPanel" aria-labelledby="remindTitle" hidden>
+          <h2 id="remindTitle" style="font-size:18px">Erinnerung</h2>
+          <label class="check" for="remindToggle"><input type="checkbox" id="remindToggle"> Benachrichtigen, wenn eine Notiz abläuft</label>
+          <label class="field" for="warnSel">Vorwarnung vor dem automatischen Löschen
+            <select id="warnSel">
+              <option value="1">1 Stunde vorher</option>
+              <option value="6">6 Stunden vorher</option>
+              <option value="12">12 Stunden vorher</option>
+              <option value="24">1 Tag vorher</option>
+            </select>
+          </label>
+          <p class="lead">Die Meldungen sind neutral: „Eine Notiz ist abgelaufen“ und, bei Notizen mit automatischem Löschen, „Eine Notiz wird bald gelöscht“. Der Text der Notiz steht nie darin.</p>
+        </section>
+
+        <details class="panel" id="backup">
+          <summary>Sicherung</summary>
+          <p class="lead">Die Sicherung ist so verschlüsselt wie dein Tresor und nur mit deinem Passwort lesbar. Sie enthält die Notizen zum Zeitpunkt des Exports, auch wenn sie später ablaufen. Lösche alte Sicherungen, wenn sie nicht mehr gebraucht werden.</p>
+          <div class="row">
+            <button class="btn small" type="button" id="expDownload">Als Datei sichern</button>
+            <button class="btn small" type="button" id="expCopy">Text kopieren</button>
+          </div>
+          <hr class="sep">
+          <form id="impForm" class="panel plain" autocomplete="off">
+            <p class="sublabel">Notizen aus einer Sicherung hinzufügen. Vorhandene Notizen bleiben erhalten.</p>
+            <label class="field" for="iFile">Sicherungsdatei
+              <input type="file" id="iFile" accept=".json,application/json,text/plain">
+            </label>
+            <label class="field" for="iPaste">oder Text der Sicherung
+              <textarea class="mono" id="iPaste" spellcheck="false"></textarea>
+            </label>
+            <label class="field" for="iPw">Passwort der Sicherung
+              <input type="password" id="iPw" autocomplete="off">
+            </label>
+            <p class="msg" id="iMsg" role="alert"></p>
+            <button class="btn" type="submit" id="iSubmit">Hinzufügen</button>
+          </form>
+        </details>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+// <crypto>
+const enc = new TextEncoder(), dec = new TextDecoder();
+function b64(u8) { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+function ub64(s) { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+const ITER = 600000;
+async function deriveKey(pw, salt, iter) {
+  const base = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: iter, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+async function seal(key, obj, meta) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(JSON.stringify(obj)));
+  return Object.assign({}, meta, { iv: b64(iv), ct: b64(new Uint8Array(ct)) });
+}
+async function unseal(key, vault) {
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: ub64(vault.iv) }, key, ub64(vault.ct));
+  return JSON.parse(dec.decode(pt));
+}
+function validVault(o) {
+  return !!o && o.v === 1 && Number.isInteger(o.iter) && o.iter >= 1000 && o.iter <= 2000000 &&
+    ["salt", "iv", "ct"].every(k => typeof o[k] === "string" && o[k].length > 0);
+}
+function cleanNotes(a) {
+  if (!Array.isArray(a)) throw new Error("Ungültige Daten");
+  return a.filter(n => n && typeof n.id === "string" && typeof n.text === "string" && Number.isFinite(n.created) && Number.isFinite(n.expires))
+    .map(n => ({ id: n.id, text: n.text, created: n.created, expires: n.expires, auto: n.auto === true }));
+}
+// </crypto>
+
+const STORE_KEY = "chiffre.vault";
+const DAY = 86400000;
+const WARN_CHOICES = [1, 6, 12, 24]; // Stunden
+function warnMs() {
+  let h = 6;
+  try { const v = Number(localStorage.getItem("chiffre.warnHours")); if (WARN_CHOICES.includes(v)) h = v; } catch (e) {}
+  return h * 3600000; // so lange vor dem automatischen Löschen kommt die Vorwarnung
+}
+const MAX_BACKUP = 5 * 1024 * 1024;
+let memVault = null, storageOk = true;
+let key = null, meta = null, notes = [];
+let openId = null, armedId = null, armTimer = null, tickTimer = null, hiddenAt = 0;
+const LOCK_AFTER_MS = 60000;
+let chosen = { label: "1 Woche", days: 7 };
+
+const $ = id => document.getElementById(id);
+
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (v === true) el.setAttribute(k, "");
+    else if (v !== false && v != null) el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    el.append(typeof kid === "object" ? kid : document.createTextNode(kid));
+  }
+  return el;
+}
+
+/* Speicher */
+function loadVault() {
+  try { const s = localStorage.getItem(STORE_KEY); return s ? JSON.parse(s) : memVault; } catch (e) { return memVault; }
+}
+function saveVault(v) {
+  memVault = v;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(v)); storageOk = true; } catch (e) { storageOk = false; }
+}
+function wipeVault() {
+  memVault = null;
+  try { if (window.ChiffreNative && window.ChiffreNative.setExpiries) window.ChiffreNative.setExpiries(""); } catch (e) {}
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+}
+async function persist() {
+  saveVault(await seal(key, notes, meta));
+  $("noStore").hidden = storageOk;
+}
+
+/* Zeit */
+const dateFmt = new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "short", year: "numeric" });
+function span(ms) {
+  const a = Math.abs(ms);
+  if (a < 3600000) return Math.max(1, Math.round(a / 60000)) + " Min.";
+  if (a < DAY) return Math.round(a / 3600000) + " Std.";
+  const d = Math.round(a / DAY);
+  return d + (d === 1 ? " Tag" : " Tagen");
+}
+function status(n, now) {
+  const left = n.expires - now;
+  if (left <= 0) return { cls: "gone", text: "seit " + span(left) + " abgelaufen", frac: 0 };
+  const total = Math.max(1, n.expires - n.created);
+  return { cls: left < 3 * DAY ? "soon" : "", text: n.auto ? "wird in " + span(left) + " gelöscht" : "läuft in " + span(left) + " ab", frac: Math.min(1, left / total) };
+}
+function endOfDay(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d, 23, 59, 0).getTime();
+}
+function uid() { return (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); }
+
+/* Anzeige */
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 2600);
+}
+function show(view) {
+  $("lockView").hidden = view !== "lock";
+  $("appView").hidden = view !== "app";
+  $("lockBtn").hidden = view !== "app";
+  $("menuBtn").hidden = view !== "app";
+  if (view !== "app") closeMenu();
+  $("count").hidden = view !== "app";
+}
+
+function noteCard(n, now, expired) {
+  const st = status(n, now);
+  const isOpen = openId === n.id;
+  const main = h("button", { class: "note-main", type: "button", "aria-expanded": String(isOpen), onclick: () => { openId = isOpen ? null : n.id; armedId = null; render(); } },
+    h("span", { class: "note-text" }, n.text),
+    h("span", { class: "meta" }, h("span", { class: "state " + st.cls }, st.text), h("span", null, dateFmt.format(n.expires)))
+  );
+  const bar = h("div", { class: "bar" }, h("i", { class: st.cls, style: "width:" + Math.round(st.frac * 100) + "%" }));
+  const li = h("li", { class: "note" + (expired ? " expired" : "") }, main, bar);
+
+  const delBtn = h("button", { class: "btn small danger" + (armedId === n.id ? " armed" : ""), type: "button", onclick: () => onDelete(n.id) }, armedId === n.id ? "Wirklich löschen" : "Löschen");
+
+  if (expired) {
+    li.append(h("div", { class: "note-actions" },
+      h("button", { class: "btn small primary", type: "button", onclick: () => extend(n.id, 7) }, "+7 Tage"),
+      h("button", { class: "btn small", type: "button", onclick: () => extend(n.id, 30) }, "+30 Tage"),
+      delBtn));
+  }
+  if (isOpen) {
+    const ta = h("textarea", { id: "edit-" + n.id, "aria-label": "Notiz bearbeiten" });
+    ta.value = n.text;
+    const ext = h("div", { class: "chips" },
+      [["+1 Tag", 1], ["+1 Woche", 7], ["+1 Monat", 30], ["+3 Monate", 90]].map(([l, d]) =>
+        h("button", { class: "chip", type: "button", "aria-pressed": "false", onclick: () => extend(n.id, d) }, l)));
+    const autoBox = h("input", { type: "checkbox", id: "auto-" + n.id });
+    autoBox.checked = !!n.auto;
+    li.append(h("div", { class: "note-body" },
+      ta,
+      h("label", { class: "check", for: "auto-" + n.id }, autoBox, "Nach Ablauf automatisch löschen"),
+      h("div", null, h("p", { class: "sublabel", style: "margin-bottom:8px" }, "Ablauf neu setzen, gerechnet ab jetzt"), ext),
+      h("div", { class: "row" },
+        h("button", { class: "btn small primary", type: "button", onclick: () => saveEdit(n.id, ta.value, autoBox.checked) }, "Speichern"),
+        expired ? null : delBtn)));
+  }
+  return li;
+}
+
+function purgeAuto(now) {
+  const due = notes.filter(n => n.auto && n.expires <= now);
+  if (!due.length) return;
+  notes = notes.filter(n => !(n.auto && n.expires <= now));
+  if (openId && !notes.some(n => n.id === openId)) openId = null;
+  if (armedId && !notes.some(n => n.id === armedId)) armedId = null;
+  persist().catch(() => toast("Speichern fehlgeschlagen."));
+  toast(due.length === 1 ? "1 Notiz wurde automatisch gelöscht" : due.length + " Notizen wurden automatisch gelöscht");
+}
+
+function render() {
+  const now = Date.now();
+  purgeAuto(now);
+  const sorted = notes.slice().sort((a, b) => a.expires - b.expires);
+  const gone = sorted.filter(n => n.expires <= now);
+  const live = sorted.filter(n => n.expires > now);
+  $("count").textContent = live.length + " aktiv";
+  $("tabBadge").hidden = gone.length === 0;
+  $("tabBadge").textContent = String(gone.length);
+  $("expiredSec").hidden = gone.length === 0;
+  $("expiredList").replaceChildren(...gone.map(n => noteCard(n, now, true)));
+  $("activeList").replaceChildren(...(live.length
+    ? live.map(n => noteCard(n, now, false))
+    : [h("li", { class: "empty" }, gone.length ? "Keine aktiven Notizen." : "Noch keine Notiz. Schreib oben die erste und leg fest, wann sie verfällt.")]));
+  syncExpiry();
+}
+
+/* Aktionen */
+async function addNote() {
+  const text = $("composer").value.trim();
+  if (!text) return;
+  const now = Date.now();
+  let expires;
+  if (chosen.custom) {
+    const v = $("customDate").value;
+    if (!v) { toast("Bitte ein Datum wählen."); return; }
+    expires = endOfDay(v);
+    if (expires <= now) { toast("Das Datum liegt in der Vergangenheit."); return; }
+  } else expires = now + Math.round(chosen.days * DAY);
+  notes.push({ id: uid(), text, created: now, expires, auto: $("autoNew").checked });
+  try { await persist(); } catch (e) { toast("Speichern fehlgeschlagen."); return; }
+  $("composer").value = "";
+  $("autoNew").checked = false;
+  $("addBtn").disabled = true;
+  render();
+  toast("Verschlüsselt gespeichert");
+}
+async function extend(id, days) {
+  const n = notes.find(x => x.id === id); if (!n) return;
+  const now = Date.now();
+  n.created = now; n.expires = now + days * DAY;
+  openId = null; armedId = null;
+  await persist(); render();
+  toast("Verlängert bis " + dateFmt.format(n.expires));
+}
+async function saveEdit(id, text, auto) {
+  const n = notes.find(x => x.id === id); if (!n) return;
+  const t = text.trim();
+  if (!t) { toast("Der Text darf nicht leer sein."); return; }
+  n.text = t; n.auto = auto === true; openId = null;
+  await persist(); render();
+  toast("Gespeichert");
+}
+async function onDelete(id) {
+  if (armedId !== id) {
+    armedId = id; clearTimeout(armTimer);
+    armTimer = setTimeout(() => { armedId = null; render(); }, 4000);
+    render(); return;
+  }
+  clearTimeout(armTimer); armedId = null; openId = null;
+  notes = notes.filter(x => x.id !== id);
+  await persist(); render();
+  toast("Gelöscht");
+}
+
+/* Sicherung */
+function pad2(x) { return String(x).padStart(2, "0"); }
+function downloadText(name, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const a = h("a", { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+function onExportFile() {
+  const v = loadVault(); if (!v) return;
+  const d = new Date();
+  const name = "chiffre-sicherung-" + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + ".json";
+  if (window.ChiffreNative && typeof window.ChiffreNative.saveFile === "function") {
+    window.ChiffreNative.saveFile(name, JSON.stringify(v));
+    return;
+  }
+  downloadText(name, JSON.stringify(v));
+  toast("Sicherung erstellt");
+}
+async function onExportCopy() {
+  const v = loadVault(); if (!v) return;
+  try { await navigator.clipboard.writeText(JSON.stringify(v)); toast("Text kopiert"); }
+  catch (e) { toast("Kopieren nicht erlaubt. Nutze die Datei."); }
+}
+async function readBackup(fileEl, pasteEl) {
+  let text;
+  const f = fileEl.files && fileEl.files[0];
+  if (f) {
+    if (f.size > MAX_BACKUP) throw new Error("Die Datei ist zu groß.");
+    text = await f.text();
+  } else text = pasteEl.value.trim();
+  if (!text) throw new Error("Bitte Datei wählen oder Text einfügen.");
+  let v;
+  try { v = JSON.parse(text); } catch (e) { throw new Error("Das ist keine gültige Sicherung."); }
+  if (!validVault(v)) throw new Error("Das ist keine gültige Sicherung.");
+  return v;
+}
+async function openBackup(v, pw) {
+  const k = await deriveKey(pw, ub64(v.salt), v.iter);
+  let data;
+  try { data = await unseal(k, v); } catch (e) { throw new Error("Falsches Passwort oder beschädigte Sicherung."); }
+  return { k, notes: cleanNotes(data) };
+}
+async function onImport(e) {
+  e.preventDefault();
+  const btn = $("iSubmit"), msg = $("iMsg");
+  msg.textContent = ""; btn.disabled = true;
+  try {
+    const v = await readBackup($("iFile"), $("iPaste"));
+    const { notes: incoming } = await openBackup(v, $("iPw").value);
+    const have = new Set(notes.map(n => n.id));
+    const fresh = incoming.filter(n => !have.has(n.id));
+    notes = notes.concat(fresh);
+    await persist(); render();
+    $("iFile").value = ""; $("iPaste").value = ""; $("iPw").value = "";
+    toast(fresh.length + (fresh.length === 1 ? " Notiz hinzugefügt" : " Notizen hinzugefügt"));
+  } catch (err) { msg.textContent = err.message || "Das hat nicht geklappt."; }
+  finally { btn.disabled = false; }
+}
+async function onRestore(e) {
+  e.preventDefault();
+  const btn = $("rSubmit"), msg = $("rMsg");
+  msg.textContent = ""; btn.disabled = true;
+  try {
+    const v = await readBackup($("rFile"), $("rPaste"));
+    const { k, notes: incoming } = await openBackup(v, $("rPw").value);
+    key = k; meta = { v: 1, iter: v.iter, salt: v.salt }; notes = incoming;
+    saveVault(v);
+    try { if (bioNative()) window.ChiffreNative.disableBiometric(); } catch (e) {}
+    enterApp();
+    toast("Wiederhergestellt");
+  } catch (err) { msg.textContent = err.message || "Das hat nicht geklappt."; }
+  finally { btn.disabled = false; }
+}
+
+/* Sperre */
+function lock() {
+  key = null; notes = []; openId = null; armedId = null;
+  clearInterval(tickTimer);
+  $("composer").value = ""; $("autoNew").checked = false; $("addBtn").disabled = true;
+  $("iFile").value = ""; $("iPaste").value = ""; $("iPw").value = ""; $("iMsg").textContent = "";
+  $("backup").open = false;
+  $("activeList").replaceChildren(); $("expiredList").replaceChildren();
+  showLock();
+}
+function showLock() {
+  const exists = !!loadVault();
+  $("lockTitle").textContent = exists ? "Tresor entsperren" : "Tresor einrichten";
+  $("lockLead").textContent = exists
+    ? "Gib dein Passwort ein. Die Notizen werden erst dann auf diesem Gerät entschlüsselt."
+    : "Lege ein Passwort fest. Alle Notizen werden damit mit AES-256 verschlüsselt, bevor sie gespeichert werden.";
+  $("pw2Wrap").hidden = exists; $("pw2").required = !exists;
+  $("setupWarn").hidden = exists;
+  $("lockSubmit").textContent = exists ? "Entsperren" : "Tresor anlegen";
+  $("pw").setAttribute("autocomplete", exists ? "current-password" : "new-password");
+  $("restoreToggle").hidden = exists;
+  $("resetBtn").hidden = !exists;
+  $("restoreBox").hidden = true;
+  $("wipeBox").hidden = true; $("wipeWord").value = ""; $("wipeGo").disabled = true;
+  $("pw").value = ""; $("pw2").value = ""; $("lockMsg").textContent = "";
+  $("rFile").value = ""; $("rPaste").value = ""; $("rPw").value = ""; $("rMsg").textContent = "";
+  show("lock");
+  refreshBio();
+}
+function enterApp() {
+  $("pw").value = ""; $("pw2").value = ""; $("rPw").value = "";
+  $("noStore").hidden = storageOk;
+  show("app"); render();
+  refreshBio();
+  showPage(notes.some(n => n.expires <= Date.now()) ? "notes" : "write");
+  clearInterval(tickTimer);
+  tickTimer = setInterval(() => { if (key && openId === null) render(); }, 30000);
+}
+async function onLockSubmit(e) {
+  e.preventDefault();
+  const pw = $("pw").value, vault = loadVault(), btn = $("lockSubmit");
+  $("lockMsg").textContent = "";
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = "Einen Moment …";
+  try {
+    if (vault) {
+      const k = await deriveKey(pw, ub64(vault.salt), vault.iter);
+      let data;
+      try { data = await unseal(k, vault); } catch (err) { $("lockMsg").textContent = "Falsches Passwort."; return; }
+      key = k; meta = { v: 1, iter: vault.iter, salt: vault.salt }; notes = cleanNotes(data);
+    } else {
+      if (pw.length < 8) { $("lockMsg").textContent = "Mindestens 8 Zeichen."; return; }
+      if (pw !== $("pw2").value) { $("lockMsg").textContent = "Die Passwörter stimmen nicht überein."; return; }
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      meta = { v: 1, iter: ITER, salt: b64(salt) };
+      key = await deriveKey(pw, salt, ITER);
+      const now = Date.now();
+      notes = [{ id: uid(), text: "Beispielnotiz: Diese Notiz verfällt in 7 Tagen. Dann fragt Chiffre, ob du sie verlängern oder löschen willst. Du kannst sie jederzeit löschen.", created: now, expires: now + 7 * DAY }];
+      await persist();
+    }
+    enterApp();
+  } catch (err) {
+    $("lockMsg").textContent = "Das hat nicht geklappt. Dein Browser unterstützt die Verschlüsselung eventuell nicht.";
+  } finally {
+    btn.disabled = false; btn.textContent = label;
+  }
+}
+function wipeWordOk() {
+  const w = $("wipeWord").value.trim().toUpperCase();
+  return w === "LÖSCHEN" || w === "LOESCHEN";
+}
+function onReset() {
+  // Nur der Dialog öffnet sich. Gelöscht wird erst nach dem eingetippten Wort.
+  $("restoreBox").hidden = true;
+  $("wipeBox").hidden = false;
+  $("wipeWord").value = ""; $("wipeGo").disabled = true;
+  $("wipeWord").focus();
+}
+function onWipe(e) {
+  e.preventDefault();
+  if (!wipeWordOk()) return;
+  wipeVault();
+  try { if (bioNative()) window.ChiffreNative.disableBiometric(); } catch (err) {}
+  showLock(); toast("Tresor gelöscht");
+}
+
+/* Erinnerung (nur in der Android-App) */
+function syncExpiry() {
+  const n = window.ChiffreNative;
+  if (!n || typeof n.setExpiries !== "function") return;
+  const now = Date.now();
+  // "e" = Ablauf einer Notiz, bei der du entscheidest; "w" = Vorwarnung vor dem automatischen Löschen
+  const items = [];
+  for (const x of notes) {
+    if (x.auto) { const t = x.expires - warnMs(); if (t > now) items.push([t, "w"]); }
+    else if (x.expires > now) items.push([x.expires, "e"]);
+  }
+  items.sort((a, b) => a[0] - b[0]);
+  try { n.setExpiries(items.slice(0, 500).map(([t, k]) => k + t).join(",")); } catch (e) {}
+}
+function initReminders() {
+  const n = window.ChiffreNative;
+  if (!n || typeof n.setReminders !== "function") return;
+  $("remindPanel").hidden = false;
+  const t = $("remindToggle");
+  try { t.checked = !!n.remindersEnabled(); } catch (e) {}
+  t.addEventListener("change", () => { try { n.setReminders(t.checked); } catch (e) { t.checked = false; } });
+  const sel = $("warnSel");
+  sel.value = String(warnMs() / 3600000);
+  sel.addEventListener("change", () => {
+    try { localStorage.setItem("chiffre.warnHours", sel.value); } catch (e) {}
+    syncExpiry();
+  });
+  window.chiffreReminderState = (on, denied) => {
+    t.checked = !!on;
+    if (denied) toast("Benachrichtigungen sind nicht erlaubt. Erlaube sie in den Android-Einstellungen.");
+    if (on) syncExpiry();
+  };
+}
+
+/* Seiten: Schreiben und Notizen */
+let curPage = "write";
+function showPage(name) {
+  if (name === curPage) return;
+  const toNotes = name === "notes";
+  curPage = name;
+  $("pageWrite").hidden = toNotes;
+  $("pageNotes").hidden = !toNotes;
+  $("tabWrite").setAttribute("aria-selected", String(!toNotes));
+  $("tabNotes").setAttribute("aria-selected", String(toNotes));
+  const el = toNotes ? $("pageNotes") : $("pageWrite");
+  el.classList.remove("from-left", "from-right");
+  void el.offsetWidth;
+  el.classList.add(toNotes ? "from-right" : "from-left");
+  window.scrollTo(0, 0);
+}
+function initSwipe() {
+  let x0 = 0, y0 = 0, ok = false;
+  const area = $("appView");
+  area.addEventListener("touchstart", e => {
+    const t = e.touches[0];
+    // Rand des Bildschirms gehört der Zurück-Geste, Eingabefelder dem Textmarkieren
+    ok = e.touches.length === 1 && t.clientX > 28 && t.clientX < window.innerWidth - 28 &&
+         !(e.target.closest && e.target.closest("textarea, input, select"));
+    x0 = t.clientX; y0 = t.clientY;
+  }, { passive: true });
+  area.addEventListener("touchend", e => {
+    if (!ok) return;
+    ok = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - x0, dy = t.clientY - y0;
+    if (Math.abs(dx) < 70 || Math.abs(dx) < 1.6 * Math.abs(dy)) return;
+    showPage(dx < 0 ? "notes" : "write");
+  }, { passive: true });
+  $("tabWrite").addEventListener("click", () => showPage("write"));
+  $("tabNotes").addEventListener("click", () => showPage("notes"));
+}
+
+/* Einstellungen */
+function openMenu() {
+  $("menuSheet").hidden = false;
+  $("menuSheet").scrollTop = 0;
+  refreshBio();
+  $("menuClose").focus();
+}
+function closeMenu() {
+  if ($("menuSheet").hidden) return;
+  $("menuSheet").hidden = true;
+  $("menuBtn").focus();
+}
+
+/* Fingerabdruck (nur in der Android-App) */
+function bioNative() {
+  const n = window.ChiffreNative;
+  return n && typeof n.biometricStatus === "function" ? n : null;
+}
+function bioReady() {
+  const n = bioNative();
+  try { return !!n && n.biometricStatus() === 2 && !!n.biometricEnabled(); } catch (e) { return false; }
+}
+function bioMsgText(code) {
+  if (code === "invalid") return "Die Fingerabdrücke auf dem Gerät haben sich geändert. Gib dein Passwort ein und richte den Fingerabdruck neu ein.";
+  if (code === "error") return "Der Fingerabdruck hat nicht geklappt. Nutze das Passwort.";
+  return "";
+}
+function refreshBio() {
+  const n = bioNative();
+  if (!n) return;
+  let status = 0, on = false;
+  try { status = n.biometricStatus(); on = !!n.biometricEnabled(); } catch (e) {}
+  $("bioBtn").hidden = !(status === 2 && on && !!loadVault() && !key);
+  $("bioPanel").hidden = status === 0;
+  $("bioLead").textContent = status === 1
+    ? "Richte zuerst in den Android-Einstellungen einen Fingerabdruck ein."
+    : on
+      ? "Der Fingerabdruck entsperrt Chiffre. Das Passwort funktioniert weiterhin. Ändern sich die Fingerabdrücke auf dem Gerät, wird er automatisch abgeschaltet."
+      : "Entsperre Chiffre zusätzlich mit deinem Fingerabdruck. Dafür merkt sich Android dein Passwort, geschützt durch den Fingerabdruck. Ohne Fingerabdruck ist es nicht lesbar.";
+  $("bioForm").hidden = status !== 2 || on;
+  $("bioOff").hidden = status !== 2 || !on;
+}
+function bioAuto() {
+  if (!key && bioReady()) { try { window.ChiffreNative.unlockBiometric(); } catch (e) {} }
+}
+async function unlockWithPassword(pw) {
+  const vault = loadVault();
+  if (!vault) return false;
+  const k = await deriveKey(pw, ub64(vault.salt), vault.iter);
+  let data;
+  try { data = await unseal(k, vault); } catch (err) { return false; }
+  key = k; meta = { v: 1, iter: vault.iter, salt: vault.salt }; notes = cleanNotes(data);
+  enterApp();
+  return true;
+}
+async function onBioEnable(e) {
+  e.preventDefault();
+  const n = bioNative(); if (!n) return;
+  const pw = $("bioPw").value, btn = $("bioOn"), msg = $("bioMsg");
+  msg.textContent = "";
+  if (!pw) { msg.textContent = "Bitte das Passwort eingeben."; return; }
+  btn.disabled = true;
+  try {
+    const vault = loadVault();
+    const k = await deriveKey(pw, ub64(vault.salt), vault.iter);
+    try { await unseal(k, vault); } catch (err) { msg.textContent = "Falsches Passwort."; return; }
+    n.enableBiometric(pw);
+  } catch (err) { msg.textContent = "Das hat nicht geklappt."; }
+  finally { btn.disabled = false; }
+}
+function initBiometric() {
+  const n = bioNative();
+  if (!n) return;
+  $("bioForm").addEventListener("submit", onBioEnable);
+  $("bioOff").addEventListener("click", () => { try { n.disableBiometric(); } catch (e) {} });
+  $("bioBtn").addEventListener("click", () => { try { n.unlockBiometric(); } catch (e) {} });
+  // Antwort der App-Hülle auf Einrichten, Ausschalten oder Ungültigwerden
+  window.chiffreBioState = (enabled, code) => {
+    $("bioPw").value = "";
+    const text = bioMsgText(code);
+    $("bioMsg").textContent = text;
+    if (!key && text) $("lockMsg").textContent = text;
+    refreshBio();
+    if (enabled && key) toast("Fingerabdruck ist eingerichtet");
+  };
+  // Der Fingerabdruck war richtig, die Hülle liefert das gemerkte Passwort (Base64 von UTF-8)
+  window.chiffreBioUnlock = async b64 => {
+    if (key) return;
+    let pw = "";
+    try { pw = new TextDecoder().decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0))); } catch (e) {}
+    $("lockMsg").textContent = "";
+    let ok = false;
+    try { ok = pw ? await unlockWithPassword(pw) : false; } catch (e) {}
+    pw = "";
+    if (!ok) {
+      try { n.disableBiometric(); } catch (e) {}
+      $("lockMsg").textContent = "Das gemerkte Passwort passt nicht mehr. Gib dein Passwort ein.";
+    }
+  };
+  refreshBio();
+}
+
+/* Verfallsauswahl */
+const options = [["1 Stunde", 1 / 24], ["6 Stunden", 0.25], ["1 Tag", 1], ["1 Woche", 7], ["1 Monat", 30], ["3 Monate", 90]];
+function buildChips() {
+  const box = $("expiryChips");
+  const items = options.map(([label, days]) => h("button", {
+    class: "chip", type: "button", "aria-pressed": String(!chosen.custom && chosen.days === days),
+    onclick: () => { chosen = { label, days }; $("customWrap").hidden = true; buildChips(); }
+  }, label));
+  items.push(h("button", {
+    class: "chip", type: "button", "aria-pressed": String(!!chosen.custom),
+    onclick: () => { chosen = { custom: true }; $("customWrap").hidden = false; buildChips(); $("customDate").focus(); }
+  }, "Datum wählen"));
+  box.replaceChildren(...items);
+}
+
+/* Start */
+(function init() {
+  try { localStorage.setItem("chiffre.probe", "1"); localStorage.removeItem("chiffre.probe"); } catch (e) { storageOk = false; }
+  const tomorrow = new Date(Date.now() + DAY);
+  $("customDate").min = tomorrow.getFullYear() + "-" + pad2(tomorrow.getMonth() + 1) + "-" + pad2(tomorrow.getDate());
+  buildChips();
+  $("composer").addEventListener("input", e => { $("addBtn").disabled = !e.target.value.trim(); });
+  $("composer").addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") addNote(); });
+  $("addBtn").addEventListener("click", addNote);
+  $("lockForm").addEventListener("submit", onLockSubmit);
+  $("lockBtn").addEventListener("click", lock);
+  $("menuBtn").addEventListener("click", openMenu);
+  initSwipe();
+  $("menuClose").addEventListener("click", closeMenu);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
+  $("resetBtn").addEventListener("click", onReset);
+  $("wipeWord").addEventListener("input", () => { $("wipeGo").disabled = !wipeWordOk(); });
+  $("wipeBox").addEventListener("submit", onWipe);
+  $("wipeCancel").addEventListener("click", () => { $("wipeBox").hidden = true; $("wipeWord").value = ""; $("wipeGo").disabled = true; });
+  $("restoreToggle").addEventListener("click", () => { $("wipeBox").hidden = true; $("restoreBox").hidden = !$("restoreBox").hidden; });
+  $("restoreBox").addEventListener("submit", onRestore);
+  $("impForm").addEventListener("submit", onImport);
+  $("expDownload").addEventListener("click", onExportFile);
+  $("expCopy").addEventListener("click", onExportCopy);
+  initReminders();
+  initBiometric();
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (!key) return;
+    if (hiddenAt && Date.now() - hiddenAt >= LOCK_AFTER_MS) { lock(); bioAuto(); } else render();
+    hiddenAt = 0;
+  });
+  window.chiffreLock = () => { if (key) { lock(); bioAuto(); } };
+  // Zurück-Taste der App-Hülle: schließt zuerst die Einstellungen
+  window.chiffreBack = () => { if (!$("menuSheet").hidden) { closeMenu(); return true; } return false; };
+  if ("serviceWorker" in navigator && !window.ChiffreNative && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
+  showLock();
+  setTimeout(bioAuto, 400);
+})();
+</script>
+</body>
+</html>
