@@ -1,0 +1,3 @@
+Fixed: reminders often arrived far too late or not at all. The app now uses exact alarms (permission "Alarms & reminders", granted automatically on Android 13 and newer).
+New: the menu shows when the next reminder is scheduled.
+New: test button in the menu. It posts a test notification after one minute.

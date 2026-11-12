@@ -1,0 +1,3 @@
+Behoben: Erinnerungen kamen oft viel zu spät oder gar nicht. Die App nutzt jetzt genaue Alarme (Berechtigung "Alarme und Erinnerungen", sie ist bei Android 13 und neuer automatisch erteilt).
+Neu: Im Menü zeigt die Erinnerung, für wann der nächste Termin gesetzt ist.
+Neu: Test-Taste im Menü. Sie schickt nach einer Minute eine Test-Benachrichtigung.

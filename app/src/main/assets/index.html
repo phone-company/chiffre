@@ -335,6 +335,8 @@ details.panel[open] { gap: 14px; }
             </select>
           </label>
           <p class="lead">Die Meldungen sind neutral: „Eine Notiz ist abgelaufen“ und, bei Notizen mit automatischem Löschen, „Eine Notiz wird bald gelöscht“. Der Text der Notiz steht nie darin.</p>
+          <p class="lead" id="remindNext" aria-live="polite"></p>
+          <button class="btn small" type="button" id="remindTest" hidden>Test in 1 Minute</button>
         </section>
 
         <details class="panel" id="backup">
@@ -766,6 +768,7 @@ function syncExpiry() {
   }
   items.sort((a, b) => a[0] - b[0]);
   try { n.setExpiries(items.slice(0, 500).map(([t, k]) => k + t).join(",")); } catch (e) {}
+  refreshRemindStatus();
 }
 function initReminders() {
   const n = window.ChiffreNative;
@@ -784,7 +787,40 @@ function initReminders() {
     t.checked = !!on;
     if (denied) toast("Benachrichtigungen sind nicht erlaubt. Erlaube sie in den Android-Einstellungen.");
     if (on) syncExpiry();
+    refreshRemindStatus();
   };
+  if (typeof n.testReminder === "function") {
+    $("remindTest").hidden = false;
+    $("remindTest").addEventListener("click", () => {
+      let r = 1;
+      try { r = n.testReminder(); } catch (e) {}
+      toast(r === 0
+        ? "Test läuft. In etwa einer Minute kommt eine Benachrichtigung. Du kannst die App schließen."
+        : "Benachrichtigungen sind nicht erlaubt. Erlaube sie in den Android-Einstellungen.");
+    });
+  }
+  refreshRemindStatus();
+}
+/* Zeigt, welcher Termin in der Android-Hülle gespeichert ist */
+function refreshRemindStatus() {
+  const n = window.ChiffreNative, el = $("remindNext");
+  if (!n || typeof n.reminderStatus !== "function") { el.hidden = true; return; }
+  let s = "";
+  try { s = String(n.reminderStatus() || ""); } catch (e) {}
+  const [on, next, count, allowed, exact] = s.split(";");
+  let text;
+  if (on !== "1") text = "Die Erinnerung ist aus.";
+  else if (allowed !== "1") text = "Benachrichtigungen sind in Android ausgeschaltet. Erlaube sie in den Android-Einstellungen.";
+  else if (!next) text = "Nächste Erinnerung: keine geplant.";
+  else {
+    const when = new Date(Number(next.slice(1))).toLocaleString("de-DE",
+      { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+    text = "Nächste Erinnerung: " + when + " Uhr (" + (next[0] === "w" ? "Vorwarnung vor dem Löschen" : "Ablauf")
+      + "). Geplant insgesamt: " + count + ".";
+    if (exact === "0") text += " Android erlaubt keine genauen Alarme, Meldungen können sich um Stunden verspäten.";
+  }
+  el.hidden = false;
+  el.textContent = text;
 }
 
 /* Seiten: Schreiben und Notizen */
@@ -830,6 +866,7 @@ function openMenu() {
   $("menuSheet").hidden = false;
   $("menuSheet").scrollTop = 0;
   refreshBio();
+  refreshRemindStatus();
   $("menuClose").focus();
 }
 function closeMenu() {

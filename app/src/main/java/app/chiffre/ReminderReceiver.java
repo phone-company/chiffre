@@ -8,12 +8,15 @@ import android.content.Intent;
 public class ReminderReceiver extends BroadcastReceiver {
 
     static final String ACTION_ALARM = "app.chiffre.notes.ALARM";
+    static final String ACTION_TEST = "app.chiffre.notes.TEST";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent == null ? null : intent.getAction();
         if (ACTION_ALARM.equals(action)) {
             Reminders.onAlarm(context);
+        } else if (ACTION_TEST.equals(action)) {
+            Reminders.onTest(context);
         } else if (Intent.ACTION_BOOT_COMPLETED.equals(action)
                 || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
             Reminders.schedule(context);

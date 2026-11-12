@@ -21,8 +21,11 @@ import java.util.List;
  *
  * Gespeichert werden nur Zeitpunkte (Millisekunden) mit einer Art, nie Text oder Titel einer Notiz.
  * Art "e": eine Notiz läuft ab, du entscheidest. Art "w": eine Notiz wird bald automatisch gelöscht.
- * Die Meldungen sind immer neutral. Ein Alarm braucht keine zusätzliche Berechtigung
- * (ungenau, kann um Minuten abweichen).
+ * Die Meldungen sind immer neutral.
+ *
+ * Der Alarm ist genau (setExactAndAllowWhileIdle). Ein ungenauer Alarm darf von Android um bis zu
+ * drei Viertel der Wartezeit verspätet werden, bei einem Termin in drei Stunden also um über zwei
+ * Stunden. Das genügt für eine Erinnerung nicht.
  */
 final class Reminders {
 
@@ -32,6 +35,8 @@ final class Reminders {
     private static final String CHANNEL_ID = "expiry";
     private static final int ID_EXPIRED = 1;
     private static final int ID_WARNING = 2;
+    private static final int ID_TEST = 3;
+    private static final long TEST_DELAY_MS = 60_000L;
     private static final int MAX_ENTRIES = 500;
 
     private Reminders() {}
@@ -114,6 +119,66 @@ final class Reminders {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
+    /** Genau, wenn Android es erlaubt. Sonst ungenau, damit wenigstens irgendwann gemeldet wird. */
+    private static void setAlarm(AlarmManager am, long at, PendingIntent pi) {
+        if (canExact(am)) {
+            try {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+                return;
+            } catch (SecurityException ignored) {
+                // Erlaubnis fehlt doch: unten ungenau weiter
+            }
+        }
+        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+    }
+
+    private static boolean canExact(AlarmManager am) {
+        return Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms();
+    }
+
+    /**
+     * Zustand für die Anzeige im Menü: "an;nächster;anzahl;erlaubt;genau". "nächster" ist Art und
+     * Zeitpunkt des nächsten künftigen Termins (zum Beispiel "w1731000000000") oder leer.
+     */
+    static String status(Context c) {
+        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+        long now = System.currentTimeMillis();
+        Entry next = null;
+        int future = 0;
+        for (Entry e : load(c)) {
+            if (e.time > now) {
+                if (next == null) next = e;
+                future++;
+            }
+        }
+        return (isEnabled(c) ? "1" : "0") + ";"
+                + (next == null ? "" : (next.warn ? "w" : "e") + next.time) + ";"
+                + future + ";" + (canNotify(c) ? "1" : "0") + ";"
+                + (am != null && canExact(am) ? "1" : "0");
+    }
+
+    private static PendingIntent testIntent(Context c) {
+        Intent i = new Intent(c, ReminderReceiver.class).setAction(ReminderReceiver.ACTION_TEST);
+        return PendingIntent.getBroadcast(c, 1, i,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    /**
+     * Prüft den ganzen Weg: In einer Minute löst derselbe Alarmtyp wie bei den echten Terminen
+     * eine neutrale Test-Benachrichtigung aus. Gibt false zurück, wenn Meldungen nicht erlaubt sind.
+     */
+    static boolean scheduleTest(Context c) {
+        AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
+        if (am == null || !canNotify(c)) return false;
+        setAlarm(am, System.currentTimeMillis() + TEST_DELAY_MS, testIntent(c));
+        return true;
+    }
+
+    /** Wird vom Test-Alarm aufgerufen. */
+    static void onTest(Context c) {
+        if (canNotify(c)) notifyText(c, ID_TEST, R.string.notif_test);
+    }
+
     /** Stellt den Alarm auf den nächsten künftigen Zeitpunkt, oder löscht ihn. */
     static void schedule(Context c) {
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
@@ -133,7 +198,7 @@ final class Reminders {
             am.cancel(pi);
             return;
         }
-        am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next, pi);
+        setAlarm(am, next, pi);
     }
 
     static boolean canNotify(Context c) {

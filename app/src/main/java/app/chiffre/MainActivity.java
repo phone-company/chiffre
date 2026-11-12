@@ -234,6 +234,18 @@ public class MainActivity extends Activity {
             Reminders.setTimes(MainActivity.this, csv);
         }
 
+        /** "an;nächster;anzahl;erlaubt", nur Zeitpunkte und Zahlen, nie Text von Notizen. */
+        @JavascriptInterface
+        public String reminderStatus() {
+            return Reminders.status(MainActivity.this);
+        }
+
+        /** Test-Benachrichtigung in einer Minute. 0 = geplant, 1 = Meldungen nicht erlaubt. */
+        @JavascriptInterface
+        public int testReminder() {
+            return Reminders.scheduleTest(MainActivity.this) ? 0 : 1;
+        }
+
         /** 0 = nicht möglich, 1 = kein Fingerabdruck eingerichtet, 2 = bereit. */
         @JavascriptInterface
         public int biometricStatus() {

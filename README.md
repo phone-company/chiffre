@@ -23,7 +23,7 @@ Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Ver
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.7.0.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
+Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.7.2.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
@@ -33,6 +33,7 @@ Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.7.0.apk`. Do
 
 - **Benachrichtigungen:** Wird erst abgefragt, wenn du in der App die Erinnerung einschaltest.
 - **Beim Start des Geräts ausführen:** Damit der Alarm nach einem Neustart wieder gestellt wird.
+- **Alarme und Erinnerungen (USE_EXACT_ALARM):** Damit die Erinnerung zur genauen Zeit kommt. Ein ungenauer Alarm darf von Android um Stunden verspätet werden.
 - **Biometrie (USE_BIOMETRIC):** Nur für das optionale Entsperren per Fingerabdruck.
 - **Internet:** keine. Die App kann nichts senden oder laden.
 
@@ -46,7 +47,7 @@ Chiffre schützt gespeicherte Notizen, wenn jemand Zugriff auf das Gerät oder s
 - Chiffre schützt nicht vor Schadsoftware auf dem entsperrten Gerät, vor Mitlesen am Bildschirm oder vor Tastaturmitschnitt.
 - Das Ablaufdatum dient der Ordnung. Es ist kein forensisch sicheres Löschen.
 - Das automatische Löschen geschieht erst beim nächsten Entsperren der App, denn nur dann kann Chiffre die Notizen lesen. Bis dahin liegt die Notiz weiter verschlüsselt auf dem Gerät. Eine automatisch gelöschte Notiz lässt sich nicht zurückholen, außer aus einer älteren Sicherung.
-- Für die Erinnerung merkt sich die App die Ablaufzeitpunkte der Notizen (nur Uhrzeiten, nie Text) unverschlüsselt im privaten App-Speicher. Ohne die Erinnerung bleibt dieser Speicher leer. Der Alarm ist ungenau und kann um einige Minuten abweichen.
+- Für die Erinnerung merkt sich die App die Ablaufzeitpunkte der Notizen (nur Uhrzeiten, nie Text) unverschlüsselt im privaten App-Speicher. Ohne die Erinnerung bleibt dieser Speicher leer. Der Alarm ist genau, sofern Android das erlaubt.
 - Nach der Eingabe liegt der Schlüssel im Arbeitsspeicher, bis die App sich sperrt.
 - Mit Fingerabdruck merkt sich Android dein Passwort, verschlüsselt mit einem Schlüssel aus der Sicherheits-Hardware (Android Keystore). Der Schlüssel ist nur nach einem Fingerabdruck (starke Biometrie) nutzbar und wird ungültig, sobald auf dem Gerät ein Fingerabdruck hinzukommt. Wer dich zwingen kann, deinen Finger aufzulegen, kommt damit an die Notizen. Ohne Fingerabdruck-Funktion wird nichts gemerkt. Das Passwort funktioniert immer.
 
