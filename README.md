@@ -10,7 +10,7 @@ Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Ver
 - Sperrt sich nach 60 Sekunden im Hintergrund
 - Optional: Entsperren per Fingerabdruck, zusätzlich zum Passwort
 - Verschlüsselte Sicherung als Datei, zum Wiederherstellen oder für den Umzug auf ein anderes Gerät
-- Hell und dunkel, Oberfläche derzeit nur auf Deutsch
+- Hell und dunkel im Material-Stil. Ab Android 12 passen sich die Farben dem Hintergrundbild an (Material You). Die Oberfläche gibt es derzeit nur auf Deutsch
 
 ## Installieren
 
@@ -23,7 +23,7 @@ Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Ver
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.7.2.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
+Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.11.0.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
@@ -50,6 +50,7 @@ Chiffre schützt gespeicherte Notizen, wenn jemand Zugriff auf das Gerät oder s
 - Für die Erinnerung merkt sich die App die Ablaufzeitpunkte der Notizen (nur Uhrzeiten, nie Text) unverschlüsselt im privaten App-Speicher. Ohne die Erinnerung bleibt dieser Speicher leer. Der Alarm ist genau, sofern Android das erlaubt.
 - Nach der Eingabe liegt der Schlüssel im Arbeitsspeicher, bis die App sich sperrt.
 - Mit Fingerabdruck merkt sich Android dein Passwort, verschlüsselt mit einem Schlüssel aus der Sicherheits-Hardware (Android Keystore). Der Schlüssel ist nur nach einem Fingerabdruck (starke Biometrie) nutzbar und wird ungültig, sobald auf dem Gerät ein Fingerabdruck hinzukommt. Wer dich zwingen kann, deinen Finger aufzulegen, kommt damit an die Notizen. Ohne Fingerabdruck-Funktion wird nichts gemerkt. Das Passwort funktioniert immer.
+- Damit du das Passwort nicht vergisst, fragt Chiffre trotz Fingerabdruck regelmäßig danach: alle 4 Wochen (Voreinstellung), alle 2 Wochen, jede Woche oder nie. Das ist eine Gedächtnisstütze und kein zusätzlicher Schutz. Der Zeitpunkt der letzten Passwort-Eingabe steht unverschlüsselt im Speicher der App (nur die Uhrzeit, nie das Passwort).
 
 ## Bauen
 

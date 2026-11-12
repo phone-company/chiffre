@@ -16,80 +16,193 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
-/* Layout: eine schmale Spalte fürs Handy. Oben Wortmarke und Sperre, darunter Eingabe, dann Abgelaufenes (falls vorhanden) vor den aktiven Notizen. Keine externen Schriften oder Anfragen. */
+/* Material 3: Farbrollen als Variablen, Standard ist das Chiffre-Grün. Auf Android 12+ ersetzt die App sie durch die Systemfarben (Material You, siehe applySystemColors). Keine externen Schriften oder Anfragen. */
 :root {
   color-scheme: light;
-  --bg: #eef3ef;
-  --surface: #ffffff;
-  --surface-2: #dfe9e3;
-  --line: #c8d7cf;
-  --fg: #10231b;
-  --muted: #54695e;
-  --accent: #0f3b2e;
-  --accent-fg: #ffffff;
+  --surface: #eef3ef;
+  --sc-low: #f4f8f5;
+  --sc: #ffffff;
+  --sc-high: #e4ece7;
+  --on-surface: #10231b;
+  --on-surface-variant: #54695e;
+  --primary: #0f3b2e;
+  --on-primary: #ffffff;
+  --primary-container: #cfe5da;
+  --on-primary-container: #0f3b2e;
+  --secondary-container: #d8e8df;
+  --on-secondary-container: #10231b;
+  --outline: #6f857a;
+  --outline-variant: #c8d7cf;
+  --inverse-surface: #10231b;
+  --inverse-on-surface: #eef3ef;
+  --error: #b3261e;
+  --on-error: #ffffff;
+  --error-container: #f9dedc;
+  --on-error-container: #410e0b;
   --warn: #9a5200;
-  --danger: #b3261e;
-  --font-display: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --state: rgba(15, 59, 46, 0.08);
+  --c-red-ink: var(--on-surface);
+  --c-orange-ink: var(--on-surface);
+  --c-yellow-ink: var(--on-surface);
+  --c-green-ink: var(--on-surface);
+  --c-blue-ink: var(--on-surface);
+  --c-violet-ink: var(--on-surface);
+  --c-red-bg: #ffc9c4;
+  --c-red-ac: #ef5350;
+  --c-orange-bg: #ffd8a8;
+  --c-orange-ac: #ffa726;
+  --c-yellow-bg: #fff1a0;
+  --c-yellow-ac: #ffd740;
+  --c-green-bg: #bfeccb;
+  --c-green-ac: #43a047;
+  --c-blue-bg: #bcd9ff;
+  --c-blue-ac: #42a5f5;
+  --c-violet-bg: #dccbff;
+  --c-violet-ac: #9575cd;
+  --font-display: "Google Sans", "Google Sans Text", Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Google Sans Text", "Google Sans", Roboto, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0a241c;
-    --surface: #0f3b2e;
-    --surface-2: #174a3a;
-    --line: #245a49;
-    --fg: #e8f3ec;
-    --muted: #9bbfae;
-    --accent: #7bd3a4;
-    --accent-fg: #06251a;
+  :root:not([data-theme="light"]) {
+    --surface: #0a241c;
+    --sc-low: #0d2e24;
+    --sc: #0f3b2e;
+    --sc-high: #164a3a;
+    --on-surface: #e8f3ec;
+    --on-surface-variant: #9bbfae;
+    --primary: #7bd3a4;
+    --on-primary: #06251a;
+    --primary-container: #245a49;
+    --on-primary-container: #c4efd9;
+    --secondary-container: #1d5444;
+    --on-secondary-container: #d3eadf;
+    --outline: #6f9b88;
+    --outline-variant: #245a49;
+    --inverse-surface: #e8f3ec;
+    --inverse-on-surface: #0a241c;
+    --error: #ff8a80;
+    --on-error: #690005;
+    --error-container: #93000a;
+    --on-error-container: #ffdad6;
     --warn: #f0b35a;
-    --danger: #ff8a80;
+    --state: rgba(255, 255, 255, 0.1);
+    --c-red-ink: #ffffff;
+    --c-orange-ink: #2a1600;
+    --c-yellow-ink: #2a2200;
+    --c-green-ink: #ffffff;
+    --c-blue-ink: #ffffff;
+    --c-violet-ink: #ffffff;
+    --c-red-bg: #a8323a;
+    --c-red-ac: #ff8a80;
+    --c-orange-bg: #f08a1c;
+    --c-orange-ac: #ffa940;
+    --c-yellow-bg: #f2c318;
+    --c-yellow-ac: #ffd54a;
+    --c-green-bg: #2e7d3a;
+    --c-green-ac: #7bd88a;
+    --c-blue-bg: #2f66a8;
+    --c-blue-ac: #8ab8f5;
+    --c-violet-bg: #6b4fb0;
+    --c-violet-ac: #c2a4f5;
     color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+    --surface: #0a241c;
+    --sc-low: #0d2e24;
+    --sc: #0f3b2e;
+    --sc-high: #164a3a;
+    --on-surface: #e8f3ec;
+    --on-surface-variant: #9bbfae;
+    --primary: #7bd3a4;
+    --on-primary: #06251a;
+    --primary-container: #245a49;
+    --on-primary-container: #c4efd9;
+    --secondary-container: #1d5444;
+    --on-secondary-container: #d3eadf;
+    --outline: #6f9b88;
+    --outline-variant: #245a49;
+    --inverse-surface: #e8f3ec;
+    --inverse-on-surface: #0a241c;
+    --error: #ff8a80;
+    --on-error: #690005;
+    --error-container: #93000a;
+    --on-error-container: #ffdad6;
+    --warn: #f0b35a;
+    --state: rgba(255, 255, 255, 0.1);
+    --c-red-ink: #ffffff;
+    --c-orange-ink: #2a1600;
+    --c-yellow-ink: #2a2200;
+    --c-green-ink: #ffffff;
+    --c-blue-ink: #ffffff;
+    --c-violet-ink: #ffffff;
+    --c-red-bg: #a8323a;
+    --c-red-ac: #ff8a80;
+    --c-orange-bg: #f08a1c;
+    --c-orange-ac: #ffa940;
+    --c-yellow-bg: #f2c318;
+    --c-yellow-ac: #ffd54a;
+    --c-green-bg: #2e7d3a;
+    --c-green-ac: #7bd88a;
+    --c-blue-bg: #2f66a8;
+    --c-blue-ac: #8ab8f5;
+    --c-violet-bg: #6b4fb0;
+    --c-violet-ac: #c2a4f5;
+    color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--surface);
+  color: var(--on-surface);
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.5;
-  padding-top: max(20px, env(safe-area-inset-top, 0px));
-  padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-h1, h2 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1, h2 { font-family: var(--font-display); margin: 0; text-wrap: balance; font-weight: 500; }
 p { margin: 0; }
 [hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+svg.i { width: 24px; height: 24px; fill: currentColor; flex: none; }
 
-/* Header */
-.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
-.brand h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
-.count { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
-.top-actions { display: flex; gap: 8px; align-items: center; flex: none; }
-.btn.icon { width: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+/* Obere Leiste */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 64px; }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; padding-left: 4px; }
+.brand h1 { font-size: 24px; font-weight: 500; letter-spacing: 0; }
+.count { font-size: 13px; color: var(--on-surface-variant); font-variant-numeric: tabular-nums; }
+.top-actions { display: flex; gap: 4px; align-items: center; flex: none; }
 .sheet {
   position: fixed; inset: 0; z-index: 10; overflow-y: auto; overscroll-behavior: contain;
-  background: var(--bg);
-  padding-top: max(20px, env(safe-area-inset-top, 0px));
-  padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+  background: var(--surface);
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
+.sheet-top { justify-content: flex-start; }
+.sheet-top h2 { font-size: 22px; }
 
-/* Reiter */
-.tabs { display: flex; gap: 6px; padding: 4px; background: var(--surface-2); border-radius: 12px; }
-.tab { flex: 1; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font: 600 15px/1 var(--font-body); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-.tab[aria-selected="true"] { background: var(--surface); color: var(--fg); }
-.badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--danger); color: var(--bg); font: 700 12px/20px var(--font-body); text-align: center; }
-.page { display: flex; flex-direction: column; gap: 20px; }
+/* Reiter (Material: primäre Reiter) */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; justify-content: center; gap: 8px; background: var(--sc); border-top: 1px solid var(--outline-variant); padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.tab { flex: 1; max-width: 240px; border: 0; background: transparent; color: var(--on-surface-variant); font: 500 12px/16px var(--font-body); letter-spacing: 0.3px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0; position: relative; -webkit-tap-highlight-color: transparent; }
+.tab .pill { position: relative; width: 64px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.tab:active .pill { background: var(--state); }
+@media (hover: hover) { .tab:hover .pill { background: var(--state); } }
+.tab[aria-selected="true"] { color: var(--on-surface); font-weight: 700; }
+.tab[aria-selected="true"] .pill { background: var(--secondary-container); color: var(--on-secondary-container); }
+body.kb .tabs { display: none; }
+body.nav { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
+body.nav .toast { bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
+.badge { position: absolute; top: -4px; left: 34px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--error); color: var(--on-error); font: 500 11px/16px var(--font-body); text-align: center; }
+.page { display: flex; flex-direction: column; gap: 16px; }
 @media (prefers-reduced-motion: no-preference) {
   .page.from-right { animation: from-right 0.18s ease-out; }
   .page.from-left { animation: from-left 0.18s ease-out; }
@@ -97,116 +210,178 @@ p { margin: 0; }
   @keyframes from-left { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
 }
 
-/* Buttons */
+/* Knöpfe */
 .btn {
   font: 500 15px/1 var(--font-body);
-  min-height: 44px;
-  padding: 0 16px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--fg);
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: 1px solid var(--outline);
+  background: transparent;
+  color: var(--primary);
   cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background-color 0.15s, box-shadow 0.15s;
 }
-.btn:hover { border-color: var(--muted); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 600; }
-.btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn.danger { color: var(--danger); border-color: var(--danger); }
-.btn.danger.armed { background: var(--danger); color: var(--bg); }
-.btn.quiet { border-color: transparent; background: transparent; color: var(--muted); }
-.btn.small { min-height: 40px; padding: 0 12px; font-size: 14px; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:active { box-shadow: inset 0 0 0 999px var(--state); }
+@media (hover: hover) { .btn:hover { box-shadow: inset 0 0 0 999px var(--state); } }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.btn.primary:disabled, .btn.primary:disabled:hover, .btn.primary:disabled:active { opacity: 0.38; cursor: not-allowed; box-shadow: none; }
+.btn.danger { color: var(--error); border-color: var(--outline); }
+.btn.danger.armed { background: var(--error); border-color: var(--error); color: var(--on-error); }
+.btn.quiet { border-color: transparent; background: transparent; color: var(--primary); padding: 0 16px; }
+.btn.quiet.danger { color: var(--error); }
+.btn.small { min-height: 40px; padding: 0 18px; font-size: 14px; }
+.btn.icon { width: 48px; min-height: 48px; padding: 0; border-color: transparent; color: var(--on-surface-variant); }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-/* Forms */
-label.field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+/* Formulare */
+label.field { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--on-surface-variant); }
 input[type="password"], input[type="text"], input[type="date"], input[type="file"], textarea, select {
   font: 400 16px/1.5 var(--font-body);
   width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--fg);
-  padding: 10px 12px;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--on-surface);
+  padding: 14px 16px;
 }
-textarea { min-height: 96px; resize: vertical; }
+select option { background: var(--surface); color: var(--on-surface); }
+textarea { min-height: 112px; resize: vertical; }
 textarea.mono { font-family: var(--font-mono); font-size: 13px; min-height: 72px; }
-input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 
-/* Panels */
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-.panel.lock { padding: 24px 20px; gap: 16px; }
-.plain { padding: 0; border: 0; background: none; }
-.lead { color: var(--muted); font-size: 15px; }
-.msg { font-size: 14px; color: var(--danger); min-height: 1.4em; }
-.warnbox { font-size: 14px; color: var(--muted); border-left: 3px solid var(--warn); padding-left: 12px; }
-details.panel > summary { cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 18px; list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 28px; }
+/* Karten */
+.panel { background: var(--sc); border: 0; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.panel.lock { padding: 28px 22px; gap: 18px; }
+.panel.lock h2 { text-align: center; font-size: 24px; }
+.panel.lock .lead { text-align: center; }
+.lock-icon { align-self: center; width: 72px; height: 72px; border-radius: 50%; background: var(--primary-container); color: var(--on-primary-container); display: grid; place-items: center; }
+.lock-icon svg { width: 36px; height: 36px; fill: currentColor; }
+.plain { padding: 0; border: 0; background: none; border-radius: 0; }
+.lead { color: var(--on-surface-variant); font-size: 15px; }
+.msg { font-size: 14px; color: var(--error); min-height: 1.4em; }
+.warnbox { font-size: 14px; color: var(--on-surface-variant); border-left: 4px solid var(--warn); background: var(--sc-low); border-radius: 4px 12px 12px 4px; padding: 10px 12px; }
+details.panel > summary { cursor: pointer; font-family: var(--font-display); font-weight: 500; font-size: 18px; list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 32px; }
 details.panel > summary::-webkit-details-marker { display: none; }
-details.panel > summary::after { content: "+"; font-family: var(--font-mono); color: var(--muted); }
-details.panel[open] > summary::after { content: "–"; }
-details.panel[open] { gap: 14px; }
-.sep { border: 0; border-top: 1px solid var(--line); margin: 2px 0; width: 100%; }
+details.panel > summary::after { content: ""; width: 10px; height: 10px; border-right: 2px solid var(--on-surface-variant); border-bottom: 2px solid var(--on-surface-variant); transform: rotate(45deg); margin: -4px 4px 0 0; transition: transform 0.15s; }
+details.panel[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
+details.panel[open] { gap: 16px; }
+.sep { border: 0; border-top: 1px solid var(--outline-variant); margin: 2px 0; width: 100%; }
 
-/* Expiry chips */
+/* Auswahl-Chips */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
   font: 500 14px/1 var(--font-body);
   min-height: 40px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--fg);
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--outline);
+  background: transparent;
+  color: var(--on-surface-variant);
   cursor: pointer;
 }
-.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.chip:active { box-shadow: inset 0 0 0 999px var(--state); }
+@media (hover: hover) { .chip:hover { box-shadow: inset 0 0 0 999px var(--state); } }
+.chip[aria-pressed="true"] { background: var(--secondary-container); border-color: transparent; color: var(--on-secondary-container); }
+.chip[aria-pressed="true"]::before { content: "\2713"; margin-right: 8px; font-weight: 700; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .row.end { justify-content: flex-end; }
 
-/* Notes */
-.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-.section-head h2 { font-size: 18px; font-weight: 700; }
-.section-head p { font-size: 14px; color: var(--muted); }
+/* Notizen */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 4px 4px 10px; }
+.section-head h2 { font-size: 14px; font-weight: 500; color: var(--primary); letter-spacing: 0.01em; }
+.section-head p { font-size: 13px; color: var(--on-surface-variant); }
 .notes { display: flex; flex-direction: column; gap: 10px; list-style: none; margin: 0; padding: 0; }
-.note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.note.expired { border-color: var(--danger); }
-.note-main { width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 14px 16px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
+.note { background: var(--sc); border: 0; border-radius: 20px; overflow: hidden; }
+.note.expired { background: var(--error-container); color: var(--on-error-container); }
+.note { position: relative; }
+.pin { position: absolute; top: 6px; right: 6px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; padding: 0; -webkit-tap-highlight-color: transparent; }
+.pin svg { width: 18px; height: 18px; fill: currentColor; opacity: 0.85; }
+.pin:active { background: var(--state); }
+.note.pinned .note-text { padding-right: 26px; }
+.notes.tiles .note.pinned .note-text { padding-right: 22px; }
+.note[data-c] { background: var(--nb); }
+.note[data-c]:not(.expired) { color: var(--ni); }
+.note[data-c]:not(.expired) .meta { color: var(--ni); }
+.note[data-c]:not(.expired) .meta > span:last-child { opacity: 0.8; }
+.note[data-c]:not(.expired) .meta .state { color: var(--ni); }
+.note[data-c]:not(.expired) .meta .state.soon { font-weight: 500; }
+.note.expired[data-c] { background: var(--error-container); box-shadow: inset 6px 0 0 var(--na); }
+.note[data-c="red"] { --nb: var(--c-red-bg); --na: var(--c-red-ac); --ni: var(--c-red-ink); }
+.note[data-c="orange"] { --nb: var(--c-orange-bg); --na: var(--c-orange-ac); --ni: var(--c-orange-ink); }
+.note[data-c="yellow"] { --nb: var(--c-yellow-bg); --na: var(--c-yellow-ac); --ni: var(--c-yellow-ink); }
+.note[data-c="green"] { --nb: var(--c-green-bg); --na: var(--c-green-ac); --ni: var(--c-green-ink); }
+.note[data-c="blue"] { --nb: var(--c-blue-bg); --na: var(--c-blue-ac); --ni: var(--c-blue-ink); }
+.note[data-c="violet"] { --nb: var(--c-violet-bg); --na: var(--c-violet-ac); --ni: var(--c-violet-ink); }
+.swatches { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px; }
+.sw { width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; background: var(--swc, transparent); position: relative; cursor: pointer; padding: 0; color: rgba(0, 0, 0, 0.75); font: 700 16px/1 var(--font-body); display: grid; place-items: center; }
+.sw.none { border-color: var(--outline); color: var(--on-surface-variant); }
+.sw.none::before { content: ""; position: absolute; left: 6px; right: 6px; top: 50%; height: 2px; background: var(--outline); transform: rotate(-45deg); }
+.sw[aria-pressed="true"] { outline: 3px solid var(--primary); outline-offset: 2px; }
+.sw[aria-pressed="true"]:not(.none)::after { content: "\2713"; }
+.sw[data-c="red"] { --swc: var(--c-red-ac); }
+.sw[data-c="orange"] { --swc: var(--c-orange-ac); }
+.sw[data-c="yellow"] { --swc: var(--c-yellow-ac); }
+.sw[data-c="green"] { --swc: var(--c-green-ac); }
+.sw[data-c="blue"] { --swc: var(--c-blue-ac); }
+.sw[data-c="violet"] { --swc: var(--c-violet-ac); }
+.notes.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; grid-auto-rows: 4px; column-gap: 10px; row-gap: 0; }
+.notes.tiles .note { align-self: start; }
+.notes.tiles .note:not([data-c]):not(.expired) { background: transparent; box-shadow: inset 0 0 0 1.5px var(--outline-variant); }
+.notes.tiles .note-main { padding: 14px 14px 12px; }
+.notes.tiles .note-text { -webkit-line-clamp: 8; font-size: 15px; line-height: 1.4; }
+.notes.tiles .meta { flex-direction: column; gap: 2px; font-size: 12px; }
+.notes.tiles .note.open, .notes.tiles .note.expired, .notes.tiles .empty { grid-column: 1 / -1; }
+.notes.tiles .note.open .meta, .notes.tiles .note.expired .meta { flex-direction: row; justify-content: space-between; font-size: 13px; }
+.notes.tiles .note.open .note-text, .notes.tiles .note.expired .note-text { -webkit-line-clamp: 3; font-size: inherit; line-height: inherit; }
+.note-main { width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 16px 18px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
+.note-main:active { box-shadow: inset 0 0 0 999px var(--state); }
 .note-text { white-space: pre-wrap; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.meta { display: flex; justify-content: space-between; gap: 12px; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
-.meta .state { color: var(--fg); }
+.meta { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--on-surface-variant); font-variant-numeric: tabular-nums; }
+.meta .state { color: var(--on-surface); }
 .meta .state.soon { color: var(--warn); }
-.meta .state.gone { color: var(--danger); }
-.bar { height: 4px; background: var(--surface-2); }
-.bar > i { display: block; height: 100%; background: var(--accent); }
+.meta .state.gone { color: var(--on-error-container); font-weight: 500; }
+.note.expired .meta { color: var(--on-error-container); }
+.bar { height: 4px; background: var(--outline-variant); }
+.bar > i { display: block; height: 100%; background: var(--primary); border-radius: 0 2px 2px 0; }
 .bar > i.soon { background: var(--warn); }
-.bar > i.gone { background: var(--danger); }
-.note-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--line); }
-.note-actions { padding: 12px 16px 14px; display: flex; flex-wrap: wrap; gap: 8px; }
-.sublabel { font-size: 13px; color: var(--muted); }
-.check { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 16px; color: var(--fg); cursor: pointer; }
-.check input { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
-.empty { color: var(--muted); text-align: center; padding: 28px 12px; border: 1px dashed var(--line); border-radius: 12px; font-size: 15px; }
+.bar > i.gone { background: var(--error); }
+.note-body { padding: 14px 18px 16px; display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--outline-variant); }
+.note-actions { padding: 12px 18px 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+.sublabel { font-size: 13px; color: var(--on-surface-variant); }
+.empty { color: var(--on-surface-variant); text-align: center; padding: 28px 12px; background: var(--sc-low); border-radius: 20px; font-size: 15px; }
 
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px); z-index: 20; }
+/* Schalter (Material) */
+.check { display: flex; flex-direction: row-reverse; justify-content: space-between; align-items: center; gap: 16px; min-height: 48px; font-size: 16px; color: var(--on-surface); cursor: pointer; }
+.check input { -webkit-appearance: none; appearance: none; flex: none; width: 52px; height: 32px; margin: 0; border-radius: 16px; border: 2px solid var(--outline); background: var(--sc-high); position: relative; cursor: pointer; transition: background-color 0.15s, border-color 0.15s; }
+.check input::after { content: ""; position: absolute; top: 50%; left: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--outline); transform: translateY(-50%); transition: left 0.15s, width 0.15s, height 0.15s, background-color 0.15s; }
+.check input:checked { background: var(--primary); border-color: var(--primary); }
+.check input:checked::after { left: 22px; width: 24px; height: 24px; background: var(--on-primary); }
+.check input:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+/* Hinweis unten (Snackbar) */
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--inverse-surface); color: var(--inverse-on-surface); padding: 14px 18px; border-radius: 12px; font-size: 14px; max-width: calc(100% - 32px); z-index: 20; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25); }
 @media (prefers-reduced-motion: no-preference) {
   .toast { animation: pop 0.18s ease-out; }
   @keyframes pop { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
 }
 </style>
+<style id="dynColors"></style>
 </head>
 <body>
 <main class="wrap">
   <header class="top">
     <div class="brand"><h1>Chiffre</h1><span class="count" id="count" hidden></span></div>
     <div class="top-actions">
-      <button class="btn small icon" id="menuBtn" type="button" aria-label="Einstellungen" aria-haspopup="dialog" hidden>
-        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-      <button class="btn small" id="lockBtn" type="button" hidden>Sperren</button>
+      <button class="btn icon" id="menuBtn" type="button" aria-label="Einstellungen" aria-haspopup="dialog" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg></button>
+      <button class="btn icon" id="lockBtn" type="button" aria-label="Sperren" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z"/></svg><span class="sr">Sperren</span></button>
     </div>
   </header>
 
   <!-- Sperrbildschirm -->
   <section id="lockView" class="panel lock" hidden>
+    <div class="lock-icon" aria-hidden="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z"/></svg></div>
     <h2 id="lockTitle"></h2>
     <p class="lead" id="lockLead"></p>
     <form id="lockForm" class="panel plain" autocomplete="off">
@@ -256,8 +431,8 @@ details.panel[open] { gap: 14px; }
     <p class="warnbox" id="noStore" hidden>Dieser Browser erlaubt kein Speichern. Die Notizen bleiben nur, solange diese Seite offen ist.</p>
 
     <div class="tabs" role="tablist" aria-label="Seiten">
-      <button class="tab" id="tabWrite" type="button" role="tab" aria-selected="true" aria-controls="pageWrite">Schreiben</button>
-      <button class="tab" id="tabNotes" type="button" role="tab" aria-selected="false" aria-controls="pageNotes">Notizen<span class="badge" id="tabBadge" hidden></span></button>
+      <button class="tab" id="tabWrite" type="button" role="tab" aria-selected="true" aria-controls="pageWrite"><span class="pill"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></span>Schreiben</button>
+      <button class="tab" id="tabNotes" type="button" role="tab" aria-selected="false" aria-controls="pageNotes"><span class="pill"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg><span class="badge" id="tabBadge" hidden></span></span>Notizen</button>
     </div>
 
     <div class="page" id="pageWrite" role="tabpanel" aria-labelledby="tabWrite">
@@ -272,6 +447,13 @@ details.panel[open] { gap: 14px; }
         <label class="field" id="customWrap" for="customDate" style="margin-top:10px" hidden>Datum
           <input type="date" id="customDate">
         </label>
+      </div>
+      <div>
+        <p class="sublabel" style="margin-bottom:8px">Farbe</p>
+        <div id="colorNew"></div>
+      </div>
+      <div>
+        <label class="check" for="pinNew"><input type="checkbox" id="pinNew"> Oben anheften</label>
       </div>
       <div>
         <label class="check" for="autoNew"><input type="checkbox" id="autoNew"> Nach Ablauf automatisch löschen</label>
@@ -295,7 +477,7 @@ details.panel[open] { gap: 14px; }
     <section>
       <div class="section-head">
         <h2>Aktiv</h2>
-        <p>Bald ablaufende zuerst</p>
+        <p>Angeheftet, dann bald ablaufend</p>
       </div>
       <ul class="notes" id="activeList"></ul>
     </section>
@@ -306,10 +488,32 @@ details.panel[open] { gap: 14px; }
 
 <div class="sheet" id="menuSheet" role="dialog" aria-modal="true" aria-labelledby="menuTitle" hidden>
   <div class="wrap">
-    <header class="top">
-      <h2 id="menuTitle" style="font-size:24px">Einstellungen</h2>
-      <button class="btn small" id="menuClose" type="button">Schließen</button>
+    <header class="top sheet-top">
+      <button class="btn icon" id="menuClose" type="button" aria-label="Schließen"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg><span class="sr">Schließen</span></button>
+      <h2 id="menuTitle">Einstellungen</h2>
     </header>
+        <section class="panel" id="themePanel" aria-labelledby="themeTitle">
+          <h2 id="themeTitle" style="font-size:18px">Darstellung</h2>
+          <div class="chips" id="themeChips" role="group" aria-label="Darstellung">
+            <button class="chip" type="button" data-mode="system" aria-pressed="true">System</button>
+            <button class="chip" type="button" data-mode="light" aria-pressed="false">Hell</button>
+            <button class="chip" type="button" data-mode="dark" aria-pressed="false">Dunkel</button>
+          </div>
+          <div>
+            <p class="sublabel" style="margin-bottom:8px">Ansicht der Notizen</p>
+            <div class="chips" id="viewChips" role="group" aria-label="Ansicht der Notizen">
+              <button class="chip" type="button" data-view="list" aria-pressed="true">Liste</button>
+              <button class="chip" type="button" data-view="tiles" aria-pressed="false">Kacheln</button>
+            </div>
+          </div>
+          <div id="paletteRow" hidden>
+            <p class="sublabel" style="margin-bottom:8px">Farben</p>
+            <div class="chips" id="paletteChips" role="group" aria-label="Farben">
+              <button class="chip" type="button" data-pal="dynamic" aria-pressed="true">Hintergrundbild</button>
+              <button class="chip" type="button" data-pal="green" aria-pressed="false">Chiffre-Grün</button>
+            </div>
+          </div>
+        </section>
         <section class="panel" id="bioPanel" aria-labelledby="bioTitle" hidden>
           <h2 id="bioTitle" style="font-size:18px">Fingerabdruck</h2>
           <p class="lead" id="bioLead"></p>
@@ -320,6 +524,17 @@ details.panel[open] { gap: 14px; }
             <button class="btn primary" type="submit" id="bioOn">Fingerabdruck einrichten</button>
           </form>
           <button class="btn" type="button" id="bioOff" hidden>Fingerabdruck ausschalten</button>
+          <div id="pwWrap" hidden>
+            <label class="field" for="pwSel">Passwort trotzdem abfragen
+              <select id="pwSel">
+                <option value="0">Nie</option>
+                <option value="7">Jede Woche</option>
+                <option value="14">Alle 2 Wochen</option>
+                <option value="28">Alle 4 Wochen</option>
+              </select>
+            </label>
+            <p class="sublabel" id="pwNext"></p>
+          </div>
           <p class="msg" id="bioMsg" role="alert"></p>
         </section>
 
@@ -389,10 +604,12 @@ function validVault(o) {
   return !!o && o.v === 1 && Number.isInteger(o.iter) && o.iter >= 1000 && o.iter <= 2000000 &&
     ["salt", "iv", "ct"].every(k => typeof o[k] === "string" && o[k].length > 0);
 }
+const NOTE_COLORS = [["red", "Rot"], ["orange", "Orange"], ["yellow", "Gelb"], ["green", "Grün"], ["blue", "Blau"], ["violet", "Violett"]];
+function cleanColor(c) { return NOTE_COLORS.some(x => x[0] === c) ? c : ""; }
 function cleanNotes(a) {
   if (!Array.isArray(a)) throw new Error("Ungültige Daten");
   return a.filter(n => n && typeof n.id === "string" && typeof n.text === "string" && Number.isFinite(n.created) && Number.isFinite(n.expires))
-    .map(n => ({ id: n.id, text: n.text, created: n.created, expires: n.expires, auto: n.auto === true }));
+    .map(n => ({ id: n.id, text: n.text, created: n.created, expires: n.expires, auto: n.auto === true, color: cleanColor(n.color), pinned: n.pinned === true }));
 }
 // </crypto>
 
@@ -439,7 +656,7 @@ function saveVault(v) {
 function wipeVault() {
   memVault = null;
   try { if (window.ChiffreNative && window.ChiffreNative.setExpiries) window.ChiffreNative.setExpiries(""); } catch (e) {}
-  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  try { localStorage.removeItem(STORE_KEY); localStorage.removeItem("chiffre.lastPw"); } catch (e) {}
 }
 async function persist() {
   saveVault(await seal(key, notes, meta));
@@ -458,8 +675,9 @@ function span(ms) {
 function status(n, now) {
   const left = n.expires - now;
   if (left <= 0) return { cls: "gone", text: "seit " + span(left) + " abgelaufen", frac: 0 };
-  const total = Math.max(1, n.expires - n.created);
-  return { cls: left < 3 * DAY ? "soon" : "", text: n.auto ? "wird in " + span(left) + " gelöscht" : "läuft in " + span(left) + " ab", frac: Math.min(1, left / total) };
+  // Gemeinsamer Maßstab für alle Notizen (logarithmisch, 3 Monate = voll): weniger Restzeit = kürzerer Balken
+  const HOUR = 3600000, frac = Math.min(1, Math.log(1 + left / HOUR) / Math.log(1 + 90 * DAY / HOUR));
+  return { cls: left < 3 * DAY ? "soon" : "", text: n.auto ? "wird in " + span(left) + " gelöscht" : "läuft in " + span(left) + " ab", frac };
 }
 function endOfDay(dateStr) {
   const [y, m, d] = dateStr.split("-").map(Number);
@@ -479,8 +697,37 @@ function show(view) {
   $("menuBtn").hidden = view !== "app";
   if (view !== "app") closeMenu();
   $("count").hidden = view !== "app";
+  document.body.classList.toggle("nav", view === "app");
 }
 
+function colorPicker(current, onPick, label) {
+  let cur = cleanColor(current);
+  const wrap = h("div", { class: "swatches", role: "group", "aria-label": label });
+  const btns = [["", "Keine Farbe"]].concat(NOTE_COLORS).map(([id, name]) => {
+    const b = h("button", { class: "sw" + (id ? "" : " none"), type: "button", "data-c": id, "aria-label": name, "aria-pressed": String(id === cur) });
+    b.addEventListener("click", () => { cur = id; btns.forEach(x => x.setAttribute("aria-pressed", String(x.dataset.c === cur))); onPick(cur); });
+    return b;
+  });
+  wrap.append(...btns);
+  return wrap;
+}
+
+function pinIcon() {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS(ns, "path");
+  path.setAttribute("d", "M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z");
+  svg.append(path);
+  return svg;
+}
+async function togglePin(id) {
+  const n = notes.find(x => x.id === id); if (!n) return;
+  n.pinned = !n.pinned;
+  try { await persist(); } catch (e) { toast("Speichern fehlgeschlagen."); }
+  render();
+  toast(n.pinned ? "Oben angeheftet" : "Nicht mehr angeheftet");
+}
 function noteCard(n, now, expired) {
   const st = status(n, now);
   const isOpen = openId === n.id;
@@ -489,7 +736,13 @@ function noteCard(n, now, expired) {
     h("span", { class: "meta" }, h("span", { class: "state " + st.cls }, st.text), h("span", null, dateFmt.format(n.expires)))
   );
   const bar = h("div", { class: "bar" }, h("i", { class: st.cls, style: "width:" + Math.round(st.frac * 100) + "%" }));
-  const li = h("li", { class: "note" + (expired ? " expired" : "") }, main, bar);
+  const li = h("li", { class: "note" + (expired ? " expired" : "") + (isOpen ? " open" : "") }, main, bar);
+  if (n.color) li.dataset.c = n.color;
+  if (n.pinned) {
+    li.classList.add("pinned");
+    li.append(h("button", { class: "pin", type: "button", "aria-label": "Angeheftet, zum Lösen tippen", onclick: e => { e.stopPropagation(); togglePin(n.id); } },
+      pinIcon()));
+  }
 
   const delBtn = h("button", { class: "btn small danger" + (armedId === n.id ? " armed" : ""), type: "button", onclick: () => onDelete(n.id) }, armedId === n.id ? "Wirklich löschen" : "Löschen");
 
@@ -507,12 +760,17 @@ function noteCard(n, now, expired) {
         h("button", { class: "chip", type: "button", "aria-pressed": "false", onclick: () => extend(n.id, d) }, l)));
     const autoBox = h("input", { type: "checkbox", id: "auto-" + n.id });
     autoBox.checked = !!n.auto;
+    let editColor = n.color || "";
+    const pinBox = h("input", { type: "checkbox", id: "pin-" + n.id });
+    pinBox.checked = !!n.pinned;
     li.append(h("div", { class: "note-body" },
       ta,
+      h("label", { class: "check", for: "pin-" + n.id }, pinBox, "Oben anheften"),
+      h("div", null, h("p", { class: "sublabel", style: "margin-bottom:8px" }, "Farbe"), colorPicker(editColor, c => { editColor = c; }, "Farbe der Notiz")),
       h("label", { class: "check", for: "auto-" + n.id }, autoBox, "Nach Ablauf automatisch löschen"),
       h("div", null, h("p", { class: "sublabel", style: "margin-bottom:8px" }, "Ablauf neu setzen, gerechnet ab jetzt"), ext),
       h("div", { class: "row" },
-        h("button", { class: "btn small primary", type: "button", onclick: () => saveEdit(n.id, ta.value, autoBox.checked) }, "Speichern"),
+        h("button", { class: "btn small primary", type: "button", onclick: () => saveEdit(n.id, ta.value, autoBox.checked, editColor, pinBox.checked) }, "Speichern"),
         expired ? null : delBtn)));
   }
   return li;
@@ -531,7 +789,7 @@ function purgeAuto(now) {
 function render() {
   const now = Date.now();
   purgeAuto(now);
-  const sorted = notes.slice().sort((a, b) => a.expires - b.expires);
+  const sorted = notes.slice().sort((a, b) => (b.pinned === true) - (a.pinned === true) || a.expires - b.expires);
   const gone = sorted.filter(n => n.expires <= now);
   const live = sorted.filter(n => n.expires > now);
   $("count").textContent = live.length + " aktiv";
@@ -542,10 +800,16 @@ function render() {
   $("activeList").replaceChildren(...(live.length
     ? live.map(n => noteCard(n, now, false))
     : [h("li", { class: "empty" }, gone.length ? "Keine aktiven Notizen." : "Noch keine Notiz. Schreib oben die erste und leg fest, wann sie verfällt.")]));
+  layoutTiles();
   syncExpiry();
 }
 
 /* Aktionen */
+let newColor = "";
+function setNewColor(c) {
+  newColor = cleanColor(c);
+  document.querySelectorAll("#colorNew .sw").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.c === newColor)));
+}
 async function addNote() {
   const text = $("composer").value.trim();
   if (!text) return;
@@ -557,10 +821,12 @@ async function addNote() {
     expires = endOfDay(v);
     if (expires <= now) { toast("Das Datum liegt in der Vergangenheit."); return; }
   } else expires = now + Math.round(chosen.days * DAY);
-  notes.push({ id: uid(), text, created: now, expires, auto: $("autoNew").checked });
+  notes.push({ id: uid(), text, created: now, expires, auto: $("autoNew").checked, color: newColor, pinned: $("pinNew").checked });
   try { await persist(); } catch (e) { toast("Speichern fehlgeschlagen."); return; }
   $("composer").value = "";
   $("autoNew").checked = false;
+  $("pinNew").checked = false;
+  setNewColor("");
   $("addBtn").disabled = true;
   render();
   toast("Verschlüsselt gespeichert");
@@ -573,11 +839,11 @@ async function extend(id, days) {
   await persist(); render();
   toast("Verlängert bis " + dateFmt.format(n.expires));
 }
-async function saveEdit(id, text, auto) {
+async function saveEdit(id, text, auto, color, pinned) {
   const n = notes.find(x => x.id === id); if (!n) return;
   const t = text.trim();
   if (!t) { toast("Der Text darf nicht leer sein."); return; }
-  n.text = t; n.auto = auto === true; openId = null;
+  n.text = t; n.auto = auto === true; n.color = cleanColor(color); n.pinned = pinned === true; openId = null;
   await persist(); render();
   toast("Gespeichert");
 }
@@ -662,6 +928,7 @@ async function onRestore(e) {
     key = k; meta = { v: 1, iter: v.iter, salt: v.salt }; notes = incoming;
     saveVault(v);
     try { if (bioNative()) window.ChiffreNative.disableBiometric(); } catch (e) {}
+    markPw();
     enterApp();
     toast("Wiederhergestellt");
   } catch (err) { msg.textContent = err.message || "Das hat nicht geklappt."; }
@@ -729,6 +996,7 @@ async function onLockSubmit(e) {
       notes = [{ id: uid(), text: "Beispielnotiz: Diese Notiz verfällt in 7 Tagen. Dann fragt Chiffre, ob du sie verlängern oder löschen willst. Du kannst sie jederzeit löschen.", created: now, expires: now + 7 * DAY }];
       await persist();
     }
+    markPw();
     enterApp();
   } catch (err) {
     $("lockMsg").textContent = "Das hat nicht geklappt. Dein Browser unterstützt die Verschlüsselung eventuell nicht.";
@@ -831,6 +1099,7 @@ function showPage(name) {
   curPage = name;
   $("pageWrite").hidden = toNotes;
   $("pageNotes").hidden = !toNotes;
+  if (toNotes) layoutTiles();
   $("tabWrite").setAttribute("aria-selected", String(!toNotes));
   $("tabNotes").setAttribute("aria-selected", String(toNotes));
   const el = toNotes ? $("pageNotes") : $("pageWrite");
@@ -839,6 +1108,22 @@ function showPage(name) {
   el.classList.add(toNotes ? "from-right" : "from-left");
   window.scrollTo(0, 0);
 }
+function initTileLayout() {
+  window.addEventListener("resize", layoutTiles);
+  window.addEventListener("orientationchange", () => setTimeout(layoutTiles, 300));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutTiles);
+}
+function initKeyboardWatch() {
+  // Tastatur offen = Fensterhöhe deutlich kleiner als zuvor: untere Leiste ausblenden
+  let max = window.innerHeight;
+  const check = () => {
+    if (window.innerHeight > max) max = window.innerHeight;
+    document.body.classList.toggle("kb", window.innerHeight < max - 150);
+  };
+  window.addEventListener("resize", check);
+  window.addEventListener("orientationchange", () => { setTimeout(() => { max = window.innerHeight; check(); }, 300); });
+}
+
 function initSwipe() {
   let x0 = 0, y0 = 0, ok = false;
   const area = $("appView");
@@ -876,13 +1161,163 @@ function closeMenu() {
 }
 
 /* Fingerabdruck (nur in der Android-App) */
+/* Systemfarben (Material You): Android liefert Farbtöne, daraus werden hier die Rollen gebildet */
+const TONES = [0, 10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+function mixHex(a, b, t) {
+  const x = [1, 3, 5].map(i => parseInt(a.slice(i, i + 2), 16)), y = [1, 3, 5].map(i => parseInt(b.slice(i, i + 2), 16));
+  return "#" + x.map((v, i) => Math.round(v * (1 - t) + y[i] * t).toString(16).padStart(2, "0")).join("");
+}
+function m3Roles(p, dark) {
+  const T = (k, tone) => p[k][TONES.indexOf(tone)];
+  const r = dark ? {
+    "primary": T("a1", 200), "on-primary": T("a1", 800), "primary-container": T("a1", 700), "on-primary-container": T("a1", 100),
+    "secondary-container": T("a2", 700), "on-secondary-container": T("a2", 100),
+    "surface": T("n1", 900), "on-surface": T("n1", 100), "on-surface-variant": T("n2", 200), "outline": T("n2", 400), "outline-variant": T("n2", 700)
+  } : {
+    "primary": T("a1", 600), "on-primary": T("a1", 0), "primary-container": T("a1", 100), "on-primary-container": T("a1", 900),
+    "secondary-container": T("a2", 100), "on-secondary-container": T("a2", 900),
+    "surface": T("n1", 10), "on-surface": T("n1", 900), "on-surface-variant": T("n2", 700), "outline": T("n2", 500), "outline-variant": T("n2", 200)
+  };
+  r["sc-low"] = mixHex(r.surface, r.primary, 0.04);
+  r["sc"] = mixHex(r.surface, r.primary, 0.07);
+  r["sc-high"] = mixHex(r.surface, r.primary, 0.11);
+  r["inverse-surface"] = r["on-surface"];
+  r["inverse-on-surface"] = r.surface;
+  return r;
+}
+function validPalette(p) {
+  return !!p && ["a1", "a2", "n1", "n2"].every(k => Array.isArray(p[k]) && p[k].length === TONES.length && p[k].every(c => /^#[0-9a-fA-F]{6}$/.test(c)));
+}
+/* Darstellung: System / Hell / Dunkel */
+let metaColors = { light: "#eef3ef", dark: "#0a241c" };
+function themeMode() {
+  let m = "system";
+  try { const v = localStorage.getItem("chiffre.theme"); if (v === "light" || v === "dark") m = v; } catch (e) {}
+  return m;
+}
+function applyTheme() {
+  const mode = themeMode(), root = document.documentElement;
+  if (mode === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", mode);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    const dark = mode === "system" ? /dark/.test(m.media) : mode === "dark";
+    m.content = dark ? metaColors.dark : metaColors.light;
+    if (mode === "system") m.media = dark ? "(prefers-color-scheme: dark)" : "(prefers-color-scheme: light)";
+    else m.removeAttribute("media");
+  });
+  const n = window.ChiffreNative;
+  if (n && typeof n.setBars === "function") {
+    const dark = mode === "system" ? !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) : mode === "dark";
+    const own = mode !== "system" || paletteMode() === "green"; // eigene Farben: Leisten selbst färben
+    try { n.setBars(own ? (dark ? 2 : 1) : 0, dark ? metaColors.dark : metaColors.light); } catch (e) {}
+  }
+}
+function viewMode() {
+  let m = "list";
+  try { if (localStorage.getItem("chiffre.view") === "tiles") m = "tiles"; } catch (e) {}
+  return m;
+}
+function setView(mode) {
+  try { if (mode === "tiles") localStorage.setItem("chiffre.view", "tiles"); else localStorage.removeItem("chiffre.view"); } catch (e) {}
+  applyView();
+  refreshThemeButtons();
+}
+function layoutTiles() {
+  // Versetzte Kacheln: jede Karte belegt so viele 4px-Zeilen, wie sie hoch ist
+  ["activeList", "expiredList"].forEach(id => {
+    const ul = $(id);
+    const tiles = ul.classList.contains("tiles");
+    ul.querySelectorAll(":scope > li").forEach(li => {
+      if (!tiles) { li.style.gridRowEnd = ""; return; }
+      li.style.gridRowEnd = "auto";
+      const hgt = li.getBoundingClientRect().height;
+      li.style.gridRowEnd = "span " + Math.max(1, Math.ceil((hgt + 10) / 4));
+    });
+  });
+}
+function applyView() {
+  const tiles = viewMode() === "tiles";
+  $("activeList").classList.toggle("tiles", tiles);
+  $("expiredList").classList.toggle("tiles", tiles);
+  layoutTiles();
+}
+function paletteMode() {
+  let m = "dynamic";
+  try { if (localStorage.getItem("chiffre.palette") === "green") m = "green"; } catch (e) {}
+  return m;
+}
+function setPalette(mode) {
+  try { if (mode === "green") localStorage.setItem("chiffre.palette", "green"); else localStorage.removeItem("chiffre.palette"); } catch (e) {}
+  applySystemColors();
+  refreshThemeButtons();
+}
+function setTheme(mode) {
+  try { if (mode === "system") localStorage.removeItem("chiffre.theme"); else localStorage.setItem("chiffre.theme", mode); } catch (e) {}
+  applyTheme();
+  refreshThemeButtons();
+}
+function refreshThemeButtons() {
+  const mode = themeMode();
+  document.querySelectorAll("#themeChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+  const vm = viewMode();
+  document.querySelectorAll("#viewChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === vm)));
+  const pm = paletteMode();
+  document.querySelectorAll("#paletteChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.pal === pm)));
+}
+
+function applySystemColors() {
+  const n = window.ChiffreNative;
+  const fresh = () => { $("dynColors").textContent = ""; metaColors = { light: "#eef3ef", dark: "#0a241c" }; applyTheme(); };
+  if (!n || typeof n.systemColors !== "function") return;
+  let p = null;
+  try { p = JSON.parse(n.systemColors() || "null"); } catch (e) {}
+  if (!validPalette(p)) return;
+  $("paletteRow").hidden = false;
+  if (paletteMode() === "green") { fresh(); return; }
+  const css = r => Object.keys(r).map(k => "--" + k + ":" + r[k]).join(";");
+  const light = m3Roles(p, false), dark = m3Roles(p, true);
+  $("dynColors").textContent = ":root{" + css(light) + "}@media (prefers-color-scheme: dark){:root:not([data-theme=\"light\"]){" + css(dark) + "}}:root[data-theme=\"dark\"]{" + css(dark) + "}";
+  metaColors = { light: light.surface, dark: dark.surface };
+  applyTheme();
+}
+
+/* Passwort trotz Fingerabdruck: Gedächtnisstütze, damit man das Passwort nicht vergisst */
+const PW_CHOICES = [0, 7, 14, 28]; // Tage, 0 = nie
+const PW_HINT = "Zur Sicherheit bitte jetzt dein Passwort eingeben. Danach geht der Fingerabdruck wieder.";
+function pwEveryDays() {
+  let d = 28;
+  try { const raw = localStorage.getItem("chiffre.pwEvery"); if (raw !== null && PW_CHOICES.includes(Number(raw))) d = Number(raw); } catch (e) {}
+  return d;
+}
+function lastPwAt() {
+  try {
+    const v = Number(localStorage.getItem("chiffre.lastPw"));
+    if (v > 0) return v;
+    localStorage.setItem("chiffre.lastPw", String(Date.now())); // erste Messung: ab jetzt zählen
+  } catch (e) {}
+  return Date.now();
+}
+function markPw() { try { localStorage.setItem("chiffre.lastPw", String(Date.now())); } catch (e) {} }
+function pwDue() {
+  const d = pwEveryDays();
+  if (d === 0) return false;
+  const last = lastPwAt(), now = Date.now();
+  if (last > now + 300000) return true; // Uhr zurückgestellt: lieber nach dem Passwort fragen
+  return now - last >= d * DAY;
+}
+function refreshPwNext() {
+  const d = pwEveryDays();
+  $("pwSel").value = String(d);
+  if (d === 0) { $("pwNext").textContent = "Chiffre fragt nur nach dem Passwort, wenn du es selbst eintippst."; return; }
+  const due = new Date(lastPwAt() + d * DAY).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+  $("pwNext").textContent = "Nächste Passwortabfrage spätestens am " + due + ".";
+}
 function bioNative() {
   const n = window.ChiffreNative;
   return n && typeof n.biometricStatus === "function" ? n : null;
 }
 function bioReady() {
   const n = bioNative();
-  try { return !!n && n.biometricStatus() === 2 && !!n.biometricEnabled(); } catch (e) { return false; }
+  try { return !!n && n.biometricStatus() === 2 && !!n.biometricEnabled() && !pwDue(); } catch (e) { return false; }
 }
 function bioMsgText(code) {
   if (code === "invalid") return "Die Fingerabdrücke auf dem Gerät haben sich geändert. Gib dein Passwort ein und richte den Fingerabdruck neu ein.";
@@ -894,7 +1329,11 @@ function refreshBio() {
   if (!n) return;
   let status = 0, on = false;
   try { status = n.biometricStatus(); on = !!n.biometricEnabled(); } catch (e) {}
-  $("bioBtn").hidden = !(status === 2 && on && !!loadVault() && !key);
+  const due = status === 2 && on && pwDue();
+  $("bioBtn").hidden = !(status === 2 && on && !!loadVault() && !key && !due);
+  if (due && !key && !!loadVault() && !$("lockMsg").textContent) $("lockMsg").textContent = PW_HINT;
+  $("pwWrap").hidden = !(status === 2 && on);
+  if (!$("pwWrap").hidden) refreshPwNext();
   $("bioPanel").hidden = status === 0;
   $("bioLead").textContent = status === 1
     ? "Richte zuerst in den Android-Einstellungen einen Fingerabdruck ein."
@@ -928,6 +1367,7 @@ async function onBioEnable(e) {
     const vault = loadVault();
     const k = await deriveKey(pw, ub64(vault.salt), vault.iter);
     try { await unseal(k, vault); } catch (err) { msg.textContent = "Falsches Passwort."; return; }
+    markPw();
     n.enableBiometric(pw);
   } catch (err) { msg.textContent = "Das hat nicht geklappt."; }
   finally { btn.disabled = false; }
@@ -937,6 +1377,10 @@ function initBiometric() {
   if (!n) return;
   $("bioForm").addEventListener("submit", onBioEnable);
   $("bioOff").addEventListener("click", () => { try { n.disableBiometric(); } catch (e) {} });
+  $("pwSel").addEventListener("change", () => {
+    try { localStorage.setItem("chiffre.pwEvery", $("pwSel").value); } catch (e) {}
+    refreshPwNext();
+  });
   $("bioBtn").addEventListener("click", () => { try { n.unlockBiometric(); } catch (e) {} });
   // Antwort der App-Hülle auf Einrichten, Ausschalten oder Ungültigwerden
   window.chiffreBioState = (enabled, code) => {
@@ -950,6 +1394,7 @@ function initBiometric() {
   // Der Fingerabdruck war richtig, die Hülle liefert das gemerkte Passwort (Base64 von UTF-8)
   window.chiffreBioUnlock = async b64 => {
     if (key) return;
+    if (pwDue()) { $("lockMsg").textContent = PW_HINT; refreshBio(); return; }
     let pw = "";
     try { pw = new TextDecoder().decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0))); } catch (e) {}
     $("lockMsg").textContent = "";
@@ -981,6 +1426,14 @@ function buildChips() {
 
 /* Start */
 (function init() {
+  applySystemColors();
+  applyTheme();
+  document.querySelectorAll("#themeChips .chip").forEach(b => b.addEventListener("click", () => setTheme(b.dataset.mode)));
+  document.querySelectorAll("#viewChips .chip").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+  applyView();
+  document.querySelectorAll("#paletteChips .chip").forEach(b => b.addEventListener("click", () => setPalette(b.dataset.pal)));
+  if (window.matchMedia) { try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme); } catch (e) {} }
+  refreshThemeButtons();
   try { localStorage.setItem("chiffre.probe", "1"); localStorage.removeItem("chiffre.probe"); } catch (e) { storageOk = false; }
   const tomorrow = new Date(Date.now() + DAY);
   $("customDate").min = tomorrow.getFullYear() + "-" + pad2(tomorrow.getMonth() + 1) + "-" + pad2(tomorrow.getDate());
@@ -992,6 +1445,9 @@ function buildChips() {
   $("lockBtn").addEventListener("click", lock);
   $("menuBtn").addEventListener("click", openMenu);
   initSwipe();
+  $("colorNew").replaceWith(Object.assign(colorPicker("", c => { newColor = c; }, "Farbe der neuen Notiz"), { id: "colorNew" }));
+  initKeyboardWatch();
+  initTileLayout();
   $("menuClose").addEventListener("click", closeMenu);
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
   $("resetBtn").addEventListener("click", onReset);

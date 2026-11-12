@@ -3,8 +3,10 @@ package app.chiffre;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -234,7 +236,89 @@ public class MainActivity extends Activity {
             Reminders.setTimes(MainActivity.this, csv);
         }
 
-        /** "an;nächster;anzahl;erlaubt", nur Zeitpunkte und Zahlen, nie Text von Notizen. */
+        /**
+         * Systemfarben (Material You) als JSON mit vier Farbreihen (Akzent 1, Akzent 2, neutral 1, neutral 2),
+         * je 13 Töne. Leer vor Android 12. Nur Farbwerte, nichts aus dem Tresor.
+         */
+        /**
+         * Darstellung (0 = System, 1 = Hell, 2 = Dunkel): Statusleiste und Navigationsleiste
+         * passen sich der gewählten Darstellung an, sonst blieben sie in der Farbe des Systems.
+         */
+        @JavascriptInterface
+        @SuppressWarnings("deprecation")
+        public void setBars(final int mode, final String hex) {
+            runOnUiThread(() -> {
+                int color;
+                boolean light;
+                if (mode == 0) {
+                    color = getColor(R.color.window_bg);
+                    int night = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+                    light = night != Configuration.UI_MODE_NIGHT_YES;
+                } else {
+                    try {
+                        color = Color.parseColor(hex);
+                    } catch (RuntimeException e) {
+                        return;
+                    }
+                    light = mode == 1;
+                }
+                getWindow().setStatusBarColor(color);
+                getWindow().setNavigationBarColor(color);
+                View decor = getWindow().getDecorView();
+                int flags = decor.getSystemUiVisibility();
+                int mask = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                if (Build.VERSION.SDK_INT >= 26) mask |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                decor.setSystemUiVisibility(light ? (flags | mask) : (flags & ~mask));
+            });
+        }
+
+        @JavascriptInterface
+        @SuppressLint("NewApi")
+        public String systemColors() {
+            if (Build.VERSION.SDK_INT < 31) {
+                return "";
+            }
+            int[][] ids = {
+                {android.R.color.system_accent1_0, android.R.color.system_accent1_10, android.R.color.system_accent1_50,
+                 android.R.color.system_accent1_100, android.R.color.system_accent1_200, android.R.color.system_accent1_300,
+                 android.R.color.system_accent1_400, android.R.color.system_accent1_500, android.R.color.system_accent1_600,
+                 android.R.color.system_accent1_700, android.R.color.system_accent1_800, android.R.color.system_accent1_900,
+                 android.R.color.system_accent1_1000},
+                {android.R.color.system_accent2_0, android.R.color.system_accent2_10, android.R.color.system_accent2_50,
+                 android.R.color.system_accent2_100, android.R.color.system_accent2_200, android.R.color.system_accent2_300,
+                 android.R.color.system_accent2_400, android.R.color.system_accent2_500, android.R.color.system_accent2_600,
+                 android.R.color.system_accent2_700, android.R.color.system_accent2_800, android.R.color.system_accent2_900,
+                 android.R.color.system_accent2_1000},
+                {android.R.color.system_neutral1_0, android.R.color.system_neutral1_10, android.R.color.system_neutral1_50,
+                 android.R.color.system_neutral1_100, android.R.color.system_neutral1_200, android.R.color.system_neutral1_300,
+                 android.R.color.system_neutral1_400, android.R.color.system_neutral1_500, android.R.color.system_neutral1_600,
+                 android.R.color.system_neutral1_700, android.R.color.system_neutral1_800, android.R.color.system_neutral1_900,
+                 android.R.color.system_neutral1_1000},
+                {android.R.color.system_neutral2_0, android.R.color.system_neutral2_10, android.R.color.system_neutral2_50,
+                 android.R.color.system_neutral2_100, android.R.color.system_neutral2_200, android.R.color.system_neutral2_300,
+                 android.R.color.system_neutral2_400, android.R.color.system_neutral2_500, android.R.color.system_neutral2_600,
+                 android.R.color.system_neutral2_700, android.R.color.system_neutral2_800, android.R.color.system_neutral2_900,
+                 android.R.color.system_neutral2_1000}
+            };
+            String[] names = {"a1", "a2", "n1", "n2"};
+            try {
+                StringBuilder sb = new StringBuilder("{");
+                for (int k = 0; k < ids.length; k++) {
+                    if (k > 0) sb.append(',');
+                    sb.append('"').append(names[k]).append("\":[");
+                    for (int t = 0; t < ids[k].length; t++) {
+                        if (t > 0) sb.append(',');
+                        sb.append("\"#").append(String.format(Locale.ROOT, "%06x", MainActivity.this.getColor(ids[k][t]) & 0xFFFFFF)).append('"');
+                    }
+                    sb.append(']');
+                }
+                return sb.append('}').toString();
+            } catch (RuntimeException e) {
+                return "";
+            }
+        }
+
+        /** "an;nächster;anzahl;erlaubt;genau", nur Zeitpunkte und Zahlen, nie Text von Notizen. */
         @JavascriptInterface
         public String reminderStatus() {
             return Reminders.status(MainActivity.this);

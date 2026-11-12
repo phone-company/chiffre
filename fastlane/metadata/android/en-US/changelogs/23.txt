@@ -1,0 +1,5 @@
+New: pin notes. Use the "Oben anheften" switch when writing or in an opened note. Pinned notes stay at the top, tap the pin to release it.
+Better: the bar under each note now uses the same scale for all notes. Little time left means a short bar, three months is full.
+New: choose how notes are shown. In the menu under "Darstellung" you pick list or tiles. The tile view shows notes in two staggered columns, each as tall as its content.
+New: coloured notes, bright and strong. The colour is stored encrypted like the text.
+New: appearance (System, Light, Dark) and colours (wallpaper or Chiffre green) can be set. Tabs sit at the bottom in a bar with icons.

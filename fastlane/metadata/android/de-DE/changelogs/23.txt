@@ -1,0 +1,5 @@
+Neu: Notizen anheften. Beim Schreiben oder in einer geöffneten Notiz den Schalter "Oben anheften" setzen. Angeheftete Notizen stehen ganz oben, ein Tipp auf die Nadel löst sie wieder.
+Besser: Der Balken unter jeder Notiz nutzt jetzt für alle Notizen denselben Maßstab. Wenig Restzeit heißt kurzer Balken, drei Monate sind voll.
+Neu: Ansicht der Notizen wählbar. Im Menü unter "Darstellung" stellst du Liste oder Kacheln ein. In der Kachelansicht stehen die Notizen versetzt in zwei Spalten, jede so hoch wie ihr Inhalt.
+Neu: Notizen in Farben, hell und kräftig. Die Farbe wird wie der Text verschlüsselt gespeichert.
+Neu: Darstellung (System, Hell, Dunkel) und Farben (Hintergrundbild oder Chiffre-Grün) einstellbar. Reiter unten in einer Leiste mit Symbolen.
