@@ -1,0 +1,1 @@
+Neu: Zeichnungen mit dem Finger. Beim Schreiben und im Editor gibt es den Knopf „Zeichnen“ mit vier Farben und Tinte, drei Strichstärken, Radierer und Rückgängig. Die Zeichnung wird zusammen mit der Notiz verschlüsselt und ist auch in Sicherungen enthalten.

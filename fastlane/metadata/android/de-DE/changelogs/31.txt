@@ -1,0 +1,1 @@
+Neu: Beim Schreiben einer neuen Notiz gibt es jetzt ein eigenes Feld „Titel (optional)“, zum Beispiel „Baumarkt“. Den Titel kannst du auch beim Bearbeiten ändern. Der Knopf „Überschrift“ entfällt dafür.

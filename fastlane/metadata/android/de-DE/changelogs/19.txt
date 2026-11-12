@@ -1,0 +1,3 @@
+Neu: Notizen in hellen, kräftigen Farben. Beim Schreiben und beim Bearbeiten wählst du aus sechs Farben oder keiner. Die Farbe wird wie der Text verschlüsselt gespeichert.
+Neu: Darstellung (System, Hell, Dunkel) und Farben (Hintergrundbild oder Chiffre-Grün) im Menü einstellbar.
+Neu: Die Reiter "Schreiben" und "Notizen" liegen unten in einer Leiste mit Symbolen.

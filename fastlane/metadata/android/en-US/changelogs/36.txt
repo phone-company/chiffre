@@ -1,0 +1,1 @@
+New: finger drawings. When writing and in the editor there is a "Draw" button with four colors plus ink, three stroke widths, an eraser and undo. The drawing is encrypted together with the note and is included in backups.

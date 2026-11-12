@@ -1,0 +1,3 @@
+Neu: Die Reiter "Schreiben" und "Notizen" liegen jetzt unten in einer Leiste mit Symbolen. Bei geöffneter Tastatur blendet sie sich aus.
+Neu: Neue Oberfläche im Material-Stil. Auf Android 12 und neuer passen sich die Farben dem Hintergrundbild an (Material You), hell und dunkel.
+Neu: Passwort trotz Fingerabdruck. Im Menü bei "Fingerabdruck" wählst du, ob Chiffre jede Woche, alle 2 Wochen oder alle 4 Wochen (Voreinstellung) nach dem Passwort fragt.

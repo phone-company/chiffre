@@ -1,0 +1,1 @@
+Neu: Notizen, die in den nächsten 24 Stunden ablaufen, stehen jetzt in einem eigenen Bereich „Läuft bald ab“ ganz oben und sind deutlich markiert (Rahmen und Ausrufezeichen). Wird eine Notiz bald automatisch gelöscht, öffnet Chiffre nach dem Entsperren direkt die Notizen.

@@ -1,0 +1,3 @@
+New: notes in bright, strong colours. When writing and editing you pick one of six colours or none. The colour is stored encrypted like the text.
+New: appearance (System, Light, Dark) and colours (wallpaper or Chiffre green) can be set in the menu.
+New: the "Schreiben" and "Notizen" tabs sit at the bottom in a bar with icons.

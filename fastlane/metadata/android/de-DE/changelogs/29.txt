@@ -1,0 +1,1 @@
+Behoben: Bei Checklisten hakt jetzt nur noch das Kästchen ab. Ein Tipp auf den Text öffnet die Notiz zum Bearbeiten.

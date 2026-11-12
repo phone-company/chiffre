@@ -1,0 +1,1 @@
+New: choose the start page. In the menu under "Darstellung" you set whether Chiffre opens on "Schreiben" or on "Notizen".

@@ -1,0 +1,1 @@
+Neu: Notizen ohne Ablaufdatum. Beim Schreiben wählst du „Ohne Ablauf“. Solche Notizen laufen nie ab und lösen keine Erinnerung aus. Bei bestehenden Notizen geht das im Editor unter „Ablauf neu setzen“.

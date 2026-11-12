@@ -1,0 +1,1 @@
+New: headings for notes and shopping lists ("Überschrift" button). All messages are now translated in the English interface.

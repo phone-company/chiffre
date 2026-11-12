@@ -1,0 +1,1 @@
+New: notes that expire within the next 24 hours now sit in their own "Expiring soon" section at the very top and are clearly marked (outline and exclamation mark). If a note is about to be deleted automatically, Chiffre opens your notes right after unlocking.

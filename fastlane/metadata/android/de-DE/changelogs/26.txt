@@ -1,0 +1,1 @@
+Neu: Suche in den Notizen, "Rückgängig" nach dem Löschen, Sortierung (Ablauf, Neueste, Farbe) und ein Kopieren-Knopf. Die Zwischenablage wird danach nach 30 Sekunden geleert.

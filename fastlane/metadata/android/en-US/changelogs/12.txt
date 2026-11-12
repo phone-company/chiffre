@@ -1,0 +1,1 @@
+New: password even with fingerprint. In the menu under "Fingerabdruck" you choose whether Chiffre asks for the password every week, every 2 weeks or every 4 weeks (default), so you do not forget it. After that the fingerprint works again.

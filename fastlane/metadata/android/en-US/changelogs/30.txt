@@ -1,0 +1,1 @@
+Fixed: ticking an item in tile view made the page jump to the top. This also affected other actions in tile view.

@@ -1,0 +1,1 @@
+New: images attached to notes. "Image" picks photos from the gallery, "Photo" takes one directly. Chiffre shrinks them and encrypts each one. Tap to view full screen with paging and zoom. The backup file includes the images. Up to 12 images per note.

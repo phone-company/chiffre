@@ -1,0 +1,1 @@
+Neu: Nach „Verschlüsselt speichern“ springt Chiffre direkt zu den Notizen, damit du die neue Notiz sofort siehst.

@@ -1,0 +1,1 @@
+Neu: Checklisten mit Kästchen, Etiketten per #Stichwort und eine englische Oberfläche. Die Sprache folgt dem Handy und lässt sich im Menü unter "Darstellung" umstellen.

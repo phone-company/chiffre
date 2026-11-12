@@ -1,0 +1,1 @@
+New: Settings now end with "About Chiffre", showing the version, author, contact address and source code address, each with a copy button.

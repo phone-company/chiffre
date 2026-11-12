@@ -1,0 +1,1 @@
+Fixed: tapping a note to edit it made the view jump, mostly in tile view. The note now stays in place when opened and closed.

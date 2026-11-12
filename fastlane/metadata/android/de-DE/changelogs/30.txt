@@ -1,0 +1,1 @@
+Behoben: Beim Abhaken in der Kachelansicht sprang die Seite nach oben. Das passierte auch bei anderen Aktionen in der Kachelansicht.

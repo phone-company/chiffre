@@ -1,0 +1,1 @@
+New: checklists with checkboxes, labels via #keyword and an English interface. The language follows your phone and can be changed in the menu under "Darstellung".

@@ -1,0 +1,1 @@
+New: writing a new note now has its own "Title (optional)" field, for example "Hardware store". You can change the title when editing, too. The "Heading" button is gone as a result.

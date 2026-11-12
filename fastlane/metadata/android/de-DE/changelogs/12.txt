@@ -1,0 +1,1 @@
+Neu: Passwort trotz Fingerabdruck. Im Menü bei "Fingerabdruck" wählst du, ob Chiffre jede Woche, alle 2 Wochen oder alle 4 Wochen (Voreinstellung) nach dem Passwort fragt, damit du es nicht vergisst. Danach geht der Fingerabdruck wieder.

@@ -1,0 +1,1 @@
+New: notes without an expiry date. Choose "No expiry" when writing. Such notes never expire and trigger no reminder. For existing notes use "Reset expiry" in the editor.

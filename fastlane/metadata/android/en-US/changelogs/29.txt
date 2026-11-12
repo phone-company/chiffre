@@ -1,0 +1,1 @@
+Fixed: in checklists only the checkbox ticks an item. Tapping the text opens the note for editing.

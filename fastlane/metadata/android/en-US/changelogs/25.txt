@@ -1,0 +1,1 @@
+New in the menu under "Sicherheit": adjustable auto-lock (immediately, 1 or 5 minutes) and an optional vault wipe after 5, 10 or 20 wrong passwords. Chiffre also reminds you every few weeks to make a backup.

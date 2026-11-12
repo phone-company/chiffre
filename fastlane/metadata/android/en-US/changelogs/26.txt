@@ -1,0 +1,1 @@
+New: search in your notes, "Rückgängig" (undo) after deleting, sorting (expiry, newest, color) and a copy button. The clipboard is cleared again after 30 seconds.

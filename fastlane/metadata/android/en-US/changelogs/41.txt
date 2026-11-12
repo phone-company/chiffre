@@ -1,0 +1,1 @@
+New: tapping a note now opens it for reading only. Press and hold a note to edit it, so nothing gets changed by accident.

@@ -31,6 +31,13 @@
             </intent-filter>
         </activity>
 
+        <!-- Foto aus Chiffre heraus: gibt der Kamera-App eine einzelne Cache-Datei frei, nicht exportiert. -->
+        <provider
+            android:name=".CaptureProvider"
+            android:authorities="${applicationId}.capture"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+
         <receiver
             android:name=".ReminderReceiver"
             android:exported="false">

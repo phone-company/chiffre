@@ -1,0 +1,1 @@
+Neu: Bei den Schlagwörtern oben gibt es jetzt links den Knopf „Alle", um den Filter wieder aufzuheben.

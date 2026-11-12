@@ -1,0 +1,1 @@
+Behoben: Beim Antippen einer Notiz zum Bearbeiten sprang die Ansicht, vor allem in der Kachelansicht. Die Notiz bleibt jetzt beim Öffnen und Schließen an ihrer Stelle.

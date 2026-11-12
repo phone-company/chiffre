@@ -1,0 +1,1 @@
+Neu: Bilder an Notizen. Mit „Bild“ wählst du Fotos aus der Galerie, mit „Foto“ nimmst du eines direkt auf. Chiffre verkleinert sie und verschlüsselt jedes einzeln. Antippen zeigt das Bild groß, mit Blättern und Vergrößern. Die Sicherung als Datei enthält die Bilder. Bis zu 12 Bilder pro Notiz.

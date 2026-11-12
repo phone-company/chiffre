@@ -1,0 +1,1 @@
+Neu: Startseite wählbar. Im Menü unter "Darstellung" stellst du ein, ob Chiffre beim Öffnen bei "Schreiben" oder bei "Notizen" beginnt.

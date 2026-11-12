@@ -40,13 +40,13 @@ Im Terminal im Projektordner:
 ```
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 ./gradlew assembleRelease
-cp app/build/outputs/apk/release/app-release.apk chiffre-1.11.0.apk
+cp app/build/outputs/apk/release/app-release.apk chiffre-1.19.0.apk
 ```
 
 Prüfen, ob die APK signiert ist und mit welchem Zertifikat (der Pfad zu `apksigner` hängt von deiner Build-Tools-Version ab):
 
 ```
-~/Library/Android/sdk/build-tools/<VERSION>/apksigner verify --print-certs chiffre-1.11.0.apk
+~/Library/Android/sdk/build-tools/<VERSION>/apksigner verify --print-certs chiffre-1.19.0.apk
 ```
 
 Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
@@ -54,11 +54,11 @@ Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
 ## 4. Auf das GrapheneOS-Gerät installieren
 
 - Kopiere die APK per USB-Kabel auf das Handy (Modus „Dateiübertragung“) und öffne sie in der Dateien-App. GrapheneOS fragt, ob diese Quelle Apps installieren darf. Erlaube das nur für diesen Vorgang und nimm die Berechtigung danach unter **Einstellungen > Apps > Spezieller App-Zugriff > Unbekannte Apps installieren** wieder zurück.
-- Oder per adb, wenn du USB-Debugging an hast: `adb install -r chiffre-1.11.0.apk`
+- Oder per adb, wenn du USB-Debugging an hast: `adb install -r chiffre-1.19.0.apk`
 
 ## 5. Updates veröffentlichen
 
-1. In `app/build.gradle.kts` `versionCode` um 1 erhöhen und `versionName` anpassen. Beide Werte bleiben wörtliche Zahlen und Texte.
+1. In `app/build.gradle.kts` `versionCode` um 1 erhöhen und `versionName` anpassen. Beide Werte bleiben wörtliche Zahlen und Texte. Dieselbe Versionsnummer steht auch in `app/src/main/assets/index.html` in der Konstante `ABOUT` (Anzeige unter Einstellungen > Über Chiffre).
 2. Ein Eintrag in `fastlane/metadata/android/de-DE/changelogs/` und `en-US/changelogs/` mit dem Namen `<versionCode>.txt`.
 3. Vor dem Update in der alten Version eine Sicherung anlegen.
 4. Bauen wie in Schritt 3, über die alte Version installieren. Die Notizen bleiben erhalten, weil der Schlüssel derselbe ist.
@@ -79,20 +79,20 @@ Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
    ```
    Prüfe die Liste. **Weder `keystore.properties` noch eine `.jks`-Datei dürfen darin auftauchen.** Die `.gitignore` schließt sie aus, aber kontrolliere es.
    ```
-   git commit -m "Chiffre 1.11.0"
+   git commit -m "Chiffre 1.19.0"
    git remote add origin https://github.com/BENUTZERNAME/chiffre.git
    git push -u origin main
-   git tag v1.11.0
-   git push origin v1.11.0
+   git tag v1.19.0
+   git push origin v1.19.0
    ```
-4. Auf GitHub unter **Releases > Draft a new release** den Tag `v1.11.0` wählen, `chiffre-1.11.0.apk` anhängen und den SHA-256-Fingerabdruck in die Beschreibung schreiben. Trage ihn auch in der `README.md` ein.
+4. Auf GitHub unter **Releases > Draft a new release** den Tag `v1.19.0` wählen, `chiffre-1.19.0.apk` anhängen und den SHA-256-Fingerabdruck in die Beschreibung schreiben. Trage ihn auch in der `README.md` ein.
 5. Optional, für die Browser-Version: **Settings > Pages > Source: GitHub Actions**. Der Workflow in `.github/workflows/pages.yml` veröffentlicht dann den Ordner `app/src/main/assets`.
 
 Ob du die `applicationId` ändern willst, entscheide **vor dem ersten Release**. Sie steht in `app/build.gradle.kts`. Eine Änderung später macht aus der App eine neue, andere App. Üblich ist `io.github.BENUTZERNAME.chiffre`.
 
 ## 7. F-Droid
 
-F-Droid baut die App selbst aus dem Quellcode. Vorgaben laut [F-Droid-Dokumentation](https://f-droid.org/docs/Submitting_to_F-Droid_Quick_Start_Guide/): öffentliches Repository mit freier Lizenz, nur freie Abhängigkeiten, Versions-Tags, die zur `versionName` passen (`v1.11.0` bei `1.11.0`), und Metadaten im Repository. Das ist hier erfüllt: MIT-Lizenz, keine Abhängigkeiten, Tags nach dem Muster `v<versionName>`, Metadaten unter `fastlane/metadata/android`.
+F-Droid baut die App selbst aus dem Quellcode. Vorgaben laut [F-Droid-Dokumentation](https://f-droid.org/docs/Submitting_to_F-Droid_Quick_Start_Guide/): öffentliches Repository mit freier Lizenz, nur freie Abhängigkeiten, Versions-Tags, die zur `versionName` passen (`v1.19.0` bei `1.19.0`), und Metadaten im Repository. Das ist hier erfüllt: MIT-Lizenz, keine Abhängigkeiten, Tags nach dem Muster `v<versionName>`, Metadaten unter `fastlane/metadata/android`.
 
 **Wichtige Entscheidung zur Signatur.** Android akzeptiert Updates nur vom gleichen Schlüssel.
 

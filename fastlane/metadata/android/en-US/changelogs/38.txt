@@ -1,0 +1,1 @@
+New: after "Save encrypted" Chiffre jumps straight to your notes so you see the new note right away.

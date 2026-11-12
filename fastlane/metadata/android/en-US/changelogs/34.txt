@@ -1,0 +1,1 @@
+New: all sections in the settings (Appearance, Fingerprint, Security, Reminder, Backup) can be expanded and collapsed. They start collapsed for a better overview.

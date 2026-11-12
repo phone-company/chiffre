@@ -1,0 +1,1 @@
+Neu im Menü unter "Sicherheit": Auto-Sperre einstellbar (sofort, 1 oder 5 Minuten) und optional Tresor löschen nach 5, 10 oder 20 falschen Passwörtern. Chiffre erinnert dich außerdem alle paar Wochen ans Sichern.

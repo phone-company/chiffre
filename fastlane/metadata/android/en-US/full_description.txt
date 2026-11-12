@@ -5,9 +5,14 @@ Chiffre is a plain notes app with one twist: every note gets an expiry date when
 • No internet access
 • Optional: a neutral notification when a note expires or is about to be deleted automatically (no note text, can be turned off)
 • Screenshots and the recent-apps preview are blocked
-• Locks itself after 60 seconds in the background
+• Locks itself in the background: immediately, after 1 or 5 minutes (adjustable)
 • Optional: unlock with your fingerprint in addition to the password
-• Encrypted backup file for restoring or moving to another device
-• Light and dark theme. The interface is currently German only.
+• Encrypted backup file for restoring or moving to another device, with a backup reminder
+• Optional: delete the vault after many wrong passwords (off by default)
+• Finger drawings
+• Images attached to notes, encrypted
+• Checklists, titles and labels (#keyword)
+• Search, undo after deleting, sorting, and copying with an automatically cleared clipboard
+• Light and dark theme. The interface is available in German and English.
 
 Important: the password cannot be reset. Without it the notes cannot be read. The encryption uses standard methods but has not been independently audited. Chiffre is a hobby project and the source code is open.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chiffre</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="description" content="Verschlüsselte Notizen mit Ablaufdatum. Alles bleibt auf deinem Gerät.">
 <meta name="theme-color" content="#eef3ef" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a241c" media="(prefers-color-scheme: dark)">
@@ -188,6 +188,35 @@ svg.i { width: 24px; height: 24px; fill: currentColor; flex: none; }
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .sheet-top { justify-content: flex-start; }
+.imgs { display: flex; flex-wrap: wrap; gap: 6px; }
+.th { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; background: var(--sc-low); display: block; -webkit-user-drag: none; }
+.notes.tiles .th { width: 56px; height: 56px; }
+.note.open .imgs .th { width: 96px; height: 96px; cursor: zoom-in; }
+.imgs .more, .imgmiss { width: 72px; height: 72px; border-radius: 12px; display: grid; place-items: center; background: var(--sc-low); color: var(--on-surface-variant); font-size: 14px; text-align: center; padding: 4px; }
+.imgmiss { border: 1px dashed var(--outline); font-size: 11px; }
+.notes.tiles .imgs .more, .notes.tiles .imgmiss { width: 56px; height: 56px; }
+.imgedit { display: flex; flex-wrap: wrap; gap: 10px; }
+.imgedit .it { position: relative; display: block; }
+.imgedit .th { width: 84px; height: 84px; }
+.imgedit .x { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface); background: var(--on-surface); color: var(--surface); font: 700 16px/1 var(--font-body); padding: 0; cursor: pointer; display: grid; place-items: center; }
+.imgv { background: #000; color: #fff; display: flex; flex-direction: column; padding-left: 0; padding-right: 0; padding-bottom: 0; z-index: 12; }
+.imgv-top { display: flex; align-items: center; gap: 8px; padding: 4px max(12px, env(safe-area-inset-left, 0px)); min-height: 56px; }
+.imgv-top .btn.icon { color: #fff; }
+#imgCount { font-size: 15px; font-variant-numeric: tabular-nums; }
+.imgv-stage { flex: 1; min-height: 0; overflow: auto; display: flex; touch-action: pan-x pan-y pinch-zoom; }
+.imgv-stage img { margin: auto; max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; }
+.imgv-stage.zoom img { max-width: none; max-height: none; width: 250%; cursor: zoom-out; }
+.imgv-nav { display: flex; justify-content: space-between; padding: 8px max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-bottom, 0px)); }
+.imgv-nav .btn { color: #fff; border-color: rgba(255,255,255,0.5); font-size: 22px; }
+.draw-prev { display: block; width: 100%; max-height: 150px; color: var(--on-surface); }
+.note.open .draw-prev { max-height: 340px; }
+.notes.tiles .draw-prev { max-height: 110px; }
+.note.open .note-body .draw-prev, .draw-new .draw-prev { max-height: 200px; }
+.draw-new { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.draw-box { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.draw-board { background: var(--sc-low); border-radius: 20px; display: flex; justify-content: center; padding: 6px; margin-top: 8px; }
+#drawCanvas { display: block; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; color: var(--on-surface); border-radius: 14px; }
+.draw-tools { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
 .sheet-top h2 { font-size: 22px; }
 
 /* Reiter (Material: primäre Reiter) */
@@ -266,7 +295,9 @@ details.panel > summary { cursor: pointer; font-family: var(--font-display); fon
 details.panel > summary::-webkit-details-marker { display: none; }
 details.panel > summary::after { content: ""; width: 10px; height: 10px; border-right: 2px solid var(--on-surface-variant); border-bottom: 2px solid var(--on-surface-variant); transform: rotate(45deg); margin: -4px 4px 0 0; transition: transform 0.15s; }
 details.panel[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
-details.panel[open] { gap: 16px; }
+details.panel[open] { gap: 0; }
+.sel { user-select: text; -webkit-user-select: text; word-break: break-all; }
+details.panel[open] > :not(summary) { margin-top: 16px; }
 .sep { border: 0; border-top: 1px solid var(--outline-variant); margin: 2px 0; width: 100%; }
 
 /* Auswahl-Chips */
@@ -337,12 +368,20 @@ details.panel[open] { gap: 16px; }
 .notes.tiles .note.open .note-text, .notes.tiles .note.expired .note-text { -webkit-line-clamp: 3; font-size: inherit; line-height: inherit; }
 .note-main { width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 16px 18px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
 .note-main:active { box-shadow: inset 0 0 0 999px var(--state); }
+.note-main { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+.note.reading .note-text, .notes.tiles .note.reading .note-text { display: block; -webkit-line-clamp: unset; overflow: visible; }
+.note-read { padding: 0 18px 14px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; font-size: 13px; color: var(--on-surface-variant); }
 .note-text { white-space: pre-wrap; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .meta { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--on-surface-variant); font-variant-numeric: tabular-nums; }
 .meta .state { color: var(--on-surface); }
 .meta .state.soon { color: var(--warn); }
+#soonSec .section-head h2 { color: var(--warn); }
+.note.urgent { outline: 2px solid var(--warn); outline-offset: -2px; }
+.note.urgent .meta .state { color: var(--warn); font-weight: 600; }
+.note.urgent .meta .state::before { content: "!"; display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--warn); color: var(--surface); font-size: 11px; font-weight: 700; margin-right: 6px; vertical-align: 1px; }
 .meta .state.gone { color: var(--on-error-container); font-weight: 500; }
 .note.expired .meta { color: var(--on-error-container); }
+.note.never .bar > i { display: none; }
 .bar { height: 4px; background: var(--outline-variant); }
 .bar > i { display: block; height: 100%; background: var(--primary); border-radius: 0 2px 2px 0; }
 .bar > i.soon { background: var(--warn); }
@@ -361,6 +400,24 @@ details.panel[open] { gap: 16px; }
 .check input:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
 /* Hinweis unten (Snackbar) */
+.search { position: relative; margin: 0 0 14px; }
+.search input { width: 100%; min-height: 48px; padding: 0 44px 0 16px; border: 1px solid var(--outline); border-radius: 24px; background: var(--surface-container, var(--sc-low)); color: var(--on-surface); font: inherit; font-size: 16px; }
+.search input:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.search .clear { position: absolute; right: 4px; top: 4px; width: 40px; height: 40px; border: 0; border-radius: 20px; background: none; color: var(--on-surface-variant); font-size: 20px; cursor: pointer; }
+.ck-list { display: block !important; -webkit-line-clamp: unset !important; white-space: normal !important; }
+.ck { display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; }
+.ck .box::before { content: ""; position: absolute; inset: -6px -10px; }
+.ck .box { position: relative; cursor: pointer; flex: none; width: 20px; height: 20px; margin-top: 1px; border: 2px solid currentColor; border-radius: 6px; opacity: 0.75; display: grid; place-items: center; font-size: 14px; line-height: 1; font-weight: 700; }
+.ck.done .box::after { content: "\2713"; }
+.ck.done .ckt { text-decoration: line-through; opacity: 0.6; }
+.ck .box:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.note-body input[type=text] { width: 100%; min-height: 44px; padding: 0 14px; border: 1px solid var(--outline); border-radius: 12px; background: transparent; color: var(--on-surface); font: inherit; font-weight: 600; }
+.ckh, .nh { display: block; font-weight: 600; font-size: 1.06em; padding: 2px 0 5px; }
+.ck-more { display: block; padding-top: 2px; font-size: 13px; opacity: 0.7; }
+.ckp { display: block; white-space: pre-wrap; padding: 3px 0; }
+.tagrow { margin: 0 0 14px; }
+.toast { pointer-events: none; width: max-content; }
+.toast .toast-btn { pointer-events: auto; margin-left: 14px; min-height: 32px; padding: 0 6px; border: 0; border-radius: 8px; background: none; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--inverse-surface); color: var(--inverse-on-surface); padding: 14px 18px; border-radius: 12px; font-size: 14px; max-width: calc(100% - 32px); z-index: 20; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25); }
 @media (prefers-reduced-motion: no-preference) {
   .toast { animation: pop 0.18s ease-out; }
@@ -430,6 +487,14 @@ details.panel[open] { gap: 16px; }
   <div id="appView" class="wrap" hidden>
     <p class="warnbox" id="noStore" hidden>Dieser Browser erlaubt kein Speichern. Die Notizen bleiben nur, solange diese Seite offen ist.</p>
 
+    <div class="warnbox" id="backupHint" hidden>
+      <p id="backupHintText" style="margin:0 0 10px"></p>
+      <div class="row">
+        <button class="btn small primary" type="button" id="bkNow">Jetzt sichern</button>
+        <button class="btn small" type="button" id="bkLater">In 3 Tagen erinnern</button>
+      </div>
+    </div>
+
     <div class="tabs" role="tablist" aria-label="Seiten">
       <button class="tab" id="tabWrite" type="button" role="tab" aria-selected="true" aria-controls="pageWrite"><span class="pill"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></span>Schreiben</button>
       <button class="tab" id="tabNotes" type="button" role="tab" aria-selected="false" aria-controls="pageNotes"><span class="pill"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg><span class="badge" id="tabBadge" hidden></span></span>Notizen</button>
@@ -438,9 +503,17 @@ details.panel[open] { gap: 16px; }
     <div class="page" id="pageWrite" role="tabpanel" aria-labelledby="tabWrite">
     <section class="panel" aria-labelledby="newTitle">
       <h2 id="newTitle" style="font-size:18px">Neue Notiz</h2>
+      <label class="field" for="titleNew">Titel (optional)
+        <input type="text" id="titleNew" maxlength="80" autocomplete="off" enterkeyhint="next" placeholder="z. B. Baumarkt">
+      </label>
       <label class="field" for="composer">Text
         <textarea id="composer" placeholder="Was soll nur für kurze Zeit existieren?"></textarea>
       </label>
+      <div class="row"><button class="btn small" type="button" id="ckNew">Checkliste</button><button class="btn small" type="button" id="drawNew">Zeichnen</button><button class="btn small" type="button" id="imgNew">Bild</button><button class="btn small" type="button" id="camNew">Foto</button><span class="sublabel" id="ckHint">Mit #Stichwort versiehst du Notizen mit Etiketten.</span></div>
+      <input type="file" id="imgFile" accept="image/*" multiple hidden>
+      <input type="file" id="camFile" accept="image/*" capture="environment" hidden>
+      <div class="draw-new" id="drawNewBox" hidden></div>
+      <div class="imgedit" id="imgNewBox" hidden></div>
       <div>
         <p class="sublabel" style="margin-bottom:8px">Verfällt nach</p>
         <div class="chips" id="expiryChips" role="group" aria-label="Verfallszeit"></div>
@@ -455,7 +528,7 @@ details.panel[open] { gap: 16px; }
       <div>
         <label class="check" for="pinNew"><input type="checkbox" id="pinNew"> Oben anheften</label>
       </div>
-      <div>
+      <div id="autoWrap">
         <label class="check" for="autoNew"><input type="checkbox" id="autoNew"> Nach Ablauf automatisch löschen</label>
         <p class="sublabel" id="autoHint">Ohne Häkchen fragt Chiffre beim Ablauf nach. Mit Häkchen wird die Notiz beim nächsten Öffnen der App ohne Nachfrage gelöscht.</p>
       </div>
@@ -466,6 +539,11 @@ details.panel[open] { gap: 16px; }
     </div>
 
     <div class="page" id="pageNotes" role="tabpanel" aria-labelledby="tabNotes" hidden>
+    <div class="search" id="searchWrap" hidden>
+      <input type="search" id="searchBox" placeholder="Notizen durchsuchen" aria-label="Notizen durchsuchen" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+      <button class="clear" type="button" id="searchClear" aria-label="Suche leeren" hidden>×</button>
+    </div>
+    <div class="chips tagrow" id="tagRow" role="group" aria-label="Etiketten" hidden></div>
     <section id="expiredSec" hidden>
       <div class="section-head">
         <h2>Abgelaufen</h2>
@@ -474,10 +552,18 @@ details.panel[open] { gap: 16px; }
       <ul class="notes" id="expiredList"></ul>
     </section>
 
-    <section>
+    <section id="soonSec" hidden>
+      <div class="section-head">
+        <h2>Läuft bald ab</h2>
+        <p>In den nächsten 24 Stunden</p>
+      </div>
+      <ul class="notes" id="soonList"></ul>
+    </section>
+
+    <section id="activeSec">
       <div class="section-head">
         <h2>Aktiv</h2>
-        <p>Angeheftet, dann bald ablaufend</p>
+        <p id="sortHint">Angeheftet, dann bald ablaufend</p>
       </div>
       <ul class="notes" id="activeList"></ul>
     </section>
@@ -492,8 +578,8 @@ details.panel[open] { gap: 16px; }
       <button class="btn icon" id="menuClose" type="button" aria-label="Schließen"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg><span class="sr">Schließen</span></button>
       <h2 id="menuTitle">Einstellungen</h2>
     </header>
-        <section class="panel" id="themePanel" aria-labelledby="themeTitle">
-          <h2 id="themeTitle" style="font-size:18px">Darstellung</h2>
+        <details class="panel" id="themePanel">
+          <summary>Darstellung</summary>
           <div class="chips" id="themeChips" role="group" aria-label="Darstellung">
             <button class="chip" type="button" data-mode="system" aria-pressed="true">System</button>
             <button class="chip" type="button" data-mode="light" aria-pressed="false">Hell</button>
@@ -506,6 +592,29 @@ details.panel[open] { gap: 16px; }
               <button class="chip" type="button" data-view="tiles" aria-pressed="false">Kacheln</button>
             </div>
           </div>
+          <div>
+            <p class="sublabel" style="margin-bottom:8px">Sortieren nach</p>
+            <div class="chips" id="sortChips" role="group" aria-label="Sortieren nach">
+              <button class="chip" type="button" data-sort="expiry" aria-pressed="true">Ablauf</button>
+              <button class="chip" type="button" data-sort="new" aria-pressed="false">Neueste</button>
+              <button class="chip" type="button" data-sort="color" aria-pressed="false">Farbe</button>
+            </div>
+          </div>
+          <div>
+            <p class="sublabel" style="margin-bottom:8px">Sprache</p>
+            <div class="chips" id="langChips" role="group" aria-label="Sprache">
+              <button class="chip" type="button" data-lang="system" aria-pressed="true">System</button>
+              <button class="chip" type="button" data-lang="de" aria-pressed="false">Deutsch</button>
+              <button class="chip" type="button" data-lang="en" aria-pressed="false">English</button>
+            </div>
+          </div>
+          <div>
+            <p class="sublabel" style="margin-bottom:8px">Beim Öffnen zeigen</p>
+            <div class="chips" id="startChips" role="group" aria-label="Beim Öffnen zeigen">
+              <button class="chip" type="button" data-start="write" aria-pressed="true">Schreiben</button>
+              <button class="chip" type="button" data-start="notes" aria-pressed="false">Notizen</button>
+            </div>
+          </div>
           <div id="paletteRow" hidden>
             <p class="sublabel" style="margin-bottom:8px">Farben</p>
             <div class="chips" id="paletteChips" role="group" aria-label="Farben">
@@ -513,9 +622,9 @@ details.panel[open] { gap: 16px; }
               <button class="chip" type="button" data-pal="green" aria-pressed="false">Chiffre-Grün</button>
             </div>
           </div>
-        </section>
-        <section class="panel" id="bioPanel" aria-labelledby="bioTitle" hidden>
-          <h2 id="bioTitle" style="font-size:18px">Fingerabdruck</h2>
+        </details>
+        <details class="panel" id="bioPanel" hidden>
+          <summary>Fingerabdruck</summary>
           <p class="lead" id="bioLead"></p>
           <form id="bioForm" class="panel plain" autocomplete="off">
             <label class="field" for="bioPw">Passwort zur Bestätigung
@@ -536,10 +645,38 @@ details.panel[open] { gap: 16px; }
             <p class="sublabel" id="pwNext"></p>
           </div>
           <p class="msg" id="bioMsg" role="alert"></p>
-        </section>
+        </details>
 
-        <section class="panel" id="remindPanel" aria-labelledby="remindTitle" hidden>
-          <h2 id="remindTitle" style="font-size:18px">Erinnerung</h2>
+        <details class="panel" id="secPanel">
+          <summary>Sicherheit</summary>
+          <label class="field" for="lockSel">Automatisch sperren
+            <select id="lockSel">
+              <option value="0">Sofort beim Verlassen</option>
+              <option value="60">Nach 1 Minute</option>
+              <option value="300">Nach 5 Minuten</option>
+            </select>
+          </label>
+          <p class="sublabel" id="lockNote"></p>
+          <label class="field" for="wipeSel">Tresor nach Fehlversuchen löschen
+            <select id="wipeSel">
+              <option value="0">Aus</option>
+              <option value="5">Nach 5 falschen Passwörtern</option>
+              <option value="10">Nach 10 falschen Passwörtern</option>
+              <option value="20">Nach 20 falschen Passwörtern</option>
+            </select>
+          </label>
+          <p class="sublabel" id="wipeNote"></p>
+          <div class="warnbox" id="wipeArm" hidden>
+            <p id="wipeArmText" style="margin:0 0 10px"></p>
+            <div class="row">
+              <button class="btn small primary" type="button" id="wipeArmOk">Einschalten</button>
+              <button class="btn small" type="button" id="wipeArmNo">Abbrechen</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="panel" id="remindPanel" hidden>
+          <summary>Erinnerung</summary>
           <label class="check" for="remindToggle"><input type="checkbox" id="remindToggle"> Benachrichtigen, wenn eine Notiz abläuft</label>
           <label class="field" for="warnSel">Vorwarnung vor dem automatischen Löschen
             <select id="warnSel">
@@ -552,7 +689,7 @@ details.panel[open] { gap: 16px; }
           <p class="lead">Die Meldungen sind neutral: „Eine Notiz ist abgelaufen“ und, bei Notizen mit automatischem Löschen, „Eine Notiz wird bald gelöscht“. Der Text der Notiz steht nie darin.</p>
           <p class="lead" id="remindNext" aria-live="polite"></p>
           <button class="btn small" type="button" id="remindTest" hidden>Test in 1 Minute</button>
-        </section>
+        </details>
 
         <details class="panel" id="backup">
           <summary>Sicherung</summary>
@@ -561,6 +698,15 @@ details.panel[open] { gap: 16px; }
             <button class="btn small" type="button" id="expDownload">Als Datei sichern</button>
             <button class="btn small" type="button" id="expCopy">Text kopieren</button>
           </div>
+          <p class="sublabel" id="bkLast" aria-live="polite"></p>
+          <label class="field" for="bkSel">Ans Sichern erinnern
+            <select id="bkSel">
+              <option value="0">Nie</option>
+              <option value="14">Alle 2 Wochen</option>
+              <option value="28">Alle 4 Wochen</option>
+              <option value="90">Alle 3 Monate</option>
+            </select>
+          </label>
           <hr class="sep">
           <form id="impForm" class="panel plain" autocomplete="off">
             <p class="sublabel">Notizen aus einer Sicherung hinzufügen. Vorhandene Notizen bleiben erhalten.</p>
@@ -577,6 +723,59 @@ details.panel[open] { gap: 16px; }
             <button class="btn" type="submit" id="iSubmit">Hinzufügen</button>
           </form>
         </details>
+
+        <details class="panel" id="aboutPanel">
+          <summary>Über Chiffre</summary>
+          <div>
+            <p class="sublabel" style="margin-bottom:4px">Version</p>
+            <p id="aboutVer"></p>
+          </div>
+          <div>
+            <p class="sublabel" style="margin-bottom:4px">Entwickelt von</p>
+            <p id="aboutName"></p>
+          </div>
+          <div>
+            <p class="sublabel" style="margin-bottom:4px">Kontakt</p>
+            <p id="aboutMail" class="sel"></p>
+            <button class="btn small" type="button" id="aboutMailCopy" style="margin-top:8px">Kopieren</button>
+          </div>
+          <div>
+            <p class="sublabel" style="margin-bottom:4px">Quellcode</p>
+            <p id="aboutRepo" class="sel"></p>
+            <button class="btn small" type="button" id="aboutRepoCopy" style="margin-top:8px">Kopieren</button>
+          </div>
+          <p class="lead">Alles bleibt auf diesem Gerät. Chiffre sendet nichts ins Internet.</p>
+        </details>
+  </div>
+</div>
+<div class="sheet" id="drawSheet" role="dialog" aria-modal="true" aria-labelledby="drawTitle" hidden>
+  <div class="wrap">
+    <header class="top sheet-top">
+      <button class="btn icon" id="drawCancel" type="button" aria-label="Abbrechen"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+      <h2 id="drawTitle">Zeichnung</h2>
+      <button class="btn primary small" id="drawDone" type="button" style="margin-left:auto">Fertig</button>
+    </header>
+    <div class="draw-board"><canvas id="drawCanvas" role="img" aria-label="Zeichenfläche"></canvas></div>
+    <div class="draw-tools">
+      <div class="swatches" id="drawColors" role="group" aria-label="Stiftfarbe"></div>
+      <div class="chips" id="drawWidths" role="group" aria-label="Strichstärke"></div>
+      <div class="row">
+        <button class="btn small" type="button" id="drawErase" aria-pressed="false">Radierer</button>
+        <button class="btn small" type="button" id="drawUndo">Rückgängig</button>
+        <button class="btn small danger" type="button" id="drawClear">Alles löschen</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="sheet imgv" id="imgSheet" role="dialog" aria-modal="true" aria-label="Bild" hidden>
+  <div class="imgv-top">
+    <button class="btn icon" id="imgClose" type="button" aria-label="Schließen"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg></button>
+    <span id="imgCount" aria-live="polite"></span>
+  </div>
+  <div class="imgv-stage" id="imgStage"><img id="imgBig" alt=""></div>
+  <div class="imgv-nav">
+    <button class="btn" id="imgPrev" type="button" aria-label="Vorheriges Bild">‹</button>
+    <button class="btn" id="imgNext" type="button" aria-label="Nächstes Bild">›</button>
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
@@ -606,10 +805,39 @@ function validVault(o) {
 }
 const NOTE_COLORS = [["red", "Rot"], ["orange", "Orange"], ["yellow", "Gelb"], ["green", "Grün"], ["blue", "Blau"], ["violet", "Violett"]];
 function cleanColor(c) { return NOTE_COLORS.some(x => x[0] === c) ? c : ""; }
+/* Zeichnungen: Striche in einer festen Fläche von 1000 x 1200, ganzzahlig, als Teil der Notiz (verschlüsselt wie der Text) */
+const DRAW_W = 1000, DRAW_H = 1200;
+const DRAW_COLORS = ["", "#e53935", "#1e88e5", "#43a047", "#fb8c00"];   // 0 = Tinte, folgt dem Design (hell/dunkel)
+const DRAW_NAMES = ["Tinte", "Rot", "Blau", "Grün", "Orange"];
+const DRAW_WIDTHS = [4, 9, 20];
+const DRAW_WNAMES = ["Dünn", "Mittel", "Dick"];
+function cleanDraw(d) {
+  if (!d || !Array.isArray(d.s)) return null;
+  const out = []; let total = 0;
+  for (const s of d.s.slice(0, 3000)) {
+    if (!s || !Array.isArray(s.p)) continue;
+    const c = Number.isInteger(s.c) && s.c >= 0 && s.c < DRAW_COLORS.length ? s.c : 0;
+    const w = Number.isInteger(s.w) && s.w >= 0 && s.w < DRAW_WIDTHS.length ? s.w : 1;
+    const p = [];
+    for (let i = 0; i + 1 < s.p.length && p.length < 8000; i += 2) {
+      const x = s.p[i], y = s.p[i + 1];
+      if (typeof x !== "number" || typeof y !== "number" || !Number.isFinite(x) || !Number.isFinite(y)) continue;
+      p.push(Math.max(0, Math.min(DRAW_W, Math.round(x))), Math.max(0, Math.min(DRAW_H, Math.round(y))));
+    }
+    if (p.length >= 2) { total += p.length; if (total > 200000) break; out.push({ c, w, p }); }
+  }
+  return out.length ? { s: out } : null;
+}
+function cleanImgIds(a) {
+  if (!Array.isArray(a)) return [];
+  const out = [];
+  for (const x of a) if (typeof x === "string" && /^[A-Za-z0-9_-]{6,64}$/.test(x) && !out.includes(x) && out.length < 12) out.push(x);
+  return out;
+}
 function cleanNotes(a) {
   if (!Array.isArray(a)) throw new Error("Ungültige Daten");
   return a.filter(n => n && typeof n.id === "string" && typeof n.text === "string" && Number.isFinite(n.created) && Number.isFinite(n.expires))
-    .map(n => ({ id: n.id, text: n.text, created: n.created, expires: n.expires, auto: n.auto === true, color: cleanColor(n.color), pinned: n.pinned === true }));
+    .map(n => Object.assign({ id: n.id, text: n.text, created: n.created, expires: n.expires, auto: n.auto === true, color: cleanColor(n.color), pinned: n.pinned === true }, cleanDraw(n.draw) ? { draw: cleanDraw(n.draw) } : {}, cleanImgIds(n.img).length ? { img: cleanImgIds(n.img) } : {}));
 }
 // </crypto>
 
@@ -621,12 +849,24 @@ function warnMs() {
   try { const v = Number(localStorage.getItem("chiffre.warnHours")); if (WARN_CHOICES.includes(v)) h = v; } catch (e) {}
   return h * 3600000; // so lange vor dem automatischen Löschen kommt die Vorwarnung
 }
-const MAX_BACKUP = 5 * 1024 * 1024;
+const MAX_BACKUP = 48 * 1024 * 1024;
 let memVault = null, storageOk = true;
 let key = null, meta = null, notes = [];
-let openId = null, armedId = null, armTimer = null, tickTimer = null, hiddenAt = 0;
-const LOCK_AFTER_MS = 60000;
+let openId = null, readId = null, armedId = null, armTimer = null, tickTimer = null, hiddenAt = 0;
+/* Auto-Sperre: Sekunden im Hintergrund, bevor Chiffre sich sperrt */
+const LOCK_CHOICES = [0, 60, 300];
+let pickerUntil = 0;
+function lockDelay() {
+  try { const raw = localStorage.getItem("chiffre.lockAfter"); if (raw !== null && LOCK_CHOICES.includes(Number(raw))) return Number(raw); } catch (e) {}
+  return 60;
+}
+function nativeLock() { const n = window.ChiffreNative; return !!n && typeof n.setLockDelay === "function"; }
+function pushLockDelay() { if (nativeLock()) { try { window.ChiffreNative.setLockDelay(lockDelay()); } catch (e) {} } }
 let chosen = { label: "1 Woche", days: 7 };
+const NEVER = 8640000000000000;   // "ohne Ablauf": größtes gültiges Datum, bleibt eine normale Zahl (Sicherungen bleiben kompatibel)
+const isNever = n => n.expires >= NEVER;
+const SOON_MS = 24 * 3600000;   // "läuft bald ab": die nächsten 24 Stunden
+const isSoon = (n, now) => !isNever(n) && n.expires > now && n.expires - now <= SOON_MS;
 
 const $ = id => document.getElementById(id);
 
@@ -656,28 +896,71 @@ function saveVault(v) {
 function wipeVault() {
   memVault = null;
   try { if (window.ChiffreNative && window.ChiffreNative.setExpiries) window.ChiffreNative.setExpiries(""); } catch (e) {}
-  try { localStorage.removeItem(STORE_KEY); localStorage.removeItem("chiffre.lastPw"); } catch (e) {}
+  try { if (window.indexedDB) imgClear().catch(() => {}); } catch (e) {}
+  try { localStorage.removeItem(STORE_KEY); localStorage.removeItem("chiffre.lastPw"); localStorage.removeItem("chiffre.fails"); localStorage.removeItem("chiffre.lastBackup"); localStorage.removeItem("chiffre.bkBase"); localStorage.removeItem("chiffre.bkSnooze"); } catch (e) {}
 }
 async function persist() {
   saveVault(await seal(key, notes, meta));
   $("noStore").hidden = storageOk;
 }
 
+/* Sprache: Deutsch ist die Vorlage, Englisch wird beim Anzeigen eingesetzt. Fehlt ein Eintrag, bleibt es Deutsch. */
+const EN = {"Einstellungen": "Settings", "Sperren": "Lock", "Passwort": "Password", "Passwort wiederholen": "Repeat password", "Dieses Passwort lässt sich nicht zurücksetzen. Ohne Passwort sind die Notizen nicht lesbar. Gespeichert wird nur auf diesem Gerät. Mit einer Sicherung kannst du Notizen später auf ein anderes Gerät oder in eine neue Installation übertragen.": "This password cannot be reset. Without it your notes cannot be read. Everything is stored on this device only. With a backup you can later move your notes to another device or a new installation.", "Mit Fingerabdruck entsperren": "Unlock with fingerprint", "Sicherung wiederherstellen": "Restore backup", "Tresor löschen": "Delete vault", "Damit werden alle Notizen unwiderruflich gelöscht. Zurückholen kannst du sie nur mit einer Sicherungsdatei. Tippe zur Bestätigung das Wort": "This deletes all notes permanently. You can only get them back with a backup file. To confirm, type the word", "LÖSCHEN": "DELETE", "ein.": "", "Bestätigung": "Confirmation", "Tresor endgültig löschen": "Delete vault for good", "Abbrechen": "Cancel", "Wähle die Sicherungsdatei oder füge ihren Text ein. Dann gib das Passwort ein, das beim Erstellen der Sicherung galt.": "Choose the backup file or paste its text. Then enter the password that was valid when the backup was made.", "Sicherungsdatei": "Backup file", "oder Text der Sicherung": "or backup text", "Passwort der Sicherung": "Backup password", "Wiederherstellen": "Restore", "Dieser Browser erlaubt kein Speichern. Die Notizen bleiben nur, solange diese Seite offen ist.": "This browser does not allow saving. Your notes only last while this page stays open.", "Jetzt sichern": "Back up now", "In 3 Tagen erinnern": "Remind me in 3 days", "Seiten": "Pages", "Schreiben": "Write", "Notizen": "Notes", "Neue Notiz": "New note", "Text": "Text", "Was soll nur für kurze Zeit existieren?": "What should only exist for a short time?", "Checkliste": "Checklist", "Mit #Stichwort versiehst du Notizen mit Etiketten.": "Add #keywords to give notes labels.", "Verfällt nach": "Expires after", "Verfallszeit": "Expiry time", "Datum": "Date", "Farbe": "Color", "Oben anheften": "Pin to top", "Nach Ablauf automatisch löschen": "Delete automatically after expiry", "Ohne Häkchen fragt Chiffre beim Ablauf nach. Mit Häkchen wird die Notiz beim nächsten Öffnen der App ohne Nachfrage gelöscht.": "Without the tick, Chiffre asks when a note expires. With the tick, the note is deleted without asking the next time you open the app.", "Verschlüsselt speichern": "Save encrypted", "Notizen durchsuchen": "Search notes", "Suche leeren": "Clear search", "Etiketten": "Labels", "Abgelaufen": "Expired", "Was soll damit passieren?": "What should happen to them?", "Aktiv": "Active", "Angeheftet, dann bald ablaufend": "Pinned first, then expiring soonest", "Schließen": "Close", "Darstellung": "Appearance", "System": "System", "Hell": "Light", "Dunkel": "Dark", "Ansicht der Notizen": "Note layout", "Liste": "List", "Kacheln": "Tiles", "Sortieren nach": "Sort by", "Ablauf": "Expiry", "Neueste": "Newest", "Beim Öffnen zeigen": "Show on opening", "Farben": "Colors", "Hintergrundbild": "Wallpaper", "Chiffre-Grün": "Chiffre green", "Fingerabdruck": "Fingerprint", "Passwort zur Bestätigung": "Password to confirm", "Fingerabdruck einrichten": "Set up fingerprint", "Fingerabdruck ausschalten": "Turn off fingerprint", "Passwort trotzdem abfragen": "Ask for the password anyway", "Nie": "Never", "Jede Woche": "Every week", "Alle 2 Wochen": "Every 2 weeks", "Alle 4 Wochen": "Every 4 weeks", "Sicherheit": "Security", "Automatisch sperren": "Lock automatically", "Sofort beim Verlassen": "Immediately when leaving", "Nach 1 Minute": "After 1 minute", "Nach 5 Minuten": "After 5 minutes", "Tresor nach Fehlversuchen löschen": "Delete vault after failed attempts", "Aus": "Off", "Nach 5 falschen Passwörtern": "After 5 wrong passwords", "Nach 10 falschen Passwörtern": "After 10 wrong passwords", "Nach 20 falschen Passwörtern": "After 20 wrong passwords", "Einschalten": "Turn on", "Erinnerung": "Reminder", "Benachrichtigen, wenn eine Notiz abläuft": "Notify me when a note expires", "Vorwarnung vor dem automatischen Löschen": "Warning before automatic deletion", "1 Stunde vorher": "1 hour before", "6 Stunden vorher": "6 hours before", "12 Stunden vorher": "12 hours before", "1 Tag vorher": "1 day before", "Die Meldungen sind neutral: „Eine Notiz ist abgelaufen“ und, bei Notizen mit automatischem Löschen, „Eine Notiz wird bald gelöscht“. Der Text der Notiz steht nie darin.": "The messages are neutral: “A note has expired” and, for notes with automatic deletion, “A note will be deleted soon”. The note text is never included.", "Test in 1 Minute": "Test in 1 minute", "Sicherung": "Backup", "Die Sicherung ist so verschlüsselt wie dein Tresor und nur mit deinem Passwort lesbar. Sie enthält die Notizen zum Zeitpunkt des Exports, auch wenn sie später ablaufen. Lösche alte Sicherungen, wenn sie nicht mehr gebraucht werden.": "The backup is encrypted like your vault and can only be read with your password. It contains the notes as of the export, even if they expire later. Delete old backups when you no longer need them.", "Als Datei sichern": "Save as file", "Text kopieren": "Copy text", "Ans Sichern erinnern": "Remind me to back up", "Alle 3 Monate": "Every 3 months", "Notizen aus einer Sicherung hinzufügen. Vorhandene Notizen bleiben erhalten.": "Add notes from a backup. Existing notes are kept.", "Hinzufügen": "Add", "Sprache": "Language", "Titel (optional)": "Title (optional)", "Zum Bearbeiten lange drücken": "Press and hold to edit", "Alle": "All", "Läuft bald ab": "Expiring soon", "In den nächsten 24 Stunden": "In the next 24 hours", "Bild": "Image", "Foto": "Photo", "Bild {n}": "Image {n}", "Bild entfernen": "Remove image", "Bild fehlt": "Image missing", "Vorheriges Bild": "Previous image", "Nächstes Bild": "Next image", "Dieses Bild kann nicht gelesen werden.": "This image cannot be read.", "Bilder werden hier nicht unterstützt.": "Images are not supported here.", "Höchstens {n} Bilder pro Notiz.": "At most {n} images per note.", "Insgesamt sind höchstens {n} Bilder möglich.": "At most {n} images in total.", "Die Sicherung ist zu groß. Entferne einige Bilder.": "The backup is too large. Remove some images.", "Text kopiert. Bilder sind nur in der Datei.": "Text copied. Images are only in the file.", "Zeichnen": "Draw", "Zeichnung": "Drawing", "Zeichnung bearbeiten": "Edit drawing", "Zeichnung entfernen": "Remove drawing", "Fertig": "Done", "Stiftfarbe": "Pen color", "Strichstärke": "Stroke width", "Tinte": "Ink", "Dünn": "Thin", "Mittel": "Medium", "Dick": "Thick", "Radierer": "Eraser", "Alles löschen": "Clear all", "Zeichenfläche": "Drawing area", "Nochmal tippen, um die Änderungen zu verwerfen.": "Tap again to discard the changes.", "Über Chiffre": "About Chiffre", "Entwickelt von": "Developed by", "Kontakt": "Contact", "Quellcode": "Source code", "Kopiert": "Copied", "Alles bleibt auf diesem Gerät. Chiffre sendet nichts ins Internet.": "Everything stays on this device. Chiffre sends nothing to the internet.", "Ohne Ablauf": "No expiry", "Ohne Ablauf gesetzt": "Set to no expiry", "z. B. Baumarkt": "e.g. Hardware store", "Rot": "Red", "Orange": "Orange", "Gelb": "Yellow", "Grün": "Green", "Blau": "Blue", "Violett": "Violet", "Keine Farbe": "No color", "1 Stunde": "1 hour", "6 Stunden": "6 hours", "1 Tag": "1 day", "1 Woche": "1 week", "1 Monat": "1 month", "3 Monate": "3 months", "Datum wählen": "Pick a date", "{n} Min.": "{n} min", "{n} Std.": "{n} h", "{n} Tag": "{n} day", "{n} Tagen": "{n} days", "seit {x} abgelaufen": "expired {x} ago", "wird in {x} gelöscht": "deleted in {x}", "läuft in {x} ab": "expires in {x}", "Rückgängig": "Undo", "Speichern fehlgeschlagen.": "Saving failed.", "Oben angeheftet": "Pinned to top", "Nicht mehr angeheftet": "Unpinned", "… und {n} weitere": "… and {n} more", "Angeheftet, zum Lösen tippen": "Pinned, tap to unpin", "Wirklich löschen": "Really delete", "Löschen": "Delete", "+7 Tage": "+7 days", "+30 Tage": "+30 days", "Notiz bearbeiten": "Edit note", "+1 Tag": "+1 day", "+1 Woche": "+1 week", "+1 Monat": "+1 month", "+3 Monate": "+3 months", "Farbe der Notiz": "Note color", "Ablauf neu setzen, gerechnet ab jetzt": "Reset expiry, counted from now", "Speichern": "Save", "Kopieren": "Copy", "Nichts zu kopieren.": "Nothing to copy.", "Kopiert. Die Zwischenablage wird in 30 Sekunden geleert.": "Copied. The clipboard is cleared in 30 seconds.", "Kopieren nicht möglich.": "Copying is not possible.", "Kopieren nicht erlaubt.": "Copying is not allowed.", "Kopiert. Chiffre versucht, die Zwischenablage in 30 Sekunden zu leeren.": "Copied. Chiffre tries to clear the clipboard in 30 seconds.", "1 Notiz wurde automatisch gelöscht": "1 note was deleted automatically", "{n} Notizen wurden automatisch gelöscht": "{n} notes were deleted automatically", "Angeheftet, dann neueste zuerst": "Pinned first, then newest first", "Angeheftet, dann nach Farbe": "Pinned first, then by color", "{n} aktiv": "{n} active", "Keine aktiven Treffer.": "No active matches.", "Keine Treffer.": "No matches.", "Keine aktiven Notizen.": "No active notes.", "Noch keine Notiz. Schreib oben die erste und leg fest, wann sie verfällt.": "No notes yet. Write the first one above and choose when it expires.", "Bitte ein Datum wählen.": "Please pick a date.", "Das Datum liegt in der Vergangenheit.": "The date is in the past.", "Verschlüsselt gespeichert": "Saved encrypted", "Verlängert bis {date}": "Extended until {date}", "Der Text darf nicht leer sein.": "The text must not be empty.", "Gespeichert": "Saved", "Gelöscht": "Deleted", "Wiederhergestellt": "Restored", "Deine letzte Sicherung war vor {x}. Geht das Handy verloren, sind ohne Sicherung alle Notizen weg.": "Your last backup was {x} ago. If your phone is lost, all notes are gone without a backup.", "Du hast noch keine Sicherung gespeichert. Geht das Handy verloren, sind ohne Sicherung alle Notizen weg.": "You have not saved a backup yet. If your phone is lost, all notes are gone without a backup.", "Letzte Sicherung: {date}.": "Last backup: {date}.", "Noch keine Sicherung gespeichert.": "No backup saved yet.", "Aus. Falsche Passwörter haben keine Folgen.": "Off. Wrong passwords have no consequences.", "Nach {n} falschen Passwörtern in Folge wird der Tresor auf diesem Gerät gelöscht. Ein richtiges Passwort setzt den Zähler zurück.": "After {n} wrong passwords in a row the vault on this device is deleted. A correct password resets the counter.", "Chiffre sperrt sich, sobald du die App verlässt. Das Auswählen einer Datei zählt nicht als Verlassen.": "Chiffre locks as soon as you leave the app. Picking a file does not count as leaving.", "Chiffre sperrt sich, wenn du die App {x} lang nicht benutzt. Bildschirm aus zählt mit.": "Chiffre locks when you have not used the app for {x}. Screen off counts too.", "1 Minute": "1 minute", "5 Minuten": "5 minutes", "Nach {n} falschen Passwörtern in Folge löscht Chiffre den Tresor unwiderruflich, auch den Fingerabdruck. Das trifft auch dich, wenn du dich vertippst. Danach hilft nur eine Sicherung. Möchtest du das?": "After {n} wrong passwords in a row Chiffre deletes the vault permanently, including the fingerprint. That applies to you too if you mistype. After that only a backup helps. Do you want this?", "Löschen nach Fehlversuchen ist an": "Deleting after failed attempts is on", "Sicherung erstellt": "Backup created", "Text kopiert": "Text copied", "Kopieren nicht erlaubt. Nutze die Datei.": "Copying is not allowed. Use the file.", "Die Datei ist zu groß.": "The file is too large.", "Bitte Datei wählen oder Text einfügen.": "Please choose a file or paste text.", "Das ist keine gültige Sicherung.": "This is not a valid backup.", "Falsches Passwort oder beschädigte Sicherung.": "Wrong password or damaged backup.", "1 Notiz hinzugefügt": "1 note added", "{n} Notizen hinzugefügt": "{n} notes added", "Das hat nicht geklappt.": "That did not work.", "Tresor entsperren": "Unlock vault", "Tresor einrichten": "Set up vault", "Gib dein Passwort ein. Die Notizen werden erst dann auf diesem Gerät entschlüsselt.": "Enter your password. Your notes are only decrypted on this device after that.", "Lege ein Passwort fest. Alle Notizen werden damit mit AES-256 verschlüsselt, bevor sie gespeichert werden.": "Choose a password. All notes are encrypted with it using AES-256 before they are saved.", "Entsperren": "Unlock", "Tresor anlegen": "Create vault", "Einen Moment …": "One moment …", "Mindestens 8 Zeichen.": "At least 8 characters.", "Die Passwörter stimmen nicht überein.": "The passwords do not match.", "Beispielnotiz: Diese Notiz verfällt in 7 Tagen. Dann fragt Chiffre, ob du sie verlängern oder löschen willst. Du kannst sie jederzeit löschen.": "Sample note: this note expires in 7 days. Then Chiffre asks whether you want to extend or delete it. You can delete it at any time.", "Das hat nicht geklappt. Dein Browser unterstützt die Verschlüsselung eventuell nicht.": "That did not work. Your browser may not support the encryption.", "Falsches Passwort.": "Wrong password.", "Zu viele falsche Passwörter. Der Tresor wurde gelöscht.": "Too many wrong passwords. The vault was deleted.", "Falsches Passwort. Noch 1 Versuch, dann wird der Tresor gelöscht.": "Wrong password. 1 attempt left, then the vault is deleted.", "Falsches Passwort. Noch {n} Versuche, dann wird der Tresor gelöscht.": "Wrong password. {n} attempts left, then the vault is deleted.", "Tresor gelöscht": "Vault deleted", "Benachrichtigungen sind nicht erlaubt. Erlaube sie in den Android-Einstellungen.": "Notifications are not allowed. Allow them in the Android settings.", "Test läuft. In etwa einer Minute kommt eine Benachrichtigung. Du kannst die App schließen.": "Test running. A notification arrives in about a minute. You can close the app.", "Die Erinnerung ist aus.": "The reminder is off.", "Benachrichtigungen sind in Android ausgeschaltet. Erlaube sie in den Android-Einstellungen.": "Notifications are turned off in Android. Allow them in the Android settings.", "Nächste Erinnerung: keine geplant.": "Next reminder: none planned.", "Nächste Erinnerung: {when} Uhr ({kind}). Geplant insgesamt: {count}.": "Next reminder: {when} ({kind}). Planned in total: {count}.", "Vorwarnung vor dem Löschen": "warning before deletion", "Android erlaubt keine genauen Alarme, Meldungen können sich um Stunden verspäten.": "Android does not allow exact alarms, so messages can be hours late.", "Zur Sicherheit bitte jetzt dein Passwort eingeben. Danach geht der Fingerabdruck wieder.": "For safety, please enter your password now. After that the fingerprint works again.", "Chiffre fragt nur nach dem Passwort, wenn du es selbst eintippst.": "Chiffre only asks for the password when you type it yourself.", "Nächste Passwortabfrage spätestens am {date}.": "Next password prompt at the latest on {date}.", "Die Fingerabdrücke auf dem Gerät haben sich geändert. Gib dein Passwort ein und richte den Fingerabdruck neu ein.": "The fingerprints on this device have changed. Enter your password and set up the fingerprint again.", "Der Fingerabdruck hat nicht geklappt. Nutze das Passwort.": "The fingerprint did not work. Use the password.", "Richte zuerst in den Android-Einstellungen einen Fingerabdruck ein.": "First set up a fingerprint in the Android settings.", "Der Fingerabdruck entsperrt Chiffre. Das Passwort funktioniert weiterhin. Ändern sich die Fingerabdrücke auf dem Gerät, wird er automatisch abgeschaltet.": "The fingerprint unlocks Chiffre. The password still works. If the fingerprints on the device change, it is turned off automatically.", "Entsperre Chiffre zusätzlich mit deinem Fingerabdruck. Dafür merkt sich Android dein Passwort, geschützt durch den Fingerabdruck. Ohne Fingerabdruck ist es nicht lesbar.": "Also unlock Chiffre with your fingerprint. For that Android remembers your password, protected by the fingerprint. Without the fingerprint it cannot be read.", "Bitte das Passwort eingeben.": "Please enter the password.", "Fingerabdruck ist eingerichtet": "Fingerprint is set up", "Das gemerkte Passwort passt nicht mehr. Gib dein Passwort ein.": "The remembered password no longer fits. Enter your password.", "Farbe der neuen Notiz": "Color of the new note"};
+function langPref() { try { const v = localStorage.getItem("chiffre.lang"); if (v === "de" || v === "en") return v; } catch (e) {} return "system"; }
+function resolveLang() {
+  const p = langPref();
+  if (p !== "system") return p;
+  const l = String((navigator.languages && navigator.languages[0]) || navigator.language || "de").toLowerCase();
+  return l.startsWith("de") ? "de" : "en";
+}
+let LANG = resolveLang();
+const hasEN = k => Object.prototype.hasOwnProperty.call(EN, k);
+function tr(de, vars) {
+  let s = LANG === "en" && hasEN(de) ? EN[de] : de;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+  return s;
+}
+function locale() { return LANG === "en" ? "en-GB" : "de-DE"; }
+const i18nItems = [];
+function collectI18n() {
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n; (n = w.nextNode());) {
+    if (n.parentElement && /^(SCRIPT|STYLE)$/.test(n.parentElement.tagName)) continue;
+    const key = n.nodeValue.replace(/\s+/g, " ").trim();
+    if (key && hasEN(key)) i18nItems.push({ node: n, de: n.nodeValue, key });
+  }
+  document.querySelectorAll("[placeholder],[aria-label],[title]").forEach(el => ["placeholder", "aria-label", "title"].forEach(a => {
+    const v = el.getAttribute(a);
+    if (v && hasEN(v)) i18nItems.push({ el, attr: a, de: v, key: v });
+  }));
+}
+function applyDom() {
+  document.documentElement.lang = LANG;
+  for (const x of i18nItems) {
+    const en = LANG === "en";
+    if (x.node) {
+      const lead = x.de.match(/^\s*/)[0], trail = x.de.match(/\s*$/)[0];
+      x.node.nodeValue = en ? lead + EN[x.key] + trail : x.de;
+    } else x.el.setAttribute(x.attr, en ? EN[x.key] : x.de);
+  }
+}
+
 /* Zeit */
-const dateFmt = new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "short", year: "numeric" });
+let dateFmt = new Intl.DateTimeFormat(locale(), { day: "numeric", month: "short", year: "numeric" });
 function span(ms) {
   const a = Math.abs(ms);
-  if (a < 3600000) return Math.max(1, Math.round(a / 60000)) + " Min.";
-  if (a < DAY) return Math.round(a / 3600000) + " Std.";
+  if (a < 3600000) return tr("{n} Min.", { n: Math.max(1, Math.round(a / 60000)) });
+  if (a < DAY) return tr("{n} Std.", { n: Math.round(a / 3600000) });
   const d = Math.round(a / DAY);
-  return d + (d === 1 ? " Tag" : " Tagen");
+  return tr(d === 1 ? "{n} Tag" : "{n} Tagen", { n: d });
 }
 function status(n, now) {
+  if (isNever(n)) return { cls: "", text: tr("Ohne Ablauf"), frac: 0 };
   const left = n.expires - now;
-  if (left <= 0) return { cls: "gone", text: "seit " + span(left) + " abgelaufen", frac: 0 };
+  if (left <= 0) return { cls: "gone", text: tr("seit {x} abgelaufen", { x: span(left) }), frac: 0 };
   // Gemeinsamer Maßstab für alle Notizen (logarithmisch, 3 Monate = voll): weniger Restzeit = kürzerer Balken
   const HOUR = 3600000, frac = Math.min(1, Math.log(1 + left / HOUR) / Math.log(1 + 90 * DAY / HOUR));
-  return { cls: left < 3 * DAY ? "soon" : "", text: n.auto ? "wird in " + span(left) + " gelöscht" : "läuft in " + span(left) + " ab", frac };
+  return { cls: left < 3 * DAY ? "soon" : "", text: n.auto ? tr("wird in {x} gelöscht", { x: span(left) }) : tr("läuft in {x} ab", { x: span(left) }), frac };
 }
 function endOfDay(dateStr) {
   const [y, m, d] = dateStr.split("-").map(Number);
@@ -686,9 +969,19 @@ function endOfDay(dateStr) {
 function uid() { return (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); }
 
 /* Anzeige */
-function toast(msg) {
-  const t = $("toast"); t.textContent = msg; t.hidden = false;
-  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 2600);
+let undoFn = null; // Rückgängig lebt nur im Arbeitsspeicher
+function toast(msg, ms) {
+  undoFn = null;
+  const t = $("toast"); t.textContent = tr(msg); t.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; undoFn = null; }, ms || 2600);
+}
+function toastUndo(msg, fn) {
+  toast(msg, 8000);
+  undoFn = fn;
+  $("toast").append(h("button", { class: "toast-btn", type: "button", onclick: () => {
+    const f = undoFn; undoFn = null; $("toast").hidden = true;
+    if (f) f();
+  } }, tr("Rückgängig")));
 }
 function show(view) {
   $("lockView").hidden = view !== "lock";
@@ -704,7 +997,7 @@ function colorPicker(current, onPick, label) {
   let cur = cleanColor(current);
   const wrap = h("div", { class: "swatches", role: "group", "aria-label": label });
   const btns = [["", "Keine Farbe"]].concat(NOTE_COLORS).map(([id, name]) => {
-    const b = h("button", { class: "sw" + (id ? "" : " none"), type: "button", "data-c": id, "aria-label": name, "aria-pressed": String(id === cur) });
+    const b = h("button", { class: "sw" + (id ? "" : " none"), type: "button", "data-c": id, "aria-label": tr(name), "aria-pressed": String(id === cur) });
     b.addEventListener("click", () => { cur = id; btns.forEach(x => x.setAttribute("aria-pressed", String(x.dataset.c === cur))); onPick(cur); });
     return b;
   });
@@ -726,54 +1019,247 @@ async function togglePin(id) {
   n.pinned = !n.pinned;
   try { await persist(); } catch (e) { toast("Speichern fehlgeschlagen."); }
   render();
-  toast(n.pinned ? "Oben angeheftet" : "Nicht mehr angeheftet");
+  toast(n.pinned ? tr("Oben angeheftet") : tr("Nicht mehr angeheftet"));
 }
+/* Checklisten: Zeilen der Form "[ ] Text" und "[x] Text" im Notiztext */
+const CK_LINE = /^\s*\[( |x|X)\]( |$)/;
+const HEAD_LINE = /^\s*#\s+(.*\S.*)$/;   // "# Überschrift" (mit Leerzeichen, sonst wäre es ein Etikett)
+function isChecklist(text) {
+  const ls = text.split("\n").filter(x => x.trim());
+  const first = ls[0] && HEAD_LINE.test(ls[0]) ? 1 : 0;
+  return !!ls[first] && CK_LINE.test(ls[first]);
+}
+/* Titel: die erste Zeile "# Titel" im Notiztext. Eigenes Feld beim Schreiben und Bearbeiten. */
+function splitTitle(text) {
+  const lines = text.split("\n");
+  const i = lines.findIndex(x => x.trim());
+  const m = i >= 0 ? HEAD_LINE.exec(lines[i]) : null;
+  if (!m) return { title: "", body: text };
+  return { title: m[1], body: lines.slice(i + 1).join("\n").replace(/^\n+/, "") };
+}
+function joinTitle(title, body) {
+  const t = title.replace(/\s+/g, " ").trim();
+  return t ? "# " + t + (body.trim() ? "\n" + body : "") : body;
+}
+function plainNode(n) {
+  const lines = n.text.split("\n");
+  const i = lines.findIndex(x => x.trim());
+  const m = i >= 0 ? HEAD_LINE.exec(lines[i]) : null;
+  if (!m) return h("span", { class: "note-text" }, n.text);
+  const rest = lines.slice(i + 1).join("\n").replace(/^\n+/, "");
+  return h("span", { class: "note-text" }, h("span", { class: "nh" }, m[1]), rest ? h("span", null, rest) : null);
+}
+function checklistNode(n, isOpen) {
+  const lines = n.text.split("\n");
+  const rows = [];
+  lines.forEach((line, i) => {
+    const m = /^\s*\[( |x|X)\] ?(.*)$/.exec(line);
+    if (m) {
+      const done = m[1] !== " ";
+      let row = null;
+      const go = e => { e.stopPropagation(); toggleCheck(n.id, i, row); };
+      // Nur das Kästchen hakt ab. Ein Tipp auf den Text öffnet die Notiz zum Lesen, langes Drücken zum Bearbeiten.
+      rows.push({ i, el: row = h("span", { class: "ck" + (done ? " done" : "") },
+        h("span", { class: "box", role: "checkbox", "aria-checked": String(done), "aria-label": m[2], tabindex: "0", onclick: go,
+          onkeydown: e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); go(e); } } }),
+        h("span", { class: "ckt" }, m[2])) });
+    } else if (HEAD_LINE.test(line)) rows.push({ i, el: h("span", { class: "ckh" }, HEAD_LINE.exec(line)[1]) });
+    else if (line.trim()) rows.push({ i, el: h("span", { class: "ckp" }, line) });
+  });
+  const cap = isOpen ? rows.length : 6;
+  const kids = rows.slice(0, cap).map(r => r.el);
+  if (rows.length > cap) kids.push(h("span", { class: "ck-more" }, tr("… und {n} weitere", { n: rows.length - cap })));
+  return h("span", { class: "note-text ck-list" }, kids);
+}
+async function toggleCheck(id, idx, row) {
+  const n = notes.find(x => x.id === id); if (!n) return;
+  const old = n.text;
+  const lines = old.split("\n");
+  let nowDone = false;
+  lines[idx] = lines[idx].replace(/\[( |x|X)\]/, (m, c) => { nowDone = c === " "; return nowDone ? "[x]" : "[ ]"; });
+  n.text = lines.join("\n");
+  if (row && row.isConnected) {
+    // Nur dieses Kästchen ändern, ohne die Liste neu zu bauen: so springt nichts
+    row.classList.toggle("done", nowDone);
+    const box = row.querySelector(".box"); if (box) box.setAttribute("aria-checked", String(nowDone));
+    const ta = $("edit-" + id), tIn = $("title-" + id);
+    if (ta && joinTitle(tIn ? tIn.value : "", ta.value).trim() === old.trim()) ta.value = splitTitle(n.text).body;
+  } else render();
+  try { await persist(); } catch (e) { toast("Speichern fehlgeschlagen."); }
+}
+function toggleChecklistText(ta) {
+  const lines = ta.value.split("\n");
+  const idx = lines.map((l, i) => (l.trim() && !HEAD_LINE.test(l) ? i : -1)).filter(i => i >= 0);
+  if (!idx.length) { ta.value = ta.value.replace(/\n*$/, "") + (ta.value.trim() ? "\n" : "") + "[ ] "; }
+  else {
+    const all = idx.every(i => CK_LINE.test(lines[i]));
+    for (const i of idx) lines[i] = all ? lines[i].replace(/^(\s*)\[( |x|X)\] ?/, "$1") : "[ ] " + lines[i];
+    ta.value = lines.join("\n");
+  }
+  ta.dispatchEvent(new Event("input")); ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+function bindChecklistKeys(ta) {
+  ta.addEventListener("keydown", e => {
+    if (e.key !== "Enter" || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.isComposing) return;
+    const pos = ta.selectionStart;
+    if (pos !== ta.selectionEnd) return;
+    const ls = ta.value.lastIndexOf("\n", pos - 1) + 1;
+    const m = /^(\s*)\[( |x|X)\] (.*)$/.exec(ta.value.slice(ls, pos));
+    if (!m) return;
+    e.preventDefault();
+    if (m[3].trim() === "") ta.setRangeText("", ls, pos, "end");   // leere Zeile beendet die Liste
+    else ta.setRangeText("\n[ ] ", pos, pos, "end");
+    ta.dispatchEvent(new Event("input"));
+  });
+}
+
+/* Etiketten: #Stichwort im Text, Filter nur im Arbeitsspeicher */
+const TAG_RE = /(^|[\s(])#([\p{L}\p{N}_-]{1,30})/gu;
+let tagQ = "";
+function tagsOf(text) { const s = new Set(); for (const m of text.matchAll(TAG_RE)) s.add(m[2].toLowerCase()); return [...s]; }
+function refreshTags() {
+  const count = new Map();
+  for (const n of notes) for (const t of tagsOf(n.text)) count.set(t, (count.get(t) || 0) + 1);
+  if (tagQ && !count.has(tagQ)) tagQ = "";
+  const top = [...count.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "de")).slice(0, 12).map(x => x[0]);
+  if (tagQ && !top.includes(tagQ)) top.push(tagQ);
+  $("tagRow").hidden = top.length === 0;
+  $("tagRow").replaceChildren(
+    h("button", { class: "chip", type: "button", id: "tagAll", "aria-pressed": String(!tagQ), onclick: () => { tagQ = ""; render(); } }, tr("Alle")),
+    ...top.map(t => h("button", { class: "chip", type: "button", "aria-pressed": String(t === tagQ),
+      onclick: () => { tagQ = tagQ === t ? "" : t; render(); } }, "#" + t)));
+}
+
+/* Tippen = Lesen, langes Drücken = Bearbeiten */
+const LONG_MS = 500;
+function bindLongPress(el, fn) {
+  let tm = 0, sx = 0, sy = 0;
+  const stop = () => { clearTimeout(tm); tm = 0; };
+  el.addEventListener("pointerdown", e => {
+    el._lp = false; stop();
+    if (e.button > 0 || (e.target.closest && e.target.closest(".box"))) return;
+    sx = e.clientX; sy = e.clientY;
+    tm = setTimeout(() => { tm = 0; el._lp = true; try { navigator.vibrate && navigator.vibrate(12); } catch (x) {} fn(); }, LONG_MS);
+  });
+  el.addEventListener("pointermove", e => { if (tm && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) stop(); });
+  for (const ev of ["pointerup", "pointercancel", "pointerleave"]) el.addEventListener(ev, stop);
+  el.addEventListener("contextmenu", e => { e.preventDefault(); stop(); el._lp = true; fn(); });
+  el.addEventListener("keydown", e => { if (e.key === "Enter" && e.shiftKey) { e.preventDefault(); stop(); fn(); } });
+}
+function startEdit(id) { openId = id; readId = null; armedId = null; render(); }
 function noteCard(n, now, expired) {
   const st = status(n, now);
-  const isOpen = openId === n.id;
-  const main = h("button", { class: "note-main", type: "button", "aria-expanded": String(isOpen), onclick: () => { openId = isOpen ? null : n.id; armedId = null; render(); } },
-    h("span", { class: "note-text" }, n.text),
-    h("span", { class: "meta" }, h("span", { class: "state " + st.cls }, st.text), h("span", null, dateFmt.format(n.expires)))
+  const isEdit = openId === n.id, isRead = readId === n.id;
+  const isOpen = isEdit || isRead;
+  const main = h("button", { class: "note-main", type: "button", "aria-expanded": String(isOpen), onclick: ev => {
+      if (ev.currentTarget._lp) { ev.currentTarget._lp = false; return; }
+      armedId = null;
+      if (isOpen) { openId = null; readId = null; } else { readId = n.id; openId = null; }
+      render();
+    } },
+    n.text.trim() ? (isChecklist(n.text) ? checklistNode(n, isOpen) : plainNode(n)) : null,
+    n.draw ? drawSvg(n.draw, "draw-prev") : null,
+    thumbsNode(n, isOpen),
+    h("span", { class: "meta" }, h("span", { class: "state " + st.cls }, st.text), isNever(n) ? null : h("span", null, dateFmt.format(n.expires)))
   );
+  bindLongPress(main, () => { if (!isEdit) startEdit(n.id); });
   const bar = h("div", { class: "bar" }, h("i", { class: st.cls, style: "width:" + Math.round(st.frac * 100) + "%" }));
-  const li = h("li", { class: "note" + (expired ? " expired" : "") + (isOpen ? " open" : "") }, main, bar);
+  const li = h("li", { "data-id": n.id, class: "note" + (expired ? " expired" : "") + (isOpen ? " open" : "") + (isRead ? " reading" : "") + (isNever(n) ? " never" : "") + (!expired && isSoon(n, now) ? " urgent" : "") }, main, bar);
   if (n.color) li.dataset.c = n.color;
   if (n.pinned) {
     li.classList.add("pinned");
-    li.append(h("button", { class: "pin", type: "button", "aria-label": "Angeheftet, zum Lösen tippen", onclick: e => { e.stopPropagation(); togglePin(n.id); } },
+    li.append(h("button", { class: "pin", type: "button", "aria-label": tr("Angeheftet, zum Lösen tippen"), onclick: e => { e.stopPropagation(); togglePin(n.id); } },
       pinIcon()));
   }
 
-  const delBtn = h("button", { class: "btn small danger" + (armedId === n.id ? " armed" : ""), type: "button", onclick: () => onDelete(n.id) }, armedId === n.id ? "Wirklich löschen" : "Löschen");
+  const delBtn = h("button", { class: "btn small danger" + (armedId === n.id ? " armed" : ""), type: "button", onclick: () => onDelete(n.id) }, armedId === n.id ? tr("Wirklich löschen") : tr("Löschen"));
 
   if (expired) {
     li.append(h("div", { class: "note-actions" },
-      h("button", { class: "btn small primary", type: "button", onclick: () => extend(n.id, 7) }, "+7 Tage"),
-      h("button", { class: "btn small", type: "button", onclick: () => extend(n.id, 30) }, "+30 Tage"),
+      h("button", { class: "btn small primary", type: "button", onclick: () => extend(n.id, 7) }, tr("+7 Tage")),
+      h("button", { class: "btn small", type: "button", onclick: () => extend(n.id, 30) }, tr("+30 Tage")),
       delBtn));
   }
-  if (isOpen) {
-    const ta = h("textarea", { id: "edit-" + n.id, "aria-label": "Notiz bearbeiten" });
-    ta.value = n.text;
+  if (isRead) {
+    const sp = splitTitle(n.text);
+    li.append(h("div", { class: "note-read" },
+      h("span", null, tr("Zum Bearbeiten lange drücken")),
+      h("button", { class: "btn small", type: "button", onclick: () => copyNote((sp.title.trim() ? sp.title.trim() + "\n" : "") + sp.body) }, tr("Kopieren"))));
+  }
+  if (isEdit) {
+    const ta = h("textarea", { id: "edit-" + n.id, "aria-label": tr("Notiz bearbeiten") });
+    const parts = splitTitle(n.text);
+    const titleIn = h("input", { type: "text", id: "title-" + n.id, maxlength: "80", autocomplete: "off", "aria-label": tr("Titel (optional)"), placeholder: tr("Titel (optional)") });
+    titleIn.value = parts.title;
+    ta.value = parts.body;
+    bindChecklistKeys(ta);
     const ext = h("div", { class: "chips" },
-      [["+1 Tag", 1], ["+1 Woche", 7], ["+1 Monat", 30], ["+3 Monate", 90]].map(([l, d]) =>
-        h("button", { class: "chip", type: "button", "aria-pressed": "false", onclick: () => extend(n.id, d) }, l)));
+      [[tr("+1 Tag"), 1], [tr("+1 Woche"), 7], [tr("+1 Monat"), 30], [tr("+3 Monate"), 90], [tr("Ohne Ablauf"), 0]].map(([l, d]) =>
+        h("button", { class: "chip", type: "button", "aria-pressed": String(d === 0 && isNever(n)), onclick: () => d ? extend(n.id, d) : setNever(n.id) }, l)));
     const autoBox = h("input", { type: "checkbox", id: "auto-" + n.id });
     autoBox.checked = !!n.auto;
     let editColor = n.color || "";
+    let editDraw = n.draw || null;
+    const drawBox = h("div", { class: "draw-box" });
+    const drawBtn = h("button", { class: "btn small", type: "button" });
+    const showDraw = () => {
+      drawBox.replaceChildren();
+      drawBox.hidden = !editDraw;
+      if (editDraw) drawBox.append(drawSvg(editDraw, "draw-prev"), h("button", { class: "btn small", type: "button", onclick: () => { editDraw = null; showDraw(); } }, tr("Zeichnung entfernen")));
+      drawBtn.textContent = tr(editDraw ? "Zeichnung bearbeiten" : "Zeichnen");
+    };
+    drawBtn.addEventListener("click", () => openDraw(editDraw, r => { editDraw = r; showDraw(); }));
+    showDraw();
+    const editImgs = (n.img || []).map(id => ({ id, pending: false }));
+    const imgBox = h("div", { class: "imgedit" });
+    const showImgs = () => {
+      imgBox.replaceChildren(...imgThumbList(editImgs, i => { revokeUrls(editImgs.splice(i, 1)); showImgs(); }));
+      imgBox.hidden = !editImgs.length;
+    };
+    showImgs();
     const pinBox = h("input", { type: "checkbox", id: "pin-" + n.id });
     pinBox.checked = !!n.pinned;
     li.append(h("div", { class: "note-body" },
+      titleIn,
       ta,
-      h("label", { class: "check", for: "pin-" + n.id }, pinBox, "Oben anheften"),
-      h("div", null, h("p", { class: "sublabel", style: "margin-bottom:8px" }, "Farbe"), colorPicker(editColor, c => { editColor = c; }, "Farbe der Notiz")),
-      h("label", { class: "check", for: "auto-" + n.id }, autoBox, "Nach Ablauf automatisch löschen"),
-      h("div", null, h("p", { class: "sublabel", style: "margin-bottom:8px" }, "Ablauf neu setzen, gerechnet ab jetzt"), ext),
+      drawBox,
+      imgBox,
+      h("label", { class: "check", for: "pin-" + n.id }, pinBox, tr("Oben anheften")),
+      h("div", null, h("p", { class: "sublabel", style: "margin-bottom:8px" }, tr("Farbe")), colorPicker(editColor, c => { editColor = c; }, tr("Farbe der Notiz"))),
+      isNever(n) ? null : h("label", { class: "check", for: "auto-" + n.id }, autoBox, tr("Nach Ablauf automatisch löschen")),
+      h("div", null, h("p", { class: "sublabel", style: "margin-bottom:8px" }, tr("Ablauf neu setzen, gerechnet ab jetzt")), ext),
       h("div", { class: "row" },
-        h("button", { class: "btn small primary", type: "button", onclick: () => saveEdit(n.id, ta.value, autoBox.checked, editColor, pinBox.checked) }, "Speichern"),
+        h("button", { class: "btn small primary", type: "button", onclick: () => saveEdit(n.id, joinTitle(titleIn.value, ta.value), autoBox.checked, editColor, pinBox.checked, editDraw, editImgs) }, tr("Speichern")),
+        h("button", { class: "btn small", type: "button", onclick: () => toggleChecklistText(ta) }, tr("Checkliste")),
+        drawBtn,
+        h("button", { class: "btn small", type: "button", onclick: () => pickImages(false, editImgs, showImgs) }, tr("Bild")),
+        h("button", { class: "btn small", type: "button", onclick: () => pickImages(true, editImgs, showImgs) }, tr("Foto")),
+        h("button", { class: "btn small", type: "button", onclick: () => copyNote((titleIn.value.trim() ? titleIn.value.trim() + "\n" : "") + ta.value) }, tr("Kopieren")),
         expired ? null : delBtn)));
   }
   return li;
+}
+
+/* Kopieren: die Zwischenablage wird nach 30 Sekunden wieder geleert */
+let clipTimer = null;
+async function copyNote(text) {
+  const t = text.trim();
+  if (!t) { toast("Nichts zu kopieren."); return; }
+  const ms = Number(window.__clipMs) || 30000;
+  const n = window.ChiffreNative;
+  if (n && typeof n.copyText === "function") {
+    try { n.copyText(t); toast("Kopiert. Die Zwischenablage wird in 30 Sekunden geleert."); }
+    catch (e) { toast("Kopieren nicht möglich."); }
+    return;
+  }
+  try { await navigator.clipboard.writeText(t); }
+  catch (e) { toast("Kopieren nicht erlaubt."); return; }
+  toast("Kopiert. Chiffre versucht, die Zwischenablage in 30 Sekunden zu leeren.");
+  clearTimeout(clipTimer);
+  clipTimer = setTimeout(async () => {
+    try { if ((await navigator.clipboard.readText()) === t) await navigator.clipboard.writeText(""); } catch (e) {}
+  }, ms);
 }
 
 function purgeAuto(now) {
@@ -781,38 +1267,93 @@ function purgeAuto(now) {
   if (!due.length) return;
   notes = notes.filter(n => !(n.auto && n.expires <= now));
   if (openId && !notes.some(n => n.id === openId)) openId = null;
+  if (readId && !notes.some(n => n.id === readId)) readId = null;
   if (armedId && !notes.some(n => n.id === armedId)) armedId = null;
   persist().catch(() => toast("Speichern fehlgeschlagen."));
-  toast(due.length === 1 ? "1 Notiz wurde automatisch gelöscht" : due.length + " Notizen wurden automatisch gelöscht");
+  scheduleGc();
+  toast(due.length === 1 ? tr("1 Notiz wurde automatisch gelöscht") : tr("{n} Notizen wurden automatisch gelöscht", { n: due.length }));
 }
 
+/* Sortierung: Angeheftete stehen immer oben */
+function sortMode() {
+  try { const v = localStorage.getItem("chiffre.sort"); if (v === "new" || v === "color") return v; } catch (e) {}
+  return "expiry";
+}
+function setSort(mode) {
+  try { if (mode === "new" || mode === "color") localStorage.setItem("chiffre.sort", mode); else localStorage.removeItem("chiffre.sort"); } catch (e) {}
+  refreshThemeButtons();
+  if (key) render();
+}
+function noteCompare(a, b) {
+  const pin = (b.pinned === true) - (a.pinned === true);
+  if (pin) return pin;
+  const m = sortMode();
+  if (m === "new") return b.created - a.created || a.expires - b.expires;
+  if (m === "color") {
+    const ci = n => { const i = NOTE_COLORS.findIndex(x => x[0] === n.color); return i < 0 ? NOTE_COLORS.length : i; };
+    return ci(a) - ci(b) || a.expires - b.expires;
+  }
+  return a.expires - b.expires;
+}
+let searchQ = ""; // nur im Arbeitsspeicher, nie gespeichert
+let lastOpenId = null;
+function cardTop(id) {
+  if (!id) return null;
+  const el = [...document.querySelectorAll("li.note")].find(x => x.dataset.id === id);
+  return el ? el.getBoundingClientRect().top : null;
+}
 function render() {
+  // Die Karte, die gerade auf- oder zugeklappt wird, bleibt an derselben Stelle auf dem Bildschirm (sonst springt die Ansicht)
+  const keepY = window.scrollY;
+  const curId = openId || readId;
+  const anchorId = curId !== lastOpenId ? (lastOpenId || curId) : null;
+  const anchorTop = cardTop(anchorId);
+  lastOpenId = curId;
   const now = Date.now();
   purgeAuto(now);
-  const sorted = notes.slice().sort((a, b) => (b.pinned === true) - (a.pinned === true) || a.expires - b.expires);
-  const gone = sorted.filter(n => n.expires <= now);
-  const live = sorted.filter(n => n.expires > now);
-  $("count").textContent = live.length + " aktiv";
-  $("tabBadge").hidden = gone.length === 0;
-  $("tabBadge").textContent = String(gone.length);
+  const sorted = notes.slice().sort(noteCompare);
+  $("sortHint").textContent = tr({ expiry: tr("Angeheftet, dann bald ablaufend"), new: tr("Angeheftet, dann neueste zuerst"), color: tr("Angeheftet, dann nach Farbe") }[sortMode()]);
+  const allGone = sorted.filter(n => n.expires <= now);
+  const allLive = sorted.filter(n => n.expires > now);
+  refreshTags();
+  const q = searchQ.trim().toLowerCase();
+  const hit = n => (!q || n.text.toLowerCase().includes(q)) && (!tagQ || tagsOf(n.text).includes(tagQ));
+  const gone = allGone.filter(hit), live = allLive.filter(hit);
+  $("count").textContent = tr("{n} aktiv", { n: allLive.length });
+  $("tabBadge").hidden = allGone.length === 0;
+  $("tabBadge").textContent = String(allGone.length);
+  $("searchWrap").hidden = notes.length === 0;
   $("expiredSec").hidden = gone.length === 0;
   $("expiredList").replaceChildren(...gone.map(n => noteCard(n, now, true)));
-  $("activeList").replaceChildren(...(live.length
-    ? live.map(n => noteCard(n, now, false))
-    : [h("li", { class: "empty" }, gone.length ? "Keine aktiven Notizen." : "Noch keine Notiz. Schreib oben die erste und leg fest, wann sie verfällt.")]));
+  const soon = live.filter(n => isSoon(n, now)).sort((a, b) => a.expires - b.expires);
+  const rest = live.filter(n => !isSoon(n, now));
+  $("soonSec").hidden = soon.length === 0;
+  $("soonList").replaceChildren(...soon.map(n => noteCard(n, now, false)));
+  $("activeSec").hidden = rest.length === 0 && soon.length > 0;
+  $("activeList").replaceChildren(...(rest.length
+    ? rest.map(n => noteCard(n, now, false))
+    : [h("li", { class: "empty" }, (q || tagQ) ? (gone.length ? tr("Keine aktiven Treffer.") : tr("Keine Treffer.")) : allGone.length ? tr("Keine aktiven Notizen.") : tr("Noch keine Notiz. Schreib oben die erste und leg fest, wann sie verfällt."))]));
   layoutTiles();
+  if (anchorTop !== null) {
+    const after = cardTop(anchorId);
+    if (after !== null && Math.abs(after - anchorTop) > 1) window.scrollBy(0, after - anchorTop);
+  } else if (window.scrollY !== keepY && $("pageNotes") && !$("pageNotes").hidden) window.scrollTo(0, keepY);
   syncExpiry();
+  refreshBackupHint();
 }
 
 /* Aktionen */
 let newColor = "";
+function buildNewColor() {
+  $("colorNew").replaceWith(Object.assign(colorPicker(newColor, c => { newColor = c; }, tr("Farbe der neuen Notiz")), { id: "colorNew" }));
+}
 function setNewColor(c) {
   newColor = cleanColor(c);
   document.querySelectorAll("#colorNew .sw").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.c === newColor)));
 }
 async function addNote() {
-  const text = $("composer").value.trim();
-  if (!text) return;
+  const text = joinTitle($("titleNew").value, $("composer").value).trim();
+  if (!text && !newDraw && !newImgs.length) return;
   const now = Date.now();
   let expires;
   if (chosen.custom) {
@@ -820,31 +1361,58 @@ async function addNote() {
     if (!v) { toast("Bitte ein Datum wählen."); return; }
     expires = endOfDay(v);
     if (expires <= now) { toast("Das Datum liegt in der Vergangenheit."); return; }
-  } else expires = now + Math.round(chosen.days * DAY);
-  notes.push({ id: uid(), text, created: now, expires, auto: $("autoNew").checked, color: newColor, pinned: $("pinNew").checked });
-  try { await persist(); } catch (e) { toast("Speichern fehlgeschlagen."); return; }
-  $("composer").value = "";
+  } else if (chosen.never) expires = NEVER;
+  else expires = now + Math.round(chosen.days * DAY);
+  const fresh = { id: uid(), text, created: now, expires, auto: !chosen.never && $("autoNew").checked, color: newColor, pinned: $("pinNew").checked };
+  if (newDraw) fresh.draw = newDraw;
+  if (newImgs.length) {
+    try { fresh.img = await commitImages(newImgs); } catch (e) { toast("Speichern fehlgeschlagen."); return; }
+  }
+  notes.push(fresh);
+  imgBusy++;
+  try { await persist(); } catch (e) { notes.pop(); toast("Speichern fehlgeschlagen."); return; } finally { imgBusy--; }
+  $("composer").value = ""; $("titleNew").value = ""; newDraw = null; revokeUrls(newImgs); newImgs = []; refreshNewDraw();
   $("autoNew").checked = false;
   $("pinNew").checked = false;
   setNewColor("");
   $("addBtn").disabled = true;
   render();
+  showPage("notes");
   toast("Verschlüsselt gespeichert");
 }
 async function extend(id, days) {
   const n = notes.find(x => x.id === id); if (!n) return;
   const now = Date.now();
   n.created = now; n.expires = now + days * DAY;
-  openId = null; armedId = null;
+  openId = null; readId = null; armedId = null;
   await persist(); render();
-  toast("Verlängert bis " + dateFmt.format(n.expires));
+  toast(tr("Verlängert bis {date}", { date: dateFmt.format(n.expires) }));
 }
-async function saveEdit(id, text, auto, color, pinned) {
+async function setNever(id) {
+  const n = notes.find(x => x.id === id); if (!n) return;
+  n.expires = NEVER; n.auto = false;
+  openId = null; readId = null; armedId = null;
+  await persist(); render();
+  toast("Ohne Ablauf gesetzt");
+}
+async function saveEdit(id, text, auto, color, pinned, draw, imgs) {
   const n = notes.find(x => x.id === id); if (!n) return;
   const t = text.trim();
-  if (!t) { toast("Der Text darf nicht leer sein."); return; }
-  n.text = t; n.auto = auto === true; n.color = cleanColor(color); n.pinned = pinned === true; openId = null;
-  await persist(); render();
+  const dn = cleanDraw(draw);
+  const list = imgs || (n.img || []).map(i => ({ id: i, pending: false }));
+  if (!t && !dn && !list.length) { toast("Der Text darf nicht leer sein."); return; }
+  imgBusy++;
+  try {
+    let ids;
+    try { ids = await commitImages(list); } catch (e) { toast("Speichern fehlgeschlagen."); return; }
+    if (!notes.some(x => x.id === id)) return;
+    if (ids.length) n.img = ids; else delete n.img;
+    if (dn) n.draw = dn; else delete n.draw;
+    n.text = t; n.auto = auto === true && !isNever(n); n.color = cleanColor(color); n.pinned = pinned === true; openId = null; readId = null;
+    await persist();
+  } finally { imgBusy--; }
+  scheduleGc();
+  render();
   toast("Gespeichert");
 }
 async function onDelete(id) {
@@ -853,11 +1421,93 @@ async function onDelete(id) {
     armTimer = setTimeout(() => { armedId = null; render(); }, 4000);
     render(); return;
   }
-  clearTimeout(armTimer); armedId = null; openId = null;
+  clearTimeout(armTimer); armedId = null; openId = null; readId = null;
+  const gone = notes.find(x => x.id === id);
   notes = notes.filter(x => x.id !== id);
-  await persist(); render();
-  toast("Gelöscht");
+  await persist(); render(); scheduleGc();
+  if (!gone) { toast("Gelöscht"); return; }
+  toastUndo(tr("Gelöscht"), async () => {
+    if (!key || notes.some(x => x.id === gone.id)) return;
+    notes.push(gone);
+    try { await persist(); } catch (e) { toast("Speichern fehlgeschlagen."); }
+    render(); toast("Wiederhergestellt");
+  });
 }
+
+/* Sicherungs-Erinnerung */
+const BK_CHOICES = [0, 14, 28, 90]; // Tage, 0 = nie
+function lsNum(k) { try { const v = Number(localStorage.getItem(k)); return v > 0 ? v : 0; } catch (e) { return 0; } }
+function lsSet(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+function backupEveryDays() {
+  let d = 28;
+  try { const raw = localStorage.getItem("chiffre.backupEvery"); if (raw !== null && BK_CHOICES.includes(Number(raw))) d = Number(raw); } catch (e) {}
+  return d;
+}
+function lastBackupAt() { return lsNum("chiffre.lastBackup"); }
+function markBackup() {
+  lsSet("chiffre.lastBackup", Date.now()); lsDel("chiffre.bkSnooze");
+  refreshBackupHint(); refreshBackupInfo();
+}
+function resetBackupBase() { lsDel("chiffre.lastBackup"); lsDel("chiffre.bkSnooze"); lsSet("chiffre.bkBase", Date.now()); }
+function backupDue() {
+  const d = backupEveryDays(), now = Date.now();
+  if (d === 0 || !notes.length) return false;
+  const base = lastBackupAt() || lsNum("chiffre.bkBase");
+  if (!base) { lsSet("chiffre.bkBase", now); return false; } // erste Messung: ab jetzt zählen
+  if (base > now + 300000) return false;
+  if (now < lsNum("chiffre.bkSnooze")) return false;
+  return now - base >= d * DAY;
+}
+function refreshBackupHint() {
+  const due = !!key && backupDue();
+  $("backupHint").hidden = !due;
+  if (!due) return;
+  const last = lastBackupAt();
+  $("backupHintText").textContent = last
+    ? tr("Deine letzte Sicherung war vor {x}. Geht das Handy verloren, sind ohne Sicherung alle Notizen weg.", { x: span(Date.now() - last) })
+    : tr("Du hast noch keine Sicherung gespeichert. Geht das Handy verloren, sind ohne Sicherung alle Notizen weg.");
+}
+function refreshBackupInfo() {
+  const last = lastBackupAt();
+  $("bkLast").textContent = last
+    ? tr("Letzte Sicherung: {date}.", { date: dateFmt.format(new Date(last)) })
+    : tr("Noch keine Sicherung gespeichert.");
+  $("bkSel").value = String(backupEveryDays());
+}
+
+/* Löschen nach Fehlversuchen (nur auf Wunsch) */
+const WIPE_CHOICES = [0, 5, 10, 20];
+function wipeAfter() {
+  try { const raw = localStorage.getItem("chiffre.wipeAfter"); if (raw !== null && WIPE_CHOICES.includes(Number(raw))) return Number(raw); } catch (e) {}
+  return 0;
+}
+function failCount() { return lsNum("chiffre.fails"); }
+function refreshWipeNote() {
+  const n = wipeAfter();
+  $("wipeSel").value = String(n);
+  $("wipeNote").textContent = n === 0
+    ? tr("Aus. Falsche Passwörter haben keine Folgen.")
+    : tr("Nach {n} falschen Passwörtern in Folge wird der Tresor auf diesem Gerät gelöscht. Ein richtiges Passwort setzt den Zähler zurück.", { n });
+}
+function refreshLockNote() {
+  const d = lockDelay();
+  $("lockSel").value = String(d);
+  $("lockNote").textContent = d === 0
+    ? tr("Chiffre sperrt sich, sobald du die App verlässt. Das Auswählen einer Datei zählt nicht als Verlassen.")
+    : tr("Chiffre sperrt sich, wenn du die App {x} lang nicht benutzt. Bildschirm aus zählt mit.", { x: tr(d === 60 ? "1 Minute" : "5 Minuten") });
+}
+function onWipeSel() {
+  const n = Number($("wipeSel").value);
+  if (n === 0) { lsSet("chiffre.wipeAfter", 0); lsDel("chiffre.fails"); refreshWipeNote(); $("wipeArm").hidden = true; return; }
+  $("wipeArmText").textContent = tr("Nach {n} falschen Passwörtern in Folge löscht Chiffre den Tresor unwiderruflich, auch den Fingerabdruck. Das trifft auch dich, wenn du dich vertippst. Danach hilft nur eine Sicherung. Möchtest du das?", { n });
+  $("wipeArm").hidden = false;
+}
+function onWipeArmOk() {
+  lsSet("chiffre.wipeAfter", Number($("wipeSel").value)); lsDel("chiffre.fails");
+  $("wipeArm").hidden = true; refreshWipeNote(); toast("Löschen nach Fehlversuchen ist an");
+}
+function onWipeArmNo() { $("wipeArm").hidden = true; refreshWipeNote(); }
 
 /* Sicherung */
 function pad2(x) { return String(x).padStart(2, "0"); }
@@ -867,39 +1517,42 @@ function downloadText(name, text) {
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
-function onExportFile() {
-  const v = loadVault(); if (!v) return;
+async function onExportFile() {
+  const v = await backupWithImages(); if (!v) return;
+  const body = JSON.stringify(v);
+  if (body.length > BACKUP_MAX_CHARS) { toast("Die Sicherung ist zu groß. Entferne einige Bilder."); return; }
   const d = new Date();
   const name = "chiffre-sicherung-" + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + ".json";
   if (window.ChiffreNative && typeof window.ChiffreNative.saveFile === "function") {
-    window.ChiffreNative.saveFile(name, JSON.stringify(v));
+    window.ChiffreNative.saveFile(name, body);
     return;
   }
-  downloadText(name, JSON.stringify(v));
+  downloadText(name, body);
+  markBackup();
   toast("Sicherung erstellt");
 }
 async function onExportCopy() {
   const v = loadVault(); if (!v) return;
-  try { await navigator.clipboard.writeText(JSON.stringify(v)); toast("Text kopiert"); }
+  try { await navigator.clipboard.writeText(JSON.stringify(v)); markBackup(); toast(imgTotal() ? "Text kopiert. Bilder sind nur in der Datei." : "Text kopiert"); }
   catch (e) { toast("Kopieren nicht erlaubt. Nutze die Datei."); }
 }
 async function readBackup(fileEl, pasteEl) {
   let text;
   const f = fileEl.files && fileEl.files[0];
   if (f) {
-    if (f.size > MAX_BACKUP) throw new Error("Die Datei ist zu groß.");
+    if (f.size > MAX_BACKUP) throw new Error(tr("Die Datei ist zu groß."));
     text = await f.text();
   } else text = pasteEl.value.trim();
-  if (!text) throw new Error("Bitte Datei wählen oder Text einfügen.");
+  if (!text) throw new Error(tr("Bitte Datei wählen oder Text einfügen."));
   let v;
-  try { v = JSON.parse(text); } catch (e) { throw new Error("Das ist keine gültige Sicherung."); }
-  if (!validVault(v)) throw new Error("Das ist keine gültige Sicherung.");
+  try { v = JSON.parse(text); } catch (e) { throw new Error(tr("Das ist keine gültige Sicherung.")); }
+  if (!validVault(v)) throw new Error(tr("Das ist keine gültige Sicherung."));
   return v;
 }
 async function openBackup(v, pw) {
   const k = await deriveKey(pw, ub64(v.salt), v.iter);
   let data;
-  try { data = await unseal(k, v); } catch (e) { throw new Error("Falsches Passwort oder beschädigte Sicherung."); }
+  try { data = await unseal(k, v); } catch (e) { throw new Error(tr("Falsches Passwort oder beschädigte Sicherung.")); }
   return { k, notes: cleanNotes(data) };
 }
 async function onImport(e) {
@@ -908,14 +1561,15 @@ async function onImport(e) {
   msg.textContent = ""; btn.disabled = true;
   try {
     const v = await readBackup($("iFile"), $("iPaste"));
-    const { notes: incoming } = await openBackup(v, $("iPw").value);
+    const { k: impKey, notes: incoming } = await openBackup(v, $("iPw").value);
     const have = new Set(notes.map(n => n.id));
     const fresh = incoming.filter(n => !have.has(n.id));
-    notes = notes.concat(fresh);
-    await persist(); render();
+    imgBusy++;
+    try { await importImages(v.imgs, impKey, fresh); notes = notes.concat(fresh); await persist(); } finally { imgBusy--; }
+    render();
     $("iFile").value = ""; $("iPaste").value = ""; $("iPw").value = "";
-    toast(fresh.length + (fresh.length === 1 ? " Notiz hinzugefügt" : " Notizen hinzugefügt"));
-  } catch (err) { msg.textContent = err.message || "Das hat nicht geklappt."; }
+    toast(fresh.length === 1 ? tr("1 Notiz hinzugefügt") : tr("{n} Notizen hinzugefügt", { n: fresh.length }));
+  } catch (err) { msg.textContent = err.message || tr("Das hat nicht geklappt."); }
   finally { btn.disabled = false; }
 }
 async function onRestore(e) {
@@ -926,34 +1580,41 @@ async function onRestore(e) {
     const v = await readBackup($("rFile"), $("rPaste"));
     const { k, notes: incoming } = await openBackup(v, $("rPw").value);
     key = k; meta = { v: 1, iter: v.iter, salt: v.salt }; notes = incoming;
-    saveVault(v);
+    const { imgs: bImgs, ...vOnly } = v;
+    saveVault(vOnly);
+    try { if (imgAvailable()) { await imgClear(); await importImages(bImgs, k, incoming); } } catch (e) {}
     try { if (bioNative()) window.ChiffreNative.disableBiometric(); } catch (e) {}
-    markPw();
+    markPw(); resetBackupBase();
     enterApp();
     toast("Wiederhergestellt");
-  } catch (err) { msg.textContent = err.message || "Das hat nicht geklappt."; }
+  } catch (err) { msg.textContent = err.message || tr("Das hat nicht geklappt."); }
   finally { btn.disabled = false; }
 }
 
 /* Sperre */
 function lock() {
-  key = null; notes = []; openId = null; armedId = null;
+  key = null; notes = []; openId = null; readId = null; armedId = null;
   clearInterval(tickTimer);
-  $("composer").value = ""; $("autoNew").checked = false; $("addBtn").disabled = true;
+  $("composer").value = ""; $("titleNew").value = ""; $("autoNew").checked = false; $("addBtn").disabled = true;
+  closeViewer(); clearImgCache(); revokeUrls(newImgs); newImgs = []; imgPick = null; clearTimeout(gcT);
+  if (dr.open) { dr.open = false; dr.cur = null; dr.strokes = []; dr.hist = []; dr.onDone = null; $("drawSheet").hidden = true; }
+  newDraw = null; refreshNewDraw();
   $("iFile").value = ""; $("iPaste").value = ""; $("iPw").value = ""; $("iMsg").textContent = "";
   $("backup").open = false;
-  $("activeList").replaceChildren(); $("expiredList").replaceChildren();
+  searchQ = ""; tagQ = ""; $("searchBox").value = ""; $("searchClear").hidden = true; $("tagRow").hidden = true;
+  undoFn = null; $("toast").hidden = true;
+  $("activeList").replaceChildren(); $("expiredList").replaceChildren(); $("soonList").replaceChildren(); $("soonSec").hidden = true;
   showLock();
 }
 function showLock() {
   const exists = !!loadVault();
-  $("lockTitle").textContent = exists ? "Tresor entsperren" : "Tresor einrichten";
+  $("lockTitle").textContent = exists ? tr("Tresor entsperren") : tr("Tresor einrichten");
   $("lockLead").textContent = exists
-    ? "Gib dein Passwort ein. Die Notizen werden erst dann auf diesem Gerät entschlüsselt."
-    : "Lege ein Passwort fest. Alle Notizen werden damit mit AES-256 verschlüsselt, bevor sie gespeichert werden.";
+    ? tr("Gib dein Passwort ein. Die Notizen werden erst dann auf diesem Gerät entschlüsselt.")
+    : tr("Lege ein Passwort fest. Alle Notizen werden damit mit AES-256 verschlüsselt, bevor sie gespeichert werden.");
   $("pw2Wrap").hidden = exists; $("pw2").required = !exists;
   $("setupWarn").hidden = exists;
-  $("lockSubmit").textContent = exists ? "Entsperren" : "Tresor anlegen";
+  $("lockSubmit").textContent = exists ? tr("Entsperren") : tr("Tresor anlegen");
   $("pw").setAttribute("autocomplete", exists ? "current-password" : "new-password");
   $("restoreToggle").hidden = exists;
   $("resetBtn").hidden = !exists;
@@ -965,13 +1626,15 @@ function showLock() {
   refreshBio();
 }
 function enterApp() {
+  lsDel("chiffre.fails");
   $("pw").value = ""; $("pw2").value = ""; $("rPw").value = "";
   $("noStore").hidden = storageOk;
-  show("app"); render();
+  show("app"); render(); gcImages();
+  refreshBackupHint(); refreshBackupInfo(); refreshLockNote(); refreshWipeNote();
   refreshBio();
-  showPage(notes.some(n => n.expires <= Date.now()) ? "notes" : "write");
+  showPage(startMode() === "notes" || notes.some(n => n.expires <= Date.now() || (n.auto && isSoon(n, Date.now()) && n.expires - Date.now() <= warnMs())) ? "notes" : "write");
   clearInterval(tickTimer);
-  tickTimer = setInterval(() => { if (key && openId === null) render(); }, 30000);
+  tickTimer = setInterval(() => { if (key && openId === null && readId === null) render(); }, 30000);
 }
 async function onLockSubmit(e) {
   e.preventDefault();
@@ -979,34 +1642,49 @@ async function onLockSubmit(e) {
   $("lockMsg").textContent = "";
   btn.disabled = true;
   const label = btn.textContent;
-  btn.textContent = "Einen Moment …";
+  btn.textContent = tr("Einen Moment …");
   try {
     if (vault) {
       const k = await deriveKey(pw, ub64(vault.salt), vault.iter);
       let data;
-      try { data = await unseal(k, vault); } catch (err) { $("lockMsg").textContent = "Falsches Passwort."; return; }
+      try { data = await unseal(k, vault); } catch (err) { failedPassword(); return; }
       key = k; meta = { v: 1, iter: vault.iter, salt: vault.salt }; notes = cleanNotes(data);
     } else {
-      if (pw.length < 8) { $("lockMsg").textContent = "Mindestens 8 Zeichen."; return; }
-      if (pw !== $("pw2").value) { $("lockMsg").textContent = "Die Passwörter stimmen nicht überein."; return; }
+      if (pw.length < 8) { $("lockMsg").textContent = tr("Mindestens 8 Zeichen."); return; }
+      if (pw !== $("pw2").value) { $("lockMsg").textContent = tr("Die Passwörter stimmen nicht überein."); return; }
       const salt = crypto.getRandomValues(new Uint8Array(16));
       meta = { v: 1, iter: ITER, salt: b64(salt) };
       key = await deriveKey(pw, salt, ITER);
       const now = Date.now();
-      notes = [{ id: uid(), text: "Beispielnotiz: Diese Notiz verfällt in 7 Tagen. Dann fragt Chiffre, ob du sie verlängern oder löschen willst. Du kannst sie jederzeit löschen.", created: now, expires: now + 7 * DAY }];
+      notes = [{ id: uid(), text: tr("Beispielnotiz: Diese Notiz verfällt in 7 Tagen. Dann fragt Chiffre, ob du sie verlängern oder löschen willst. Du kannst sie jederzeit löschen."), created: now, expires: now + 7 * DAY }];
       await persist();
     }
     markPw();
     enterApp();
   } catch (err) {
-    $("lockMsg").textContent = "Das hat nicht geklappt. Dein Browser unterstützt die Verschlüsselung eventuell nicht.";
+    $("lockMsg").textContent = tr("Das hat nicht geklappt. Dein Browser unterstützt die Verschlüsselung eventuell nicht.");
   } finally {
     btn.disabled = false; btn.textContent = label;
   }
 }
+function failedPassword() {
+  const limit = wipeAfter();
+  if (limit === 0) { $("lockMsg").textContent = tr("Falsches Passwort."); return; }
+  const n = failCount() + 1;
+  lsSet("chiffre.fails", n);
+  if (n >= limit) {
+    wipeVault();
+    try { if (bioNative()) window.ChiffreNative.disableBiometric(); } catch (e) {}
+    showLock();
+    $("lockMsg").textContent = tr("Zu viele falsche Passwörter. Der Tresor wurde gelöscht.");
+    return;
+  }
+  const left = limit - n;
+  $("lockMsg").textContent = left === 1 ? tr("Falsches Passwort. Noch 1 Versuch, dann wird der Tresor gelöscht.") : tr("Falsches Passwort. Noch {n} Versuche, dann wird der Tresor gelöscht.", { n: left });
+}
 function wipeWordOk() {
   const w = $("wipeWord").value.trim().toUpperCase();
-  return w === "LÖSCHEN" || w === "LOESCHEN";
+  return w === "LÖSCHEN" || w === "LOESCHEN" || w === "DELETE";
 }
 function onReset() {
   // Nur der Dialog öffnet sich. Gelöscht wird erst nach dem eingetippten Wort.
@@ -1031,6 +1709,7 @@ function syncExpiry() {
   // "e" = Ablauf einer Notiz, bei der du entscheidest; "w" = Vorwarnung vor dem automatischen Löschen
   const items = [];
   for (const x of notes) {
+    if (isNever(x)) continue;
     if (x.auto) { const t = x.expires - warnMs(); if (t > now) items.push([t, "w"]); }
     else if (x.expires > now) items.push([x.expires, "e"]);
   }
@@ -1063,8 +1742,8 @@ function initReminders() {
       let r = 1;
       try { r = n.testReminder(); } catch (e) {}
       toast(r === 0
-        ? "Test läuft. In etwa einer Minute kommt eine Benachrichtigung. Du kannst die App schließen."
-        : "Benachrichtigungen sind nicht erlaubt. Erlaube sie in den Android-Einstellungen.");
+        ? tr("Test läuft. In etwa einer Minute kommt eine Benachrichtigung. Du kannst die App schließen.")
+        : tr("Benachrichtigungen sind nicht erlaubt. Erlaube sie in den Android-Einstellungen."));
     });
   }
   refreshRemindStatus();
@@ -1077,15 +1756,14 @@ function refreshRemindStatus() {
   try { s = String(n.reminderStatus() || ""); } catch (e) {}
   const [on, next, count, allowed, exact] = s.split(";");
   let text;
-  if (on !== "1") text = "Die Erinnerung ist aus.";
-  else if (allowed !== "1") text = "Benachrichtigungen sind in Android ausgeschaltet. Erlaube sie in den Android-Einstellungen.";
-  else if (!next) text = "Nächste Erinnerung: keine geplant.";
+  if (on !== "1") text = tr("Die Erinnerung ist aus.");
+  else if (allowed !== "1") text = tr("Benachrichtigungen sind in Android ausgeschaltet. Erlaube sie in den Android-Einstellungen.");
+  else if (!next) text = tr("Nächste Erinnerung: keine geplant.");
   else {
-    const when = new Date(Number(next.slice(1))).toLocaleString("de-DE",
+    const when = new Date(Number(next.slice(1))).toLocaleString(locale(),
       { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-    text = "Nächste Erinnerung: " + when + " Uhr (" + (next[0] === "w" ? "Vorwarnung vor dem Löschen" : "Ablauf")
-      + "). Geplant insgesamt: " + count + ".";
-    if (exact === "0") text += " Android erlaubt keine genauen Alarme, Meldungen können sich um Stunden verspäten.";
+    text = tr("Nächste Erinnerung: {when} Uhr ({kind}). Geplant insgesamt: {count}.", { when, kind: tr(next[0] === "w" ? "Vorwarnung vor dem Löschen" : "Ablauf"), count });
+    if (exact === "0") text += " " + tr("Android erlaubt keine genauen Alarme, Meldungen können sich um Stunden verspäten.");
   }
   el.hidden = false;
   el.textContent = text;
@@ -1147,6 +1825,409 @@ function initSwipe() {
 }
 
 /* Einstellungen */
+/* Bilder: verkleinert, einzeln verschlüsselt, in IndexedDB. Die Notiz merkt sich nur die Kennungen (note.img). */
+const IMG_FULL = 1280, IMG_THUMB = 320, IMG_MAX_PER_NOTE = 12, IMG_MAX_TOTAL = 60, IMG_MAX_SRC = 30 * 1024 * 1024, BACKUP_MAX_CHARS = 30 * 1024 * 1024;
+let imgDbP = null;
+function imgAvailable() { return !!window.indexedDB; }
+function imgDb() {
+  if (!imgDbP) imgDbP = new Promise((res, rej) => {
+    if (!window.indexedDB) { rej(new Error("no idb")); return; }
+    const r = indexedDB.open("chiffre-img", 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore("img", { keyPath: "id" }); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => { imgDbP = null; rej(r.error); };
+  });
+  return imgDbP;
+}
+function imgTx(mode, fn) {
+  return imgDb().then(db => new Promise((res, rej) => {
+    const tx = db.transaction("img", mode);
+    const rq = fn(tx.objectStore("img"));
+    tx.oncomplete = () => res(rq ? rq.result : undefined);
+    tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+  }));
+}
+const imgPut = rec => imgTx("readwrite", s => s.put(rec));
+const imgGet = id => imgTx("readonly", s => s.get(id));
+const imgDel = id => imgTx("readwrite", s => s.delete(id));
+const imgIds = () => imgTx("readonly", s => s.getAllKeys());
+const imgClear = () => imgTx("readwrite", s => s.clear());
+async function sealBytes(k, u8) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  return { iv, ct: await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, u8) };
+}
+async function unsealBytes(k, o) { return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv: o.iv }, k, o.ct)); }
+async function decodeImage(file) {
+  if (typeof createImageBitmap === "function") {
+    try { return await createImageBitmap(file, { imageOrientation: "from-image" }); } catch (e) {}
+    try { return await createImageBitmap(file); } catch (e) {}
+  }
+  const url = URL.createObjectURL(file);
+  try { const im = new Image(); im.src = url; await im.decode(); return im; } finally { URL.revokeObjectURL(url); }
+}
+function scaleToJpeg(src, w0, h0, max, q) {
+  const s = Math.min(1, max / Math.max(w0, h0));
+  const w = Math.max(1, Math.round(w0 * s)), hh = Math.max(1, Math.round(h0 * s));
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = hh;
+  const ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, hh); ctx.drawImage(src, 0, 0, w, hh);
+  return new Promise((res, rej) => cv.toBlob(b => b ? b.arrayBuffer().then(ab => res(new Uint8Array(ab)), rej) : rej(new Error("jpeg")), "image/jpeg", q));
+}
+async function processImage(file) {
+  if (file.size > IMG_MAX_SRC) throw new Error("big");
+  const src = await decodeImage(file);
+  const w0 = src.width || src.naturalWidth, h0 = src.height || src.naturalHeight;
+  if (!w0 || !h0) throw new Error("dim");
+  const f = await scaleToJpeg(src, w0, h0, IMG_FULL, 0.75);
+  const t = await scaleToJpeg(src, w0, h0, IMG_THUMB, 0.7);
+  if (src.close) src.close();
+  return { f, t };
+}
+const imgUrlCache = new Map();   // nur im Arbeitsspeicher, beim Sperren verworfen
+async function getImgUrl(id, kind, cache) {
+  const ck = id + ":" + kind;
+  if (imgUrlCache.has(ck)) return imgUrlCache.get(ck);
+  if (!key) return null;
+  const rec = await imgGet(id);
+  if (!rec || !rec[kind]) return null;
+  const bytes = await unsealBytes(key, rec[kind]);
+  if (!key) return null;
+  const url = URL.createObjectURL(new Blob([bytes], { type: "image/jpeg" }));
+  if (cache !== false) imgUrlCache.set(ck, url);
+  return url;
+}
+function clearImgCache() { for (const u of imgUrlCache.values()) { try { URL.revokeObjectURL(u); } catch (e) {} } imgUrlCache.clear(); }
+function fillImg(el, id, kind) {
+  const miss = () => { const m = h("span", { class: "imgmiss" }, tr("Bild fehlt")); if (el.parentNode) el.replaceWith(m); };
+  const cached = imgUrlCache.get(id + ":" + kind);
+  if (cached) { el.src = cached; return; }
+  getImgUrl(id, kind).then(u => { if (u) el.src = u; else if (key) miss(); }, () => { if (key) miss(); });
+}
+let imgBusy = 0;
+async function commitImages(list) {
+  const ids = [];
+  imgBusy++;
+  try {
+    for (const it of list) {
+      if (it.pending) {
+        await imgPut({ id: it.id, t: await sealBytes(key, it.t), f: await sealBytes(key, it.f) });
+        it.pending = false;
+      }
+      ids.push(it.id);
+    }
+  } finally { imgBusy--; }
+  return ids;
+}
+async function gcImages() {
+  if (!key || imgBusy || !imgAvailable()) return;
+  try {
+    const keep = new Set(); for (const n of notes) for (const id of (n.img || [])) keep.add(id);
+    for (const id of await imgIds()) if (!keep.has(id) && key && !imgBusy) await imgDel(id);
+  } catch (e) {}
+}
+let gcT = 0;
+function scheduleGc() { clearTimeout(gcT); gcT = setTimeout(gcImages, 9000); }
+function imgTotal(extra) {
+  let n = 0; for (const x of notes) n += (x.img || []).length;
+  return n + (extra || 0);
+}
+function revokeUrls(list) { for (const it of list) if (it.url) { try { URL.revokeObjectURL(it.url); } catch (e) {} } }
+let imgPick = null;
+function pickImages(capture, list, after) {
+  if (!imgAvailable()) { toast("Bilder werden hier nicht unterstützt."); return; }
+  if (list.length >= IMG_MAX_PER_NOTE) { toast(tr("Höchstens {n} Bilder pro Notiz.", { n: IMG_MAX_PER_NOTE })); return; }
+  imgPick = { list, after };
+  $(capture ? "camFile" : "imgFile").click();
+}
+async function onImgFiles(input) {
+  const pick = imgPick; imgPick = null;
+  const files = [...(input.files || [])]; input.value = "";
+  if (!pick || !files.length || !key) return;
+  let total = imgTotal(pick.list.filter(x => x.pending).length + (pick.list === newImgs ? 0 : newImgs.length));
+  for (const f of files) {
+    if (pick.list.length >= IMG_MAX_PER_NOTE) { toast(tr("Höchstens {n} Bilder pro Notiz.", { n: IMG_MAX_PER_NOTE })); break; }
+    if (total >= IMG_MAX_TOTAL) { toast(tr("Insgesamt sind höchstens {n} Bilder möglich.", { n: IMG_MAX_TOTAL })); break; }
+    try {
+      const r = await processImage(f);
+      if (!key) return;
+      pick.list.push({ id: uid(), pending: true, t: r.t, f: r.f, url: URL.createObjectURL(new Blob([r.t], { type: "image/jpeg" })) });
+      total++;
+    } catch (e) { toast("Dieses Bild kann nicht gelesen werden."); }
+  }
+  pick.after();
+}
+function imgThumbList(list, onRemove) {
+  return list.map((it, i) => {
+    const im = h("img", { class: "th", alt: tr("Bild {n}", { n: i + 1 }), draggable: "false" });
+    if (it.url) im.src = it.url; else fillImg(im, it.id, "t");
+    return h("span", { class: "it" }, im, h("button", { class: "x", type: "button", "aria-label": tr("Bild entfernen"), onclick: () => onRemove(i) }, "×"));
+  });
+}
+function thumbsNode(n, isOpen) {
+  const ids = n.img || [];
+  if (!ids.length) return null;
+  const max = isOpen ? ids.length : 4;
+  const box = h("span", { class: "imgs" });
+  ids.slice(0, max).forEach((id, i) => {
+    const im = h("img", { class: "th", alt: tr("Bild {n}", { n: i + 1 }), draggable: "false" });
+    fillImg(im, id, "t");
+    if (isOpen) im.addEventListener("click", e => { e.stopPropagation(); openViewer(ids, i); });
+    box.append(im);
+  });
+  if (ids.length > max) box.append(h("span", { class: "more" }, "+" + (ids.length - max)));
+  return box;
+}
+/* Bildansicht: Antippen vergrößert, Pfeile blättern */
+const iv = { ids: [], i: 0, open: false, seq: 0, url: "" };
+async function showViewer() {
+  const big = $("imgBig"), stage = $("imgStage");
+  $("imgCount").textContent = iv.ids.length > 1 ? (iv.i + 1) + " / " + iv.ids.length : "";
+  $("imgPrev").hidden = $("imgNext").hidden = iv.ids.length < 2;
+  big.removeAttribute("src"); big.alt = ""; stage.classList.remove("zoom");
+  if (iv.url) { try { URL.revokeObjectURL(iv.url); } catch (e) {} iv.url = ""; }
+  const my = ++iv.seq;
+  let u = null;
+  try { u = await getImgUrl(iv.ids[iv.i], "f", false); } catch (e) {}
+  if (my !== iv.seq || !iv.open) { if (u) try { URL.revokeObjectURL(u); } catch (e) {} return; }
+  if (u) { iv.url = u; big.src = u; big.alt = tr("Bild {n}", { n: iv.i + 1 }); } else big.alt = tr("Bild fehlt");
+}
+function openViewer(ids, i) {
+  iv.ids = ids.slice(); iv.i = i; iv.open = true;
+  $("imgSheet").hidden = false;
+  showViewer(); $("imgClose").focus();
+}
+function closeViewer() {
+  if (!iv.open) return;
+  iv.open = false; iv.seq++; $("imgSheet").hidden = true;
+  $("imgBig").removeAttribute("src");
+  if (iv.url) { try { URL.revokeObjectURL(iv.url); } catch (e) {} iv.url = ""; }
+}
+function stepViewer(d) { if (iv.ids.length < 2) return; iv.i = (iv.i + d + iv.ids.length) % iv.ids.length; showViewer(); }
+/* Sicherung: Bilder liegen als schon verschlüsselte Blöcke in der Datei ("imgs") */
+async function backupWithImages() {
+  const v = loadVault(); if (!v) return null;
+  const ids = []; for (const n of notes) for (const id of (n.img || [])) ids.push(id);
+  if (!ids.length || !imgAvailable()) return v;
+  const imgs = {};
+  for (const id of ids) {
+    try {
+      const rec = await imgGet(id); if (!rec) continue;
+      imgs[id] = { t: { iv: b64(rec.t.iv), ct: b64(new Uint8Array(rec.t.ct)) }, f: { iv: b64(rec.f.iv), ct: b64(new Uint8Array(rec.f.ct)) } };
+    } catch (e) {}
+  }
+  return Object.keys(imgs).length ? Object.assign({}, v, { imgs }) : v;
+}
+async function importImages(imgs, k, list) {
+  if (!imgs || typeof imgs !== "object" || !imgAvailable()) return 0;
+  let n = 0;
+  for (const note of list) for (const id of (note.img || [])) {
+    const r = imgs[id];
+    if (!r || typeof r !== "object" || !r.t || !r.f) continue;
+    try {
+      const tb = await unsealBytes(k, { iv: ub64(r.t.iv), ct: ub64(r.t.ct) });
+      const fb = await unsealBytes(k, { iv: ub64(r.f.iv), ct: ub64(r.f.ct) });
+      await imgPut({ id, t: await sealBytes(key, tb), f: await sealBytes(key, fb) });
+      n++;
+    } catch (e) {}
+  }
+  return n;
+}
+function strokePath(p) {
+  let d = "M" + p[0] + " " + p[1];
+  if (p.length === 2) return d + "L" + p[0] + " " + p[1];
+  if (p.length === 4) return d + "L" + p[2] + " " + p[3];
+  for (let i = 2; i + 1 < p.length; i += 2) {
+    const mx = Math.round((p[i - 2] + p[i]) / 2), my = Math.round((p[i - 1] + p[i + 1]) / 2);
+    d += "Q" + p[i - 2] + " " + p[i - 1] + " " + mx + " " + my;
+  }
+  return d + "L" + p[p.length - 2] + " " + p[p.length - 1];
+}
+function drawSvg(d, cls) {
+  const NS = "http://www.w3.org/2000/svg";
+  let x0 = DRAW_W, y0 = DRAW_H, x1 = 0, y1 = 0;
+  for (const s of d.s) for (let i = 0; i + 1 < s.p.length; i += 2) {
+    const r = DRAW_WIDTHS[s.w] / 2;
+    x0 = Math.min(x0, s.p[i] - r); x1 = Math.max(x1, s.p[i] + r); y0 = Math.min(y0, s.p[i + 1] - r); y1 = Math.max(y1, s.p[i + 1] + r);
+  }
+  const pad = 24;
+  x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(DRAW_W, x1 + pad); y1 = Math.min(DRAW_H, y1 + pad);
+  const w = Math.max(120, x1 - x0), hh = Math.max(120, y1 - y0);
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", [Math.round(x0), Math.round(y0), Math.round(w), Math.round(hh)].join(" "));
+  svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
+  svg.setAttribute("class", cls || "draw-prev");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", tr("Zeichnung"));
+  for (const s of d.s) {
+    const path = document.createElementNS(NS, "path");
+    path.setAttribute("d", strokePath(s.p));
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", DRAW_COLORS[s.c] || "currentColor");
+    path.setAttribute("stroke-width", String(DRAW_WIDTHS[s.w]));
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    svg.append(path);
+  }
+  return svg;
+}
+/* Zeichenblatt: Finger oder Stift, Radierer löscht ganze Striche, Rückgängig geht Schritt für Schritt zurück */
+const dr = { strokes: [], hist: [], c: 0, w: 1, erase: false, cur: null, onDone: null, armed: false, armT: 0, open: false };
+function drawCtx() { return $("drawCanvas").getContext("2d"); }
+function drawResize() {
+  const cv = $("drawCanvas"), board = cv.parentElement;
+  const availW = Math.max(120, board.clientWidth - 12);
+  const top = board.getBoundingClientRect().top;
+  const availH = Math.max(200, window.innerHeight - top - 230);
+  const cw = Math.floor(Math.min(availW, availH * DRAW_W / DRAW_H));
+  const ch = Math.floor(cw * DRAW_H / DRAW_W);
+  const dpr = Math.min(3, window.devicePixelRatio || 1);
+  cv.style.width = cw + "px"; cv.style.height = ch + "px";
+  cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr);
+  drawRedraw();
+}
+function drawRedraw() {
+  const cv = $("drawCanvas"), ctx = drawCtx();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  const k = cv.width / DRAW_W;
+  ctx.setTransform(k, 0, 0, k, 0, 0);
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  const ink = getComputedStyle(cv).color;
+  const all = dr.cur ? dr.strokes.concat([dr.cur]) : dr.strokes;
+  for (const s of all) {
+    if (!s.path || s.n !== s.p.length) { s.path = new Path2D(strokePath(s.p)); s.n = s.p.length; }
+    ctx.strokeStyle = DRAW_COLORS[s.c] || ink;
+    ctx.lineWidth = DRAW_WIDTHS[s.w];
+    ctx.stroke(s.path);
+  }
+}
+function drawPoint(e) {
+  const r = $("drawCanvas").getBoundingClientRect();
+  return [Math.max(0, Math.min(DRAW_W, Math.round((e.clientX - r.left) / r.width * DRAW_W))), Math.max(0, Math.min(DRAW_H, Math.round((e.clientY - r.top) / r.height * DRAW_H)))];
+}
+function drawPushHist() { dr.hist.push(dr.strokes); if (dr.hist.length > 100) dr.hist.shift(); }
+function distSeg(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+  let u = l2 ? ((px - ax) * dx + (py - ay) * dy) / l2 : 0; u = Math.max(0, Math.min(1, u));
+  return Math.hypot(px - (ax + u * dx), py - (ay + u * dy));
+}
+function drawEraseAt(pt) {
+  const R = 30;
+  const keep = dr.strokes.filter(s => {
+    const lim = R + DRAW_WIDTHS[s.w] / 2;
+    if (s.p.length === 2) return Math.hypot(pt[0] - s.p[0], pt[1] - s.p[1]) > lim;
+    for (let i = 0; i + 3 < s.p.length; i += 2) if (distSeg(pt[0], pt[1], s.p[i], s.p[i + 1], s.p[i + 2], s.p[i + 3]) <= lim) return false;
+    return true;
+  });
+  if (keep.length !== dr.strokes.length) {
+    if (!dr.erasedNow) { drawPushHist(); dr.erasedNow = true; }
+    dr.strokes = keep; drawRedraw(); drawButtons();
+  }
+}
+function drawButtons() {
+  $("drawUndo").disabled = dr.hist.length === 0;
+  $("drawClear").disabled = dr.strokes.length === 0;
+  $("drawErase").setAttribute("aria-pressed", String(dr.erase));
+  $("drawColors").querySelectorAll(".sw").forEach(b => b.setAttribute("aria-pressed", String(!dr.erase && Number(b.dataset.i) === dr.c)));
+  $("drawWidths").querySelectorAll(".chip").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.i) === dr.w)));
+}
+function buildDrawTools() {
+  $("drawColors").replaceChildren(...DRAW_NAMES.map((name, i) => {
+    const b = h("button", { class: "sw", type: "button", "data-i": String(i), "aria-label": tr(name), "aria-pressed": "false",
+      onclick: () => { dr.c = i; dr.erase = false; drawButtons(); } });
+    b.style.setProperty("--swc", DRAW_COLORS[i] || "var(--on-surface)");
+    return b;
+  }));
+  $("drawWidths").replaceChildren(...DRAW_WNAMES.map((name, i) => h("button", { class: "chip", type: "button", "data-i": String(i), "aria-pressed": "false",
+    onclick: () => { dr.w = i; drawButtons(); } }, tr(name))));
+  drawButtons();
+}
+function openDraw(initial, onDone) {
+  dr.strokes = initial ? initial.s.map(s => ({ c: s.c, w: s.w, p: s.p.slice() })) : [];
+  dr.hist = []; dr.cur = null; dr.erase = false; dr.onDone = onDone; dr.armed = false; dr.open = true;
+  buildDrawTools();
+  $("drawSheet").hidden = false; $("drawSheet").scrollTop = 0;
+  drawResize();
+  $("drawDone").focus();
+}
+function closeDraw(apply) {
+  if (!dr.open) return;
+  const result = apply ? cleanDraw({ s: dr.strokes }) : undefined;
+  dr.open = false; dr.cur = null; dr.strokes = []; dr.hist = []; clearTimeout(dr.armT); dr.armed = false;
+  $("drawSheet").hidden = true;
+  const f = dr.onDone; dr.onDone = null;
+  if (apply && f) f(result);
+}
+function drawCancel() {
+  if (dr.hist.length && !dr.armed) {
+    dr.armed = true; toast("Nochmal tippen, um die Änderungen zu verwerfen.");
+    clearTimeout(dr.armT); dr.armT = setTimeout(() => { dr.armed = false; }, 3500); return;
+  }
+  closeDraw(false);
+}
+function initDraw() {
+  const cv = $("drawCanvas");
+  cv.addEventListener("pointerdown", e => {
+    if (dr.cur || dr.erasing) return;
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    dr.pid = e.pointerId;
+    const pt = drawPoint(e);
+    if (dr.erase) { dr.erasing = true; dr.erasedNow = false; drawEraseAt(pt); }
+    else { dr.cur = { c: dr.c, w: dr.w, p: [pt[0], pt[1]] }; drawRedraw(); }
+  });
+  cv.addEventListener("pointermove", e => {
+    if (e.pointerId !== dr.pid) return;
+    if (dr.erasing) { e.preventDefault(); drawEraseAt(drawPoint(e)); return; }
+    if (!dr.cur) return;
+    e.preventDefault();
+    const evs = typeof e.getCoalescedEvents === "function" ? e.getCoalescedEvents() : [];
+    for (const ev of (evs.length ? evs : [e])) {
+      const pt = drawPoint(ev), p = dr.cur.p;
+      if (p.length >= 8000) break;
+      if (Math.hypot(pt[0] - p[p.length - 2], pt[1] - p[p.length - 1]) >= 3) p.push(pt[0], pt[1]);
+    }
+    drawRedraw();
+  });
+  const end = e => {
+    if (e.pointerId !== dr.pid) return;
+    if (dr.erasing) { dr.erasing = false; dr.erasedNow = false; return; }
+    if (!dr.cur) return;
+    drawPushHist();
+    dr.strokes = dr.strokes.concat([dr.cur]); dr.cur = null;
+    drawRedraw(); drawButtons();
+  };
+  cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+  cv.addEventListener("contextmenu", e => e.preventDefault());
+  $("drawErase").addEventListener("click", () => { dr.erase = !dr.erase; drawButtons(); });
+  $("drawUndo").addEventListener("click", () => { if (dr.hist.length) { dr.strokes = dr.hist.pop(); drawRedraw(); drawButtons(); } });
+  $("drawClear").addEventListener("click", () => { if (dr.strokes.length) { drawPushHist(); dr.strokes = []; drawRedraw(); drawButtons(); } });
+  $("drawDone").addEventListener("click", () => closeDraw(true));
+  $("drawCancel").addEventListener("click", drawCancel);
+  window.addEventListener("resize", () => { if (dr.open) drawResize(); });
+}
+/* Neue Notiz: Zeichnung anhängen */
+let newDraw = null;
+let newImgs = [];
+function refreshNewDraw() {
+  const ib = $("imgNewBox");
+  ib.replaceChildren(...imgThumbList(newImgs, i => { revokeUrls(newImgs.splice(i, 1)); refreshNewDraw(); }));
+  ib.hidden = !newImgs.length;
+  const box = $("drawNewBox");
+  box.replaceChildren();
+  box.hidden = !newDraw;
+  if (newDraw) box.append(drawSvg(newDraw, "draw-prev"), h("button", { class: "btn small", type: "button", onclick: () => { newDraw = null; refreshNewDraw(); } }, tr("Zeichnung entfernen")));
+  $("drawNew").textContent = tr(newDraw ? "Zeichnung bearbeiten" : "Zeichnen");
+  $("addBtn").disabled = !($("composer").value.trim() || $("titleNew").value.trim() || newDraw || newImgs.length);
+}
+const ABOUT = { version: "1.19.0", name: "Andree Wijchers", mail: "chiffre@tuta.com", repo: "github.com/phone-company/chiffre" };
+function copyPlain(text) {
+  const n = window.ChiffreNative;
+  if (n && typeof n.copyText === "function") {
+    try { n.copyText(text); toast("Kopiert"); } catch (e) { toast("Kopieren nicht möglich."); }
+    return;
+  }
+  navigator.clipboard.writeText(text).then(() => toast("Kopiert"), () => toast("Kopieren nicht erlaubt."));
+}
 function openMenu() {
   $("menuSheet").hidden = false;
   $("menuSheet").scrollTop = 0;
@@ -1211,6 +2292,15 @@ function applyTheme() {
     try { n.setBars(own ? (dark ? 2 : 1) : 0, dark ? metaColors.dark : metaColors.light); } catch (e) {}
   }
 }
+function startMode() {
+  let m = "write";
+  try { if (localStorage.getItem("chiffre.start") === "notes") m = "notes"; } catch (e) {}
+  return m;
+}
+function setStart(mode) {
+  try { if (mode === "notes") localStorage.setItem("chiffre.start", "notes"); else localStorage.removeItem("chiffre.start"); } catch (e) {}
+  refreshThemeButtons();
+}
 function viewMode() {
   let m = "list";
   try { if (localStorage.getItem("chiffre.view") === "tiles") m = "tiles"; } catch (e) {}
@@ -1222,8 +2312,10 @@ function setView(mode) {
   refreshThemeButtons();
 }
 function layoutTiles() {
-  // Versetzte Kacheln: jede Karte belegt so viele 4px-Zeilen, wie sie hoch ist
-  ["activeList", "expiredList"].forEach(id => {
+  // Versetzte Kacheln: jede Karte belegt so viele 4px-Zeilen, wie sie hoch ist.
+  // Beim Messen schrumpft die Seite kurz. Die Scrollposition wird danach wiederhergestellt, sonst springt die Ansicht nach oben.
+  const keepY = window.scrollY;
+  ["activeList", "expiredList", "soonList"].forEach(id => {
     const ul = $(id);
     const tiles = ul.classList.contains("tiles");
     ul.querySelectorAll(":scope > li").forEach(li => {
@@ -1233,11 +2325,13 @@ function layoutTiles() {
       li.style.gridRowEnd = "span " + Math.max(1, Math.ceil((hgt + 10) / 4));
     });
   });
+  if (window.scrollY !== keepY) window.scrollTo(0, keepY);
 }
 function applyView() {
   const tiles = viewMode() === "tiles";
   $("activeList").classList.toggle("tiles", tiles);
   $("expiredList").classList.toggle("tiles", tiles);
+  $("soonList").classList.toggle("tiles", tiles);
   layoutTiles();
 }
 function paletteMode() {
@@ -1258,8 +2352,14 @@ function setTheme(mode) {
 function refreshThemeButtons() {
   const mode = themeMode();
   document.querySelectorAll("#themeChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+  const sm = startMode();
+  document.querySelectorAll("#startChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.start === sm)));
+  const so = sortMode();
+  document.querySelectorAll("#sortChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.sort === so)));
   const vm = viewMode();
   document.querySelectorAll("#viewChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === vm)));
+  const lp = langPref();
+  document.querySelectorAll("#langChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lp)));
   const pm = paletteMode();
   document.querySelectorAll("#paletteChips .chip").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.pal === pm)));
 }
@@ -1307,9 +2407,9 @@ function pwDue() {
 function refreshPwNext() {
   const d = pwEveryDays();
   $("pwSel").value = String(d);
-  if (d === 0) { $("pwNext").textContent = "Chiffre fragt nur nach dem Passwort, wenn du es selbst eintippst."; return; }
-  const due = new Date(lastPwAt() + d * DAY).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
-  $("pwNext").textContent = "Nächste Passwortabfrage spätestens am " + due + ".";
+  if (d === 0) { $("pwNext").textContent = tr("Chiffre fragt nur nach dem Passwort, wenn du es selbst eintippst."); return; }
+  const due = new Date(lastPwAt() + d * DAY).toLocaleDateString(locale(), { day: "2-digit", month: "2-digit", year: "numeric" });
+  $("pwNext").textContent = tr("Nächste Passwortabfrage spätestens am {date}.", { date: due });
 }
 function bioNative() {
   const n = window.ChiffreNative;
@@ -1320,8 +2420,8 @@ function bioReady() {
   try { return !!n && n.biometricStatus() === 2 && !!n.biometricEnabled() && !pwDue(); } catch (e) { return false; }
 }
 function bioMsgText(code) {
-  if (code === "invalid") return "Die Fingerabdrücke auf dem Gerät haben sich geändert. Gib dein Passwort ein und richte den Fingerabdruck neu ein.";
-  if (code === "error") return "Der Fingerabdruck hat nicht geklappt. Nutze das Passwort.";
+  if (code === "invalid") return tr("Die Fingerabdrücke auf dem Gerät haben sich geändert. Gib dein Passwort ein und richte den Fingerabdruck neu ein.");
+  if (code === "error") return tr("Der Fingerabdruck hat nicht geklappt. Nutze das Passwort.");
   return "";
 }
 function refreshBio() {
@@ -1331,15 +2431,15 @@ function refreshBio() {
   try { status = n.biometricStatus(); on = !!n.biometricEnabled(); } catch (e) {}
   const due = status === 2 && on && pwDue();
   $("bioBtn").hidden = !(status === 2 && on && !!loadVault() && !key && !due);
-  if (due && !key && !!loadVault() && !$("lockMsg").textContent) $("lockMsg").textContent = PW_HINT;
+  if (due && !key && !!loadVault() && !$("lockMsg").textContent) $("lockMsg").textContent = tr(PW_HINT);
   $("pwWrap").hidden = !(status === 2 && on);
   if (!$("pwWrap").hidden) refreshPwNext();
   $("bioPanel").hidden = status === 0;
   $("bioLead").textContent = status === 1
-    ? "Richte zuerst in den Android-Einstellungen einen Fingerabdruck ein."
+    ? tr("Richte zuerst in den Android-Einstellungen einen Fingerabdruck ein.")
     : on
-      ? "Der Fingerabdruck entsperrt Chiffre. Das Passwort funktioniert weiterhin. Ändern sich die Fingerabdrücke auf dem Gerät, wird er automatisch abgeschaltet."
-      : "Entsperre Chiffre zusätzlich mit deinem Fingerabdruck. Dafür merkt sich Android dein Passwort, geschützt durch den Fingerabdruck. Ohne Fingerabdruck ist es nicht lesbar.";
+      ? tr("Der Fingerabdruck entsperrt Chiffre. Das Passwort funktioniert weiterhin. Ändern sich die Fingerabdrücke auf dem Gerät, wird er automatisch abgeschaltet.")
+      : tr("Entsperre Chiffre zusätzlich mit deinem Fingerabdruck. Dafür merkt sich Android dein Passwort, geschützt durch den Fingerabdruck. Ohne Fingerabdruck ist es nicht lesbar.");
   $("bioForm").hidden = status !== 2 || on;
   $("bioOff").hidden = status !== 2 || !on;
 }
@@ -1361,15 +2461,15 @@ async function onBioEnable(e) {
   const n = bioNative(); if (!n) return;
   const pw = $("bioPw").value, btn = $("bioOn"), msg = $("bioMsg");
   msg.textContent = "";
-  if (!pw) { msg.textContent = "Bitte das Passwort eingeben."; return; }
+  if (!pw) { msg.textContent = tr("Bitte das Passwort eingeben."); return; }
   btn.disabled = true;
   try {
     const vault = loadVault();
     const k = await deriveKey(pw, ub64(vault.salt), vault.iter);
-    try { await unseal(k, vault); } catch (err) { msg.textContent = "Falsches Passwort."; return; }
+    try { await unseal(k, vault); } catch (err) { msg.textContent = tr("Falsches Passwort."); return; }
     markPw();
     n.enableBiometric(pw);
-  } catch (err) { msg.textContent = "Das hat nicht geklappt."; }
+  } catch (err) { msg.textContent = tr("Das hat nicht geklappt."); }
   finally { btn.disabled = false; }
 }
 function initBiometric() {
@@ -1394,7 +2494,7 @@ function initBiometric() {
   // Der Fingerabdruck war richtig, die Hülle liefert das gemerkte Passwort (Base64 von UTF-8)
   window.chiffreBioUnlock = async b64 => {
     if (key) return;
-    if (pwDue()) { $("lockMsg").textContent = PW_HINT; refreshBio(); return; }
+    if (pwDue()) { $("lockMsg").textContent = tr(PW_HINT); refreshBio(); return; }
     let pw = "";
     try { pw = new TextDecoder().decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0))); } catch (e) {}
     $("lockMsg").textContent = "";
@@ -1403,7 +2503,7 @@ function initBiometric() {
     pw = "";
     if (!ok) {
       try { n.disableBiometric(); } catch (e) {}
-      $("lockMsg").textContent = "Das gemerkte Passwort passt nicht mehr. Gib dein Passwort ein.";
+      $("lockMsg").textContent = tr("Das gemerkte Passwort passt nicht mehr. Gib dein Passwort ein.");
     }
   };
   refreshBio();
@@ -1415,21 +2515,46 @@ function buildChips() {
   const box = $("expiryChips");
   const items = options.map(([label, days]) => h("button", {
     class: "chip", type: "button", "aria-pressed": String(!chosen.custom && chosen.days === days),
-    onclick: () => { chosen = { label, days }; $("customWrap").hidden = true; buildChips(); }
-  }, label));
+    onclick: () => { chosen = { label, days }; $("customWrap").hidden = true; $("autoWrap").hidden = false; buildChips(); }
+  }, tr(label)));
   items.push(h("button", {
     class: "chip", type: "button", "aria-pressed": String(!!chosen.custom),
-    onclick: () => { chosen = { custom: true }; $("customWrap").hidden = false; buildChips(); $("customDate").focus(); }
-  }, "Datum wählen"));
+    onclick: () => { chosen = { custom: true }; $("customWrap").hidden = false; $("autoWrap").hidden = false; buildChips(); $("customDate").focus(); }
+  }, tr("Datum wählen")));
+  items.push(h("button", {
+    class: "chip", type: "button", "aria-pressed": String(!!chosen.never),
+    onclick: () => { chosen = { never: true }; $("customWrap").hidden = true; $("autoWrap").hidden = true; buildChips(); }
+  }, tr("Ohne Ablauf")));
   box.replaceChildren(...items);
 }
+
+/* Sprache wechseln, ohne die App zu sperren */
+function setLang(mode) {
+  try { if (mode === "de" || mode === "en") localStorage.setItem("chiffre.lang", mode); else localStorage.removeItem("chiffre.lang"); } catch (e) {}
+  applyLang();
+}
+function applyLang() {
+  LANG = resolveLang();
+  dateFmt = new Intl.DateTimeFormat(locale(), { day: "numeric", month: "short", year: "numeric" });
+  applyDom();
+  buildChips(); buildNewColor(); setNewColor(newColor);
+  if (key) {
+    render(); refreshBackupInfo(); refreshBackupHint(); refreshLockNote(); refreshWipeNote();
+    if ($("wipeArm").hidden === false) onWipeSel();
+  } else showLock();
+  refreshBio(); refreshRemindStatus(); refreshThemeButtons(); refreshPwNextSafe();
+}
+function refreshPwNextSafe() { if (!$("pwWrap").hidden) refreshPwNext(); }
 
 /* Start */
 (function init() {
   applySystemColors();
   applyTheme();
   document.querySelectorAll("#themeChips .chip").forEach(b => b.addEventListener("click", () => setTheme(b.dataset.mode)));
+  document.querySelectorAll("#startChips .chip").forEach(b => b.addEventListener("click", () => setStart(b.dataset.start)));
   document.querySelectorAll("#viewChips .chip").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+  document.querySelectorAll("#sortChips .chip").forEach(b => b.addEventListener("click", () => setSort(b.dataset.sort)));
+  document.querySelectorAll("#langChips .chip").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
   applyView();
   document.querySelectorAll("#paletteChips .chip").forEach(b => b.addEventListener("click", () => setPalette(b.dataset.pal)));
   if (window.matchMedia) { try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme); } catch (e) {} }
@@ -1437,15 +2562,31 @@ function buildChips() {
   try { localStorage.setItem("chiffre.probe", "1"); localStorage.removeItem("chiffre.probe"); } catch (e) { storageOk = false; }
   const tomorrow = new Date(Date.now() + DAY);
   $("customDate").min = tomorrow.getFullYear() + "-" + pad2(tomorrow.getMonth() + 1) + "-" + pad2(tomorrow.getDate());
+  collectI18n(); applyDom();
   buildChips();
-  $("composer").addEventListener("input", e => { $("addBtn").disabled = !e.target.value.trim(); });
+  const canAdd = refreshNewDraw;
+  initDraw();
+  $("imgNew").addEventListener("click", () => pickImages(false, newImgs, refreshNewDraw));
+  $("camNew").addEventListener("click", () => pickImages(true, newImgs, refreshNewDraw));
+  $("imgFile").addEventListener("change", e => onImgFiles(e.target));
+  $("camFile").addEventListener("change", e => onImgFiles(e.target));
+  $("imgClose").addEventListener("click", closeViewer);
+  $("imgPrev").addEventListener("click", () => stepViewer(-1));
+  $("imgNext").addEventListener("click", () => stepViewer(1));
+  $("imgBig").addEventListener("click", () => $("imgStage").classList.toggle("zoom"));
+  $("drawNew").addEventListener("click", () => openDraw(newDraw, r => { newDraw = r; refreshNewDraw(); }));
+  $("composer").addEventListener("input", canAdd);
+  $("titleNew").addEventListener("input", canAdd);
+  $("titleNew").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); if (e.ctrlKey || e.metaKey) addNote(); else $("composer").focus(); }
+  });
   $("composer").addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") addNote(); });
   $("addBtn").addEventListener("click", addNote);
   $("lockForm").addEventListener("submit", onLockSubmit);
   $("lockBtn").addEventListener("click", lock);
   $("menuBtn").addEventListener("click", openMenu);
   initSwipe();
-  $("colorNew").replaceWith(Object.assign(colorPicker("", c => { newColor = c; }, "Farbe der neuen Notiz"), { id: "colorNew" }));
+  buildNewColor();
   initKeyboardWatch();
   initTileLayout();
   $("menuClose").addEventListener("click", closeMenu);
@@ -1461,15 +2602,39 @@ function buildChips() {
   $("expCopy").addEventListener("click", onExportCopy);
   initReminders();
   initBiometric();
+  $("ckNew").addEventListener("click", () => toggleChecklistText($("composer")));
+  bindChecklistKeys($("composer"));
+  $("searchBox").addEventListener("input", () => { searchQ = $("searchBox").value; $("searchClear").hidden = !searchQ; render(); });
+  $("searchClear").addEventListener("click", () => { searchQ = ""; $("searchBox").value = ""; $("searchClear").hidden = true; render(); $("searchBox").focus(); });
+  $("lockSel").addEventListener("change", () => { lsSet("chiffre.lockAfter", $("lockSel").value); pushLockDelay(); refreshLockNote(); });
+  $("wipeSel").addEventListener("change", onWipeSel);
+  $("wipeArmOk").addEventListener("click", onWipeArmOk);
+  $("wipeArmNo").addEventListener("click", onWipeArmNo);
+  $("bkSel").addEventListener("change", () => { lsSet("chiffre.backupEvery", $("bkSel").value); refreshBackupHint(); });
+  $("aboutVer").textContent = ABOUT.version;
+  $("aboutName").textContent = ABOUT.name;
+  $("aboutMail").textContent = ABOUT.mail;
+  $("aboutRepo").textContent = ABOUT.repo;
+  $("aboutMailCopy").addEventListener("click", () => copyPlain(ABOUT.mail));
+  $("aboutRepoCopy").addEventListener("click", () => copyPlain(ABOUT.repo));
+  $("bkNow").addEventListener("click", () => { openMenu(); $("backup").open = true; $("backup").scrollIntoView({ block: "start" }); });
+  $("bkLater").addEventListener("click", () => { lsSet("chiffre.bkSnooze", Date.now() + 3 * DAY); refreshBackupHint(); });
+  document.addEventListener("click", e => { if (e.target && e.target.type === "file") pickerUntil = Date.now() + 120000; }, true);
+  pushLockDelay();
+  refreshLockNote(); refreshWipeNote(); refreshBackupInfo();
+  window.chiffreSaved = markBackup;
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) { hiddenAt = Date.now(); return; }
     if (!key) return;
-    if (hiddenAt && Date.now() - hiddenAt >= LOCK_AFTER_MS) { lock(); bioAuto(); } else render();
+    // In der App sperrt die Hülle selbst (sie kennt auch die Dateiauswahl des Systems).
+    const picking = Date.now() < pickerUntil;
+    pickerUntil = 0;
+    if (!nativeLock() && !picking && hiddenAt && Date.now() - hiddenAt >= lockDelay() * 1000) { lock(); bioAuto(); } else render();
     hiddenAt = 0;
   });
   window.chiffreLock = () => { if (key) { lock(); bioAuto(); } };
   // Zurück-Taste der App-Hülle: schließt zuerst die Einstellungen
-  window.chiffreBack = () => { if (!$("menuSheet").hidden) { closeMenu(); return true; } return false; };
+  window.chiffreBack = () => { if (iv.open) { closeViewer(); return true; } if (dr.open) { closeDraw(true); return true; } if (!$("menuSheet").hidden) { closeMenu(); return true; } return false; };
   if ("serviceWorker" in navigator && !window.ChiffreNative && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
   showLock();
   setTimeout(bioAuto, 400);

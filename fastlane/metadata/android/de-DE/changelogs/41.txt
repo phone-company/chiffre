@@ -1,0 +1,1 @@
+Neu: Ein Tipp auf eine Notiz öffnet sie jetzt nur zum Lesen. Zum Bearbeiten die Notiz lange drücken. So lässt sich nichts mehr aus Versehen ändern.

@@ -1,0 +1,1 @@
+New: the tag row now has an "All" button on the left to clear the tag filter.

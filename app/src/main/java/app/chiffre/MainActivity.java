@@ -4,13 +4,20 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.PersistableBundle;
 import android.os.SystemClock;
 import android.util.Base64;
 import android.view.View;
@@ -29,6 +36,7 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,22 +64,35 @@ public class MainActivity extends Activity {
     private static final int REQ_PICK = 1;
     private static final int REQ_SAVE = 2;
     private static final int REQ_NOTIFICATIONS = 3;
+    private static final int REQ_CAPTURE = 4;
 
     /** Größte Sicherung, die gespeichert wird (Zeichen). */
-    private static final int MAX_SAVE_CHARS = 8 * 1024 * 1024;
+    private static final int MAX_SAVE_CHARS = 32 * 1024 * 1024;
 
-    /** So lange darf die App im Hintergrund sein, bevor sie sich sperrt. */
-    private static final long LOCK_AFTER_MS = 60_000L;
+    /** Standard: So lange darf die App im Hintergrund sein, bevor sie sich sperrt. */
+    private static final int DEFAULT_LOCK_SECONDS = 60;
+    private static final String PREFS_LOCK = "chiffre_lock";
 
     private WebView web;
     private ValueCallback<Uri[]> pickCallback;
+    private Uri captureUri;
     private String pendingSave;
     private long stoppedAt = 0L;
+    /** Gilt nur für einen Rückweg: Dateiauswahl oder Speichern des Systems soll nicht sperren. */
+    private boolean skipLockOnce = false;
+
+    /** Kopierte Notiztexte werden nach dieser Zeit wieder aus der Zwischenablage entfernt. */
+    private static final long CLIP_CLEAR_MS = 30_000L;
+    private final Handler clipHandler = new Handler(Looper.getMainLooper());
+    private int clipToken = 0;
+    private long ownClipAt = 0L;
+    private boolean clipListening = false;
     private boolean bioBusy = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CaptureProvider.cleanAll(this);
 
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
@@ -153,13 +174,42 @@ public class MainActivity extends Activity {
                     pickCallback.onReceiveValue(null);
                 }
                 pickCallback = callback;
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("*/*");
+                String[] types = params.getAcceptTypes();
+                boolean images = types != null && types.length > 0 && types[0] != null
+                        && types[0].startsWith("image/");
+                Intent intent = null;
+                int req = REQ_PICK;
+                if (images && params.isCaptureEnabled()) {
+                    try {
+                        File file = CaptureProvider.newFile(MainActivity.this);
+                        captureUri = CaptureProvider.uriFor(MainActivity.this, file);
+                        intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, captureUri);
+                        intent.setClipData(ClipData.newRawUri("", captureUri));
+                        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        req = REQ_CAPTURE;
+                    } catch (RuntimeException e) {
+                        intent = null;
+                        captureUri = null;
+                        req = REQ_PICK;
+                    }
+                }
+                if (intent == null) {
+                    intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType(images ? "image/*" : "*/*");
+                    if (images && params.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) {
+                        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    }
+                }
                 try {
-                    startActivityForResult(intent, REQ_PICK);
+                    skipLockOnce = true;
+                    startActivityForResult(intent, req);
                 } catch (ActivityNotFoundException e) {
+                    skipLockOnce = false;
                     pickCallback = null;
+                    captureUri = null;
                     callback.onReceiveValue(null);
                 }
                 return true;
@@ -214,6 +264,27 @@ public class MainActivity extends Activity {
             final String safeName = name.replaceAll("[^A-Za-z0-9._-]", "_");
             final String content = text;
             runOnUiThread(() -> startSave(safeName, content));
+        }
+
+        /** Wie lange die App im Hintergrund bleiben darf, bevor sie sich sperrt: 0, 60 oder 300 Sekunden. */
+        @JavascriptInterface
+        public void setLockDelay(int seconds) {
+            int s = seconds <= 0 ? 0 : (seconds <= 60 ? 60 : 300);
+            getSharedPreferences(PREFS_LOCK, MODE_PRIVATE).edit().putInt("seconds", s).apply();
+        }
+
+        @JavascriptInterface
+        public int getLockDelay() {
+            return lockDelaySeconds();
+        }
+
+        /** Kopiert einen Notiztext. Android blendet ihn nicht in der Vorschau ein und er wird nach 30 s geleert. */
+        @JavascriptInterface
+        public void copyText(final String text) {
+            if (text == null || text.length() > 200_000) {
+                return;
+            }
+            runOnUiThread(() -> copyToClipboard(text));
         }
 
         @JavascriptInterface
@@ -458,6 +529,45 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void copyToClipboard(String text) {
+        final ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        if (cm == null) {
+            return;
+        }
+        if (!clipListening) {
+            clipListening = true;
+            // Kopiert die Person danach selbst etwas anderes, wird das nicht mehr gelöscht.
+            cm.addPrimaryClipChangedListener(() -> {
+                if (SystemClock.elapsedRealtime() - ownClipAt > 1500L) {
+                    clipToken++;
+                }
+            });
+        }
+        ClipData clip = ClipData.newPlainText("Chiffre", text);
+        if (Build.VERSION.SDK_INT >= 33) {
+            PersistableBundle extras = new PersistableBundle();
+            extras.putBoolean("android.content.extra.IS_SENSITIVE", true);
+            clip.getDescription().setExtras(extras);
+        }
+        ownClipAt = SystemClock.elapsedRealtime();
+        cm.setPrimaryClip(clip);
+        final int token = ++clipToken;
+        clipHandler.postDelayed(() -> {
+            if (token != clipToken) {
+                return;
+            }
+            if (Build.VERSION.SDK_INT >= 28) {
+                cm.clearPrimaryClip();
+            } else {
+                cm.setPrimaryClip(ClipData.newPlainText("", ""));
+            }
+        }, CLIP_CLEAR_MS);
+    }
+
+    private int lockDelaySeconds() {
+        return getSharedPreferences(PREFS_LOCK, MODE_PRIVATE).getInt("seconds", DEFAULT_LOCK_SECONDS);
+    }
+
     private void startSave(String name, String text) {
         pendingSave = text;
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
@@ -465,8 +575,10 @@ public class MainActivity extends Activity {
         intent.setType("application/json");
         intent.putExtra(Intent.EXTRA_TITLE, name);
         try {
+            skipLockOnce = true;
             startActivityForResult(intent, REQ_SAVE);
         } catch (ActivityNotFoundException e) {
+            skipLockOnce = false;
             pendingSave = null;
             Toast.makeText(this, R.string.backup_failed, Toast.LENGTH_LONG).show();
         }
@@ -483,13 +595,33 @@ public class MainActivity extends Activity {
             }
         } else if (requestCode == REQ_PICK) {
             Uri[] result = null;
-            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
-                result = new Uri[] { data.getData() };
+            if (resultCode == RESULT_OK && data != null) {
+                ClipData clip = data.getClipData();
+                if (clip != null && clip.getItemCount() > 0) {
+                    result = new Uri[clip.getItemCount()];
+                    for (int i = 0; i < result.length; i++) {
+                        result[i] = clip.getItemAt(i).getUri();
+                    }
+                } else if (data.getData() != null) {
+                    result = new Uri[] { data.getData() };
+                }
             }
             if (pickCallback != null) {
                 pickCallback.onReceiveValue(result);
                 pickCallback = null;
             }
+        } else if (requestCode == REQ_CAPTURE) {
+            Uri[] result = null;
+            if (resultCode == RESULT_OK && captureUri != null) {
+                result = new Uri[] { captureUri };
+            }
+            captureUri = null;
+            if (pickCallback != null) {
+                pickCallback.onReceiveValue(result);
+                pickCallback = null;
+            }
+            // Das Foto liegt nur kurz im Cache der App: Chiffre liest es sofort und verkleinert es.
+            clipHandler.postDelayed(() -> CaptureProvider.cleanAll(MainActivity.this), 120_000L);
         }
     }
 
@@ -506,9 +638,14 @@ public class MainActivity extends Activity {
                 ok = false;
             }
             final boolean done = ok;
-            runOnUiThread(() -> Toast.makeText(this,
-                    done ? R.string.backup_saved : R.string.backup_failed,
-                    Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> {
+                Toast.makeText(this,
+                        done ? R.string.backup_saved : R.string.backup_failed,
+                        Toast.LENGTH_SHORT).show();
+                if (done && web != null) {
+                    web.evaluateJavascript("window.chiffreSaved && window.chiffreSaved();", null);
+                }
+            });
         }).start();
     }
 
@@ -535,10 +672,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (stoppedAt != 0L && web != null
-                && SystemClock.elapsedRealtime() - stoppedAt >= LOCK_AFTER_MS) {
+        if (stoppedAt != 0L && web != null && !skipLockOnce
+                && SystemClock.elapsedRealtime() - stoppedAt >= lockDelaySeconds() * 1000L) {
             web.evaluateJavascript("window.chiffreLock && window.chiffreLock();", null);
         }
+        skipLockOnce = false;
         stoppedAt = 0L;
     }
 
