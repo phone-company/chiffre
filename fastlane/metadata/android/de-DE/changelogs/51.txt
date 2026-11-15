@@ -1,0 +1,1 @@
+Fix: Die Ablauf-Knöpfe (+1 Tag usw.) sind auf farbigen Notizen jetzt gut lesbar.

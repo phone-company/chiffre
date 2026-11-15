@@ -1,0 +1,1 @@
+Fix: Löschen und andere Knöpfe sind auf farbigen Notizen jetzt gut lesbar.

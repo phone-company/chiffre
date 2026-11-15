@@ -3,11 +3,13 @@
     <string name="app_name">Chiffre</string>
     <string name="backup_saved">Sicherung gespeichert</string>
     <string name="backup_failed">Sicherung konnte nicht gespeichert werden</string>
-    <string name="notif_channel">Ablaufende Notizen</string>
+    <string name="notif_channel">Erinnerungen und Ablauf</string>
     <string name="notif_one">Eine Notiz ist abgelaufen</string>
     <string name="notif_many">Mehrere Notizen sind abgelaufen</string>
     <string name="notif_warn_one">Eine Notiz wird bald gelöscht</string>
     <string name="notif_warn_many">Mehrere Notizen werden bald gelöscht</string>
+    <string name="notif_remind_one">Erinnerung an eine Notiz</string>
+    <string name="notif_remind_many">Erinnerung an mehrere Notizen</string>
     <string name="notif_test">Test: Erinnerungen funktionieren</string>
     <string name="bio_title_unlock">Chiffre entsperren</string>
     <string name="bio_title_enable">Fingerabdruck bestätigen</string>

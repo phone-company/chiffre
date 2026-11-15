@@ -1,0 +1,1 @@
+Fix: the notes page no longer scrolls sideways when there are many tags.

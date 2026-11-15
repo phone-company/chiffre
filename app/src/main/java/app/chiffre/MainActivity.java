@@ -298,7 +298,7 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> changeReminders(on));
         }
 
-        /** Künftige Zeitpunkte mit Art (e/w), kommagetrennt, in Millisekunden. Nie Text von Notizen. */
+        /** Künftige Zeitpunkte mit Art (e/w/r), kommagetrennt, in Millisekunden. Nie Text von Notizen. */
         @JavascriptInterface
         public void setExpiries(String csv) {
             if (csv != null && csv.length() > 20_000) {

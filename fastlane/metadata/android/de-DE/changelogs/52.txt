@@ -1,0 +1,1 @@
+Fix: Alle Texte auf farbigen Notizen sind jetzt gut lesbar (Hinweis zum Bearbeiten, Textfelder, Schalter), auch im dunklen Design.

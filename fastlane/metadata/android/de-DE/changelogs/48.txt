@@ -1,0 +1,1 @@
+Neu: Erinnerung an einzelne Notizen (Datum und Uhrzeit). Die Notiz steht beim Öffnen oben, die Meldung zeigt keinen Inhalt.

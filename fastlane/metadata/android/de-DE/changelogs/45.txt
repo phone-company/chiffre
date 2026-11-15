@@ -1,0 +1,1 @@
+Fix: Das Textfeld beim Schreiben ist jetzt deutlich größer und wächst mit dem Text mit.

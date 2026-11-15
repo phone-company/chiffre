@@ -1,0 +1,1 @@
+Fix: Die Notizenseite scrollt bei vielen Schlagwörtern nicht mehr seitlich.

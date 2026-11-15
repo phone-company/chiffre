@@ -1,0 +1,1 @@
+Neu: Sicherheit. Neue Passwörter brauchen mindestens 12 Zeichen, eine Anzeige schätzt die Stärke. Unter Einstellungen > Passwort ändern kannst du ein neues Passwort festlegen; Notizen und Bilder werden dabei neu verschlüsselt. Danach den Fingerabdruck neu einrichten und eine neue Sicherung anlegen.

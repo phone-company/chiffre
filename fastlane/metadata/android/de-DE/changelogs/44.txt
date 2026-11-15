@@ -1,0 +1,1 @@
+Neu: Passwort anzeigen (Auge), feste Speichern-Taste, Schriftgröße einstellbar, ruhigere Notizenliste und ein freundlicher Start ohne Notizen.

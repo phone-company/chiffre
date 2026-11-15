@@ -1,0 +1,1 @@
+New: security. New passwords need at least 12 characters, with a strength indicator. Under Settings > Change password you can set a new password; notes and images are re-encrypted. Afterwards set up fingerprint unlock again and create a new backup.

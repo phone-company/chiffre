@@ -1,0 +1,1 @@
+Aufgeräumt: Passwort ändern, Erweitert (Löschen nach Fehlversuchen) und das Hinzufügen aus einer Sicherung sind eingeklappt.

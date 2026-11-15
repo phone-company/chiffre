@@ -1,0 +1,1 @@
+Fix: the text field on the Write page is now much larger and grows with your text.

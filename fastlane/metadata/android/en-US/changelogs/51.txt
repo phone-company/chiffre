@@ -1,0 +1,1 @@
+Fix: the expiry buttons (+1 day etc.) are now easy to read on coloured notes.

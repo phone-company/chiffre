@@ -1,0 +1,1 @@
+New: show password (eye), fixed save button, adjustable text size, calmer note list and a friendlier empty start screen.

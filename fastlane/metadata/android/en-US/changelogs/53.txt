@@ -1,0 +1,1 @@
+Tidied up: settings split into Appearance and Note list, notifications merged, cleaner Write page.

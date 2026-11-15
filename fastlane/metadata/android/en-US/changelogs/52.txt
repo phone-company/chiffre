@@ -1,0 +1,1 @@
+Fix: all text on coloured notes is now easy to read (edit hint, text fields, switches), also in dark mode.

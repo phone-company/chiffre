@@ -1,0 +1,1 @@
+Fix: Delete and other buttons are now easy to read on coloured notes.

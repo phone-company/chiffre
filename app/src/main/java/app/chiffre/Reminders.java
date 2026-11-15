@@ -21,7 +21,7 @@ import java.util.List;
  *
  * Gespeichert werden nur Zeitpunkte (Millisekunden) mit einer Art, nie Text oder Titel einer Notiz.
  * Art "e": eine Notiz läuft ab, du entscheidest. Art "w": eine Notiz wird bald automatisch gelöscht.
- * Die Meldungen sind immer neutral.
+ * Art "r": eine Notiz, an die du erinnert werden wolltest. Die Meldungen sind immer neutral.
  *
  * Der Alarm ist genau (setExactAndAllowWhileIdle). Ein ungenauer Alarm darf von Android um bis zu
  * drei Viertel der Wartezeit verspätet werden, bei einem Termin in drei Stunden also um über zwei
@@ -36,6 +36,7 @@ final class Reminders {
     private static final int ID_EXPIRED = 1;
     private static final int ID_WARNING = 2;
     private static final int ID_TEST = 3;
+    private static final int ID_REMIND = 4;
     private static final long TEST_DELAY_MS = 60_000L;
     private static final int MAX_ENTRIES = 500;
 
@@ -44,11 +45,12 @@ final class Reminders {
     /** Ein Zeitpunkt mit Art. */
     static final class Entry implements Comparable<Entry> {
         final long time;
-        final boolean warn;
+        /** 'e' Ablauf, 'w' Vorwarnung, 'r' Erinnerung. */
+        final char kind;
 
-        Entry(long time, boolean warn) {
+        Entry(long time, char kind) {
             this.time = time;
-            this.warn = warn;
+            this.kind = kind;
         }
 
         @Override
@@ -87,14 +89,14 @@ final class Reminders {
         for (String part : csv.split(",")) {
             String p = part.trim();
             if (p.isEmpty()) continue;
-            boolean warn = false;
-            if (p.charAt(0) == 'w' || p.charAt(0) == 'e') {
-                warn = p.charAt(0) == 'w';
+            char kind = 'e';
+            if (p.charAt(0) == 'w' || p.charAt(0) == 'e' || p.charAt(0) == 'r') {
+                kind = p.charAt(0);
                 p = p.substring(1);
             }
             try {
                 long t = Long.parseLong(p);
-                if (t > 0) out.add(new Entry(t, warn));
+                if (t > 0) out.add(new Entry(t, kind));
             } catch (NumberFormatException ignored) {
                 // überspringen
             }
@@ -108,7 +110,7 @@ final class Reminders {
         StringBuilder sb = new StringBuilder();
         for (Entry e : list) {
             if (sb.length() > 0) sb.append(',');
-            sb.append(e.warn ? 'w' : 'e').append(e.time);
+            sb.append(e.kind).append(e.time);
         }
         return sb.toString();
     }
@@ -152,7 +154,7 @@ final class Reminders {
             }
         }
         return (isEnabled(c) ? "1" : "0") + ";"
-                + (next == null ? "" : (next.warn ? "w" : "e") + next.time) + ";"
+                + (next == null ? "" : String.valueOf(next.kind) + next.time) + ";"
                 + future + ";" + (canNotify(c) ? "1" : "0") + ";"
                 + (am != null && canExact(am) ? "1" : "0");
     }
@@ -216,16 +218,23 @@ final class Reminders {
         long now = System.currentTimeMillis();
         int expired = 0;
         int warned = 0;
+        int reminded = 0;
         List<Entry> rest = new ArrayList<>();
         for (Entry e : load(c)) {
             if (e.time <= now) {
-                if (e.warn) warned++; else expired++;
+                if (e.kind == 'w') warned++;
+                else if (e.kind == 'r') reminded++;
+                else expired++;
             } else {
                 rest.add(e);
             }
         }
         prefs(c).edit().putString(KEY_TIMES, join(rest)).apply();
-        if ((expired > 0 || warned > 0) && isEnabled(c) && canNotify(c)) {
+        if ((expired > 0 || warned > 0 || reminded > 0) && isEnabled(c) && canNotify(c)) {
+            if (reminded > 0) {
+                notifyText(c, ID_REMIND,
+                        reminded > 1 ? R.string.notif_remind_many : R.string.notif_remind_one);
+            }
             if (expired > 0) {
                 notifyText(c, ID_EXPIRED,
                         expired > 1 ? R.string.notif_many : R.string.notif_one);

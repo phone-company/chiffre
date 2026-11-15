@@ -1,0 +1,1 @@
+Fix: Der Radierer löscht beim Zeichnen nur noch das berührte Stück statt des ganzen Strichs.

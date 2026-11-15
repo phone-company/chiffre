@@ -1,0 +1,1 @@
+Fix: Wischen nach links funktioniert jetzt auch über dem Textfeld auf der Schreiben-Seite.

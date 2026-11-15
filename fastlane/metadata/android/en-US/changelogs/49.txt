@@ -1,0 +1,1 @@
+Fix: swiping left now also works over the text field on the Write page.

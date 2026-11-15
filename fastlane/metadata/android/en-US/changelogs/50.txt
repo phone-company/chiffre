@@ -1,0 +1,1 @@
+Fix: the eraser now only removes the part you touch instead of the whole stroke.

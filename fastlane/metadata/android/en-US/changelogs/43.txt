@@ -1,0 +1,1 @@
+New: fingerprint and change password are now grouped under Settings > Security.
