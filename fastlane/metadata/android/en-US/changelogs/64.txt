@@ -1,0 +1,1 @@
+New: notes can be locked (padlock). A locked note cannot be edited until you unlock it. Reading, copying and ticking off still work.

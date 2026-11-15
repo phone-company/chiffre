@@ -1,0 +1,1 @@
+Geändert: Standardsortierung ist jetzt „Bearbeitet". Jede geänderte Notiz (speichern, anheften, Ablauf verlängern) rückt an die erste Stelle, auch in der Kachelansicht. Angeheftete bleiben oben.

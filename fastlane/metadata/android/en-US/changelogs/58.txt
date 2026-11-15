@@ -1,0 +1,1 @@
+Fixed: with the "Edited" sort order the view now jumps to the top after saving, so the edited note is visible in first place right away.

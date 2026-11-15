@@ -33,6 +33,8 @@ final class Reminders {
     private static final String KEY_ON = "on";
     private static final String KEY_TIMES = "times";
     private static final String CHANNEL_ID = "expiry";
+    /** Eigener, lauter Kanal für Erinnerungen an Notizen (Banner auf dem Bildschirm). */
+    private static final String CHANNEL_REMIND = "remind";
     private static final int ID_EXPIRED = 1;
     private static final int ID_WARNING = 2;
     private static final int ID_TEST = 3;
@@ -178,7 +180,7 @@ final class Reminders {
 
     /** Wird vom Test-Alarm aufgerufen. */
     static void onTest(Context c) {
-        if (canNotify(c)) notifyText(c, ID_TEST, R.string.notif_test);
+        if (canNotify(c)) notifyText(c, ID_TEST, false, R.string.notif_test);
     }
 
     /** Stellt den Alarm auf den nächsten künftigen Zeitpunkt, oder löscht ihn. */
@@ -232,37 +234,43 @@ final class Reminders {
         prefs(c).edit().putString(KEY_TIMES, join(rest)).apply();
         if ((expired > 0 || warned > 0 || reminded > 0) && isEnabled(c) && canNotify(c)) {
             if (reminded > 0) {
-                notifyText(c, ID_REMIND,
+                notifyText(c, ID_REMIND, true,
                         reminded > 1 ? R.string.notif_remind_many : R.string.notif_remind_one);
             }
             if (expired > 0) {
-                notifyText(c, ID_EXPIRED,
+                notifyText(c, ID_EXPIRED, false,
                         expired > 1 ? R.string.notif_many : R.string.notif_one);
             }
             if (warned > 0) {
-                notifyText(c, ID_WARNING,
+                notifyText(c, ID_WARNING, false,
                         warned > 1 ? R.string.notif_warn_many : R.string.notif_warn_one);
             }
         }
         schedule(c);
     }
 
-    private static void notifyText(Context c, int id, int textRes) {
+    private static void notifyText(Context c, int id, boolean remind, int textRes) {
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
         nm.createNotificationChannel(new NotificationChannel(CHANNEL_ID,
                 c.getString(R.string.notif_channel), NotificationManager.IMPORTANCE_DEFAULT));
+        if (remind) {
+            nm.createNotificationChannel(new NotificationChannel(CHANNEL_REMIND,
+                    c.getString(R.string.notif_channel_remind), NotificationManager.IMPORTANCE_HIGH));
+        }
 
         Intent open = c.getPackageManager().getLaunchIntentForPackage(c.getPackageName());
         PendingIntent tap = open == null ? null : PendingIntent.getActivity(c, 0, open,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        Notification.Builder b = new Notification.Builder(c, CHANNEL_ID)
+        Notification.Builder b = new Notification.Builder(c, remind ? CHANNEL_REMIND : CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_chiffre)
                 .setContentTitle(c.getString(R.string.app_name))
                 .setContentText(c.getString(textRes))
                 .setVisibility(Notification.VISIBILITY_PRIVATE)
                 .setAutoCancel(true);
+        // Als Erinnerung gekennzeichnet darf sie auch durch "Nicht stören" mit der Ausnahme "Erinnerungen".
+        if (remind) b.setCategory(Notification.CATEGORY_REMINDER);
         if (tap != null) b.setContentIntent(tap);
         nm.notify(id, b.build());
     }

@@ -1,0 +1,1 @@
+New: sort order "Edited" (Settings > Notes list): the most recently edited note comes first, pinned notes stay ahead of the rest.

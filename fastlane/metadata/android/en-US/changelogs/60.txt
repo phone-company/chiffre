@@ -1,0 +1,1 @@
+Fixed (attempt): while editing, the keyboard stays open when you tap "Save", so the first tap saves.

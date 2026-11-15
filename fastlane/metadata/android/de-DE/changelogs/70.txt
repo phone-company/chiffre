@@ -1,0 +1,1 @@
+Der Titel steht jetzt direkt als Überschrift über dem Text, mit Stift-Symbol, beim Schreiben und im Bearbeiten-Bereich. Das extra Titelfeld entfällt. Bestehende Notizen bleiben unverändert.

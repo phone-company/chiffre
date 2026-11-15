@@ -3,7 +3,8 @@
     <string name="app_name">Chiffre</string>
     <string name="backup_saved">Backup saved</string>
     <string name="backup_failed">Backup could not be saved</string>
-    <string name="notif_channel">Reminders and expiry</string>
+    <string name="notif_channel">Note expiry</string>
+    <string name="notif_channel_remind">Note reminders</string>
     <string name="notif_one">A note has expired</string>
     <string name="notif_many">Several notes have expired</string>
     <string name="notif_warn_one">A note will be deleted soon</string>

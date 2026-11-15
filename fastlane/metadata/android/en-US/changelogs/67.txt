@@ -1,0 +1,1 @@
+Changed: a note that gets unpinned now moves to the very bottom of the list. Editing brings it forward again.

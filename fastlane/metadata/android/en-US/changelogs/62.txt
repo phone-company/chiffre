@@ -1,0 +1,1 @@
+New: when you swipe to your notes while writing and come back, the cursor sits after the text you started and the keyboard is ready.

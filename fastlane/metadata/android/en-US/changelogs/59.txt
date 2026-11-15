@@ -1,0 +1,1 @@
+Changed: default sort order is now "Edited". Any changed note (save, pin, extend expiry) moves to the first spot, also in tile view. Pinned notes stay on top.

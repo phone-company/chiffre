@@ -1,0 +1,1 @@
+Neu: Wer beim Schreiben kurz zu den Notizen wischt und zurückkommt, findet den Cursor hinter dem begonnenen Text und die Tastatur bereit.

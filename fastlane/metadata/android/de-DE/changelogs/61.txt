@@ -1,0 +1,1 @@
+Geändert: Der Haken an einer Notiz markiert sie jetzt als erledigt und schiebt sie ganz nach unten, statt sie zu löschen. Nochmal tippen macht sie wieder offen. Gelöscht wird wie gewohnt nach Ablauf oder von Hand.

@@ -1,0 +1,1 @@
+Fixed: when you unpin a note it returns to its old place instead of jumping to the top.

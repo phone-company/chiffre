@@ -1,0 +1,1 @@
+Changed: a locked note can no longer be unpinned with the pin. Unpinning offers "Undo" in case the note moves away by accident.

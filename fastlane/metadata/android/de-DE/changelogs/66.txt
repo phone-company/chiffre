@@ -1,0 +1,1 @@
+Geändert: Eine gesperrte Notiz lässt sich nicht mehr per Pin lösen. Beim Lösen des Pins gibt es „Rückgängig", falls die Notiz versehentlich wegrutscht.

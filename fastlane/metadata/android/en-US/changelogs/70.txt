@@ -1,0 +1,1 @@
+The title now sits directly above the text as a heading with a pen icon, when writing and when editing. The extra title field is gone. Existing notes are unchanged.

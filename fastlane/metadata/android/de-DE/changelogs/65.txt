@@ -1,0 +1,1 @@
+Behoben: Wird das Anheften einer Notiz gelöst, rückt sie wieder an ihren alten Platz zurück, statt nach oben zu springen.

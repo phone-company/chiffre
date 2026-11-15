@@ -1,0 +1,1 @@
+Behoben: Mit der Sortierung „Bearbeitet" springt die Ansicht nach dem Speichern nach oben, damit man die bearbeitete Notiz sofort an erster Stelle sieht.

@@ -19,7 +19,9 @@ public class ReminderReceiver extends BroadcastReceiver {
             Reminders.onTest(context);
         } else if (Intent.ACTION_BOOT_COMPLETED.equals(action)
                 || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
-            Reminders.schedule(context);
+            // Nicht nur den nächsten Alarm stellen: Was während des Ausschaltens oder Updates fällig
+            // wurde, wird jetzt noch gemeldet (spät ist besser als nie) und danach der nächste Alarm gestellt.
+            Reminders.onAlarm(context);
         }
     }
 }

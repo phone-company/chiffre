@@ -1,0 +1,1 @@
+Neu: Webadressen in einer geöffneten Notiz werden erkannt, ein Knopf „Link kopieren" kopiert sie. Chiffre öffnet nichts von selbst.

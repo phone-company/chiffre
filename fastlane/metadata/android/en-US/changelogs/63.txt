@@ -1,0 +1,1 @@
+New: web addresses in an opened note are detected, a "Copy link" button copies them. Chiffre never opens anything on its own.

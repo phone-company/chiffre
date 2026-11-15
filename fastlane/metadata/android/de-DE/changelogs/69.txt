@@ -1,0 +1,1 @@
+Ruhiger: Beim Schreiben zeigt Anhängen erst auf Tipp Zeichnen, Bild und Foto. Im Bearbeiten-Bereich bleiben Speichern, Checkliste, Mehr und Löschen sichtbar, der Rest steckt hinter Mehr. Es fällt nichts weg.

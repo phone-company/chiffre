@@ -1,0 +1,1 @@
+Neu: Sortierung „Bearbeitet" (Einstellungen > Notizenliste): die zuletzt bearbeitete Notiz steht oben, angeheftete Notizen bleiben vor den übrigen.

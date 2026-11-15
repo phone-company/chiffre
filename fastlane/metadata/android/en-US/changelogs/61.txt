@@ -1,0 +1,1 @@
+Changed: the tick on a note now marks it as done and moves it to the very bottom instead of deleting it. Tap again to reopen. Notes are still deleted on expiry or by hand.

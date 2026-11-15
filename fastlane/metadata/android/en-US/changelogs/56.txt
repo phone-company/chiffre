@@ -1,0 +1,1 @@
+New: tick on the right of every note (done, with undo), quick reminder choices (in 1 hour, this evening, tomorrow morning, next week), cursor ready in the write field, last expiry stays selected. Reminders arrive reliably after a restart or update.

@@ -1,0 +1,1 @@
+Behoben (Versuch): Beim Bearbeiten bleibt die Tastatur beim Tippen auf „Speichern" offen, damit schon der erste Tipp speichert.

@@ -1,0 +1,1 @@
+Calmer: when writing, Attach reveals Draw, Image and Photo only on tap. In the edit area Save, Checklist, More and Delete stay visible, the rest is behind More. Nothing was removed.

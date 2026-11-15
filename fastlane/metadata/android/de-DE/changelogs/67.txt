@@ -1,0 +1,1 @@
+Geändert: Eine Notiz, deren Pin gelöst wird, rutscht jetzt ganz nach unten in die Liste. Bearbeiten holt sie wieder nach vorn.

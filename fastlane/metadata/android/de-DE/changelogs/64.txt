@@ -1,0 +1,1 @@
+Neu: Notizen lassen sich sperren (Schloss). Eine gesperrte Notiz kann nicht bearbeitet werden, bis man sie wieder entsperrt. Lesen, Kopieren und Abhaken gehen weiter.

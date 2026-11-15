@@ -1,0 +1,1 @@
+Neu: Haken rechts an jeder Notiz (Erledigt, mit Rückgängig), Schnellwahl für Erinnerungen (In 1 Stunde, Heute Abend, Morgen früh, Nächste Woche), Cursor sofort im Schreibfeld, letzte Verfallszeit bleibt gewählt. Erinnerungen kommen auch nach Neustart und Update zuverlässig.

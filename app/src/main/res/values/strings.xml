@@ -3,7 +3,8 @@
     <string name="app_name">Chiffre</string>
     <string name="backup_saved">Sicherung gespeichert</string>
     <string name="backup_failed">Sicherung konnte nicht gespeichert werden</string>
-    <string name="notif_channel">Erinnerungen und Ablauf</string>
+    <string name="notif_channel">Ablauf von Notizen</string>
+    <string name="notif_channel_remind">Erinnerungen an Notizen</string>
     <string name="notif_one">Eine Notiz ist abgelaufen</string>
     <string name="notif_many">Mehrere Notizen sind abgelaufen</string>
     <string name="notif_warn_one">Eine Notiz wird bald gelöscht</string>
