@@ -1,0 +1,1 @@
+Settings are now also reachable from the Write page: in the three-dot menu at the bottom right.

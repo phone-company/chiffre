@@ -1,0 +1,1 @@
+Seitenwechsel mit offener Notiz ruckelt nicht mehr: die Notiz springt beim Wischen zwischen Schreiben und Notizen nicht mehr.

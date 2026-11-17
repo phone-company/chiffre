@@ -1,0 +1,1 @@
+Korrektur: Eine Notiz, die weit wandert (z. B. beim Lösen vom Anheften nach ganz unten), fliegt nicht mehr über andere Notizen, sondern blendet am neuen Platz ein. Kurze Wege gleiten weiter.

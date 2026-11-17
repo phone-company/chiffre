@@ -1,0 +1,1 @@
+More modern: the done mark is now a small circle that fills when completed. Checklist circles, pin, lock and bell follow the same style in size, stroke weight and tint.

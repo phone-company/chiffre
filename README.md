@@ -1,19 +1,20 @@
 # Chiffre
 
-Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Verfallsdatum. Läuft es ab, fragt die App, ob die Notiz bleiben oder gelöscht werden soll. Pro Notiz lässt sich auch festlegen, dass sie nach dem Ablauf ohne Nachfrage gelöscht wird. So sammelt sich nicht jahrelang an, was längst erledigt ist.
+Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Ablaufdatum. Läuft es ab, fragt die App, ob die Notiz bleiben oder gelöscht werden soll. Pro Notiz lässt sich auch festlegen, dass sie nach dem Ablauf ohne Nachfrage gelöscht wird. So sammelt sich nicht jahrelang an, was längst erledigt ist.
 
 - Verschlüsselt mit deinem Passwort (AES-256-GCM, Schlüsselableitung per PBKDF2-SHA-256 mit 600.000 Runden)
 - Kein Konto, keine Cloud, keine Werbung, keine Analyse
 - Die Android-App hat keine Internet-Berechtigung
 - Optional: neutrale Benachrichtigungen („Eine Notiz ist abgelaufen“, bei automatischem Löschen vorher „Eine Notiz wird bald gelöscht“, Vorwarnzeit von 1 Stunde bis 1 Tag einstellbar), ohne Notiztext, jederzeit abschaltbar
-- Erinnerung an einzelne Notizen (Datum und Uhrzeit): Die App meldet sich ohne Inhalt, die Notiz steht beim Öffnen ganz oben und lässt sich mit „Erledigt“ oder „+1 Std.“ weiterschieben
+- Erinnerung an einzelne Notizen (Datum und Uhrzeit): Die App meldet sich ohne Inhalt, die Notiz steht beim Öffnen ganz oben und lässt sich mit „Erledigt“ oder „+1 Std.“ weiterschieben. Auf Wunsch wiederholt sie sich täglich, wöchentlich oder monatlich („Erledigt“ springt dann zum nächsten Termin)
 - Screenshots und die Vorschau in der App-Übersicht sind gesperrt
 - Sperrt sich im Hintergrund: sofort, nach 1 oder nach 5 Minuten (einstellbar, Standard 1 Minute)
 - Optional: Entsperren per Fingerabdruck, zusätzlich zum Passwort
 - Verschlüsselte Sicherung als Datei, zum Wiederherstellen oder für den Umzug auf ein anderes Gerät, mit einstellbarer Erinnerung ans Sichern
 - Optional: Tresor nach 5, 10 oder 20 falschen Passwörtern löschen (standardmäßig aus)
-- Checklisten mit Kästchen, jede Notiz mit eigenem Titel, Etiketten per #Stichwort
-- Suche in den Notizen (nur im entsperrten Tresor, der Suchtext wird nicht gespeichert), „Rückgängig“ nach dem Löschen, Sortierung nach Ablauf, Neueste oder Farbe
+- Checklisten mit Kästchen: Erledigtes rutscht nach unten (abschaltbar), Unterpunkte durch Einrücken, Punkte lassen sich im Modus „Erweitert“ per Pfeiltasten verschieben, erledigte auf einmal löschen. Jede Notiz mit eigenem Titel, Etiketten per #Stichwort
+- Suche in den Notizen (nur im entsperrten Tresor, der Suchtext wird nicht gespeichert) und, im Funktionsumfang „Erweitert“, auch innerhalb einer Notiz; „Rückgängig“ nach dem Löschen, Sortierung nach Ablauf, Neueste oder Farbe
+- Funktionsumfang „Einfach“ oder „Erweitert“ (Einstellungen > Aussehen): Neue Tresore starten einfach, „Erweitert“ blendet zusätzliche Funktionen ein, etwa Suche in der Notiz, wiederkehrende Erinnerungen und die Pfeile für Unterpunkte in Checklisten. Bestehende Tresore behalten alles
 - Zeichnungen mit dem Finger, auch ohne Text; verschlüsselt wie die Notiz
 - Bilder an Notizen: aus der Galerie oder direkt aufgenommen, verkleinert und verschlüsselt
 - Bereich „Läuft bald ab“ oben in den Notizen für alles, was in den nächsten 24 Stunden abläuft, deutlich markiert
@@ -32,7 +33,7 @@ Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Ver
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.29.0.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
+Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.3.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
@@ -58,7 +59,7 @@ Chiffre schützt gespeicherte Notizen, wenn jemand Zugriff auf das Gerät oder s
 - Bilder werden verkleinert (längste Seite 1280 Pixel) und einzeln mit demselben Schlüssel verschlüsselt im Speicher der App abgelegt, nicht im Tresor-Text. Das Original in deiner Galerie bleibt unverändert und unverschlüsselt, bis du es selbst löschst. Eine Sicherung als Datei enthält die Bilder, „Text kopieren“ nicht. Bis zu 12 Bilder pro Notiz, insgesamt 60.
 - Das Ablaufdatum dient der Ordnung. Es ist kein forensisch sicheres Löschen.
 - Das automatische Löschen geschieht erst beim nächsten Entsperren der App, denn nur dann kann Chiffre die Notizen lesen. Bis dahin liegt die Notiz weiter verschlüsselt auf dem Gerät. Eine automatisch gelöschte Notiz lässt sich nicht zurückholen, außer aus einer älteren Sicherung.
-- Für die Erinnerung merkt sich die App die Ablaufzeitpunkte der Notizen (Ablauf, Vorwarnung und Erinnerung an eine Notiz, nur Uhrzeiten, nie Text) unverschlüsselt im privaten App-Speicher. Ohne die Erinnerung bleibt dieser Speicher leer. Der Alarm ist genau, sofern Android das erlaubt.
+- Für die Erinnerung merkt sich die App die Ablaufzeitpunkte der Notizen (Ablauf, Vorwarnung und Erinnerung an eine Notiz, bei wiederholten Erinnerungen auch die nächsten Termine, nur Uhrzeiten, nie Text) unverschlüsselt im privaten App-Speicher. Ohne die Erinnerung bleibt dieser Speicher leer. Der Alarm ist genau, sofern Android das erlaubt.
 - Nach der Eingabe liegt der Schlüssel im Arbeitsspeicher, bis die App sich sperrt.
 - Mit Fingerabdruck merkt sich Android dein Passwort, verschlüsselt mit einem Schlüssel aus der Sicherheits-Hardware (Android Keystore). Der Schlüssel ist nur nach einem Fingerabdruck (starke Biometrie) nutzbar und wird ungültig, sobald auf dem Gerät ein Fingerabdruck hinzukommt. Wer dich zwingen kann, deinen Finger aufzulegen, kommt damit an die Notizen. Ohne Fingerabdruck-Funktion wird nichts gemerkt. Das Passwort funktioniert immer.
 - Damit du das Passwort nicht vergisst, fragt Chiffre trotz Fingerabdruck regelmäßig danach: alle 4 Wochen (Voreinstellung), alle 2 Wochen, jede Woche oder nie. Das ist eine Gedächtnisstütze und kein zusätzlicher Schutz. Der Zeitpunkt der letzten Passwort-Eingabe steht unverschlüsselt im Speicher der App (nur die Uhrzeit, nie das Passwort).

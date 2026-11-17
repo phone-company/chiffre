@@ -1,0 +1,1 @@
+New: tapping a note opens the editor right away, going back saves automatically. Checklists and locked notes open for reading. Adjustable under Note list: When tapping a note.

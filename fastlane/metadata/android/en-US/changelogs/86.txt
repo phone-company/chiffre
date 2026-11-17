@@ -1,0 +1,2 @@
+Cleaner note editor: borderless text field, cursor and keyboard ready at once.
+Reminder, expiry, colour, lock and auto-delete are in the menu (⋮).

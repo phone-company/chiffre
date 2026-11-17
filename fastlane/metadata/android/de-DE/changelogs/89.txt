@@ -1,0 +1,1 @@
+Erinnerung: "Eigene Zeit" öffnet gleich die Auswahl für Datum und Uhrzeit und übernimmt sie sofort.

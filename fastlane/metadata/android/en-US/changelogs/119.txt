@@ -1,0 +1,1 @@
+The bottom bar now fades smoothly and no longer gets stuck after swiping, even when the keyboard closes at that moment.

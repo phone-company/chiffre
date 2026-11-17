@@ -1,0 +1,1 @@
+Auto-delete now shows at once: in the expiry line when writing and at the top of the editor, plus a notice.

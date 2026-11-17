@@ -1,0 +1,1 @@
+Reminder: "Custom time" opens the date and time picker straight away and applies it at once.

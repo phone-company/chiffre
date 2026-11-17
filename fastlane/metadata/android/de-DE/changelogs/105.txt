@@ -1,0 +1,1 @@
+Langer Druck wählt Notizen jetzt auch auf Android zuverlässig aus. Das Diagnose-Protokoll zeichnet den langen Druck mit auf.

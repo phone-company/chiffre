@@ -1,0 +1,1 @@
+Neue Optik: Die Knöpfe in den Notizen sind jetzt halbdurchsichtig wie Milchglas, die Notizfarbe schimmert durch. Gilt für Speichern, Checkliste, Mehr, Auswahlknöpfe und Weitere Optionen, in Hell und Dunkel.

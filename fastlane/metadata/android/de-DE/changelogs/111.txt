@@ -1,0 +1,1 @@
+Einheitliche Wörter: statt "Verfällt nach" steht jetzt überall "Ablauf nach" (und "Ablauf am" bei eigenem Datum).

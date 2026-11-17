@@ -1,0 +1,1 @@
+Fixed: tapping a note no longer makes the card jump away, even when another note was open. In tile view it no longer drifts briefly.

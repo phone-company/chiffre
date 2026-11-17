@@ -1,0 +1,1 @@
+Erstes Öffnen ruckelt weniger: Autofill des Systems ist aus, die Tastatur startet erst nach der Bewegung.

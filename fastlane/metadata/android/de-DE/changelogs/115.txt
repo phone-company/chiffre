@@ -1,0 +1,1 @@
+Erinnerungs-Fenster (Erweitert): die Wiederholung steht jetzt unter dem Zeitpunkt. Das Fenster bleibt nach der Zeitwahl offen, mit Fertig schließen.

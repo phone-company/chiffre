@@ -1,0 +1,1 @@
+First open jitters less: system autofill is off and the keyboard starts only after the slide.

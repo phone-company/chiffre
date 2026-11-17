@@ -1,0 +1,1 @@
+Closing a note with the keyboard open no longer jitters: the keyboard hides first, then the note slides away.

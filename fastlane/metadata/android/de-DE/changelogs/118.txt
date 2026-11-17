@@ -1,0 +1,1 @@
+Fingerabdruck robuster: Ein kurzer Fehler im Schlüsselspeicher löscht den Schlüssel nicht mehr. Bei Problemen steht ein Fehlercode in der Meldung.

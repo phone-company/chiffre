@@ -1,0 +1,1 @@
+Reminder: one tap on "Custom time" now opens the date and time picker directly.

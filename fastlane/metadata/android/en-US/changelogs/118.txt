@@ -1,0 +1,1 @@
+Fingerprint more robust: a brief keystore error no longer deletes the key. If something fails, an error code appears in the message.

@@ -1,0 +1,1 @@
+Page swipe with a note open: when the keyboard closes meanwhile, the note keeps filling the screen, no cards showing underneath.

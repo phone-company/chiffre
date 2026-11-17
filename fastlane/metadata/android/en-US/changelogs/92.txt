@@ -1,0 +1,1 @@
+Change expiry: one tap on "Pick a date" opens the date picker straight away and applies the date at once.

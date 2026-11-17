@@ -1,0 +1,1 @@
+Der Haken bleibt, nach dem Abhaken sitzt ein kleiner, feiner Kreis eng darum, ungefüllt. Checklistenfelder wieder eckig. Gesperrte Notizen lassen sich nicht mehr als erledigt markieren, Checklistenpunkte schon.

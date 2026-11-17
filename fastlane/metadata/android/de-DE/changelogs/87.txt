@@ -1,0 +1,3 @@
+Neue Notiz schreiben als Vollseite: Titel, Textfeld, Cursor und Tastatur sofort da.
+Oben Zurück, Glocke, Pin und Speichern, unten Plus, Checkliste, Rückgängig, Wiederholen und Mehr.
+Ablauf steht als Zeile unter dem Titel, Farbe und Auto-Löschen liegen im Menü.

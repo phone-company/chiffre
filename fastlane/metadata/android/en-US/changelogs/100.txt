@@ -1,0 +1,1 @@
+Fixed the jump on first open: right after launch the open keyboard is now detected and the motion waits for it.

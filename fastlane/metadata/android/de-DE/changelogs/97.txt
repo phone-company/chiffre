@@ -1,0 +1,1 @@
+Schließen mit offener Tastatur ruckelt nicht mehr: erst geht die Tastatur zu, dann gleitet die Notiz weg.

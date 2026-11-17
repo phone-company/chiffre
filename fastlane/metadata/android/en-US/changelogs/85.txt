@@ -1,0 +1,3 @@
+New bottom bar in a note: plus (image, photo, draw), checklist, undo, redo, eye (read only) and more.
+In read mode the bar shows pencil and more.
+Pencil and more moved from the top bar to the bottom.

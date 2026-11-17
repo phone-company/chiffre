@@ -1,0 +1,1 @@
+Colour applies at once: the whole page changes colour as soon as you pick one, when writing and editing.

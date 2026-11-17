@@ -1,0 +1,1 @@
+Swiping between Write and Notes with a note open no longer makes the note jump.

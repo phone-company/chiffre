@@ -1,0 +1,1 @@
+Bessere Checklisten: Erledigte Punkte rutschen nach unten (abschaltbar in den Einstellungen), Unterpunkte durch Einrücken, Punkte per Pfeiltasten verschieben, "Erledigte löschen" im Menü.

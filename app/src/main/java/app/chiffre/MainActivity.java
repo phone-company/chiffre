@@ -104,6 +104,11 @@ public class MainActivity extends Activity {
         root.addView(web, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        // Notizinhalt gehört nicht dem Autofill-Dienst des Systems; das spart außerdem den Aufbau beim ersten Fokus im Textfeld
+        if (Build.VERSION.SDK_INT >= 26) {
+            root.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
+            web.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
+        }
         applyInsets(root);
 
         configureWebView();
@@ -449,9 +454,15 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void onFailure(int kind) {
+            public void onFailure(int kind, String detail) {
                 bioBusy = false;
-                tellBio(false, kind == Biometrics.KIND_CANCELED ? "" : "error");
+                if (kind == Biometrics.KIND_CANCELED) {
+                    tellBio(false, "", "");
+                } else if (kind == Biometrics.KIND_LOCKOUT) {
+                    tellBio(false, "lockout", detail);
+                } else {
+                    tellBio(false, "error", detail);
+                }
             }
         });
     }
@@ -474,22 +485,33 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void onFailure(int kind) {
+            public void onFailure(int kind, String detail) {
                 bioBusy = false;
                 if (kind == Biometrics.KIND_INVALID) {
-                    tellBio(false, "invalid");
+                    tellBio(false, "invalid", detail);
+                } else if (kind == Biometrics.KIND_LOCKOUT) {
+                    tellBio(Biometrics.isEnabled(MainActivity.this), "lockout", detail);
                 } else if (kind == Biometrics.KIND_ERROR) {
-                    tellBio(Biometrics.isEnabled(MainActivity.this), "error");
+                    tellBio(Biometrics.isEnabled(MainActivity.this), "error", detail);
                 }
-                // Abbruch durch dich: keine Meldung, das Passwort bleibt möglich.
+                // Abbruch durch dich oder gesperrtes Gerät: keine Meldung, das Passwort bleibt möglich.
             }
         });
     }
 
     private void tellBio(boolean enabled, String code) {
+        tellBio(enabled, code, "");
+    }
+
+    private void tellBio(boolean enabled, String code, String detail) {
         if (web != null) {
+            // detail wird in ein JavaScript-Textstück gesetzt: nur harmlose Zeichen durchlassen
+            String d = detail == null ? "" : detail.replaceAll("[^A-Za-z0-9:._/-]", "");
+            if (d.length() > 60) {
+                d = d.substring(0, 60);
+            }
             web.evaluateJavascript("window.chiffreBioState && window.chiffreBioState("
-                    + enabled + ",'" + code + "');", null);
+                    + enabled + ",'" + code + "','" + d + "');", null);
         }
     }
 

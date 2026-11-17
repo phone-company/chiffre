@@ -1,0 +1,1 @@
+Sanfter: Notizen gleiten beim Speichern, Abhaken und Anheften an ihren neuen Platz, Bearbeiten und Weitere Optionen klappen weich auf und zu, die Liste scrollt sanft nach oben. Bei reduzierten Animationen bleibt alles sofort.

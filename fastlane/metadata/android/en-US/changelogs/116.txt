@@ -1,0 +1,1 @@
+Tidier menus: editor menu without duplicates (image, photo, draw, checklist live under Plus and the bar), auto-delete inside Change expiry, feature set under Appearance.

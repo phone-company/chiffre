@@ -1,0 +1,1 @@
+Moderner: Der Erledigt-Haken ist jetzt ein kleiner Kreis, der beim Erledigen gefüllt wird. Die Kreise in Checklisten, Pin, Schloss und Glocke folgen derselben Linie, in Größe, Strichstärke und Tönung.

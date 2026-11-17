@@ -1,0 +1,1 @@
+Neu: Die Notiz-Seite hat oben Glocke, Anheften und ein Drei-Punkte-Menü. Das Menü öffnet eine Liste von unten: Farbe, Ablauf, Kopieren, Sperren, Löschen. Erinnerung und Farbe lassen sich direkt ändern.

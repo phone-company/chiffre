@@ -1,0 +1,1 @@
+Farbe wirkt sofort: Beim Schreiben und im Editor färbt sich die ganze Seite, sobald du eine Farbe wählst.

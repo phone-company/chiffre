@@ -1,0 +1,3 @@
+Neue untere Leiste in der Notiz: Plus (Bild, Foto, Zeichnen), Checkliste, Rückgängig, Wiederholen, Auge (nur lesen) und Mehr.
+Im Lesen-Modus stehen unten Stift und Mehr.
+Stift und Mehr sind aus der Kopfleiste nach unten gewandert.

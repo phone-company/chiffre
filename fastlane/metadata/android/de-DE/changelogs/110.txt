@@ -1,0 +1,1 @@
+Seitenwechsel mit offener Notiz: geht dabei die Tastatur zu, füllt die Notiz weiter den ganzen Bildschirm, keine anderen Karten darunter.

@@ -1,0 +1,1 @@
+Fix: the Copy link button no longer touches the line below the note, it now has some space. Applies to list and tiles, with and without expiry.

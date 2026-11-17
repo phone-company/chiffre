@@ -1,0 +1,1 @@
+Pfeilzeile für Checklisten erscheint auf der Schreiben-Seite nur noch, wenn der Cursor in einem Checklistenpunkt steht.

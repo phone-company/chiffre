@@ -1,0 +1,1 @@
+New look: buttons in notes are now translucent like frosted glass, the note colour shines through. Applies to Save, Checklist, More, choice buttons and More options, in light and dark.

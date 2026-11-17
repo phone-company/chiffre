@@ -1,0 +1,1 @@
+Besser auffindbar: Ablauf neu setzen steht wieder sichtbar im Bearbeiten-Bereich. Weitere Optionen sieht jetzt wie ein Knopf aus und nennt, was darin steckt: Farbe, Anheften, Auto-Löschen.

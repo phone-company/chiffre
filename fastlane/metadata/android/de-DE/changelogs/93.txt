@@ -1,0 +1,2 @@
+Auge sperrt die Notiz gegen Bearbeiten, der Stift entsperrt sie und öffnet den Editor.
+"Notiz sperren" ist aus Menü und Leseseite verschwunden, das Schloss auf der Karte bleibt.

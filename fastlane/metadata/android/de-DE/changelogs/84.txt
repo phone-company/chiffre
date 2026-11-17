@@ -1,0 +1,1 @@
+Neu: Tippen auf eine Notiz öffnet gleich den Editor, Zurück speichert automatisch. Checklisten und gesperrte Notizen öffnen zum Lesen. Einstellbar unter Notizenliste: Beim Antippen.

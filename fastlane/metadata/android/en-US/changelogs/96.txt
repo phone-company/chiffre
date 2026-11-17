@@ -1,0 +1,1 @@
+Fixed gliding: on close the page jumped back up instead of sinking down. The keyboard now opens only after the page has slid in.

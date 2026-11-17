@@ -1,0 +1,1 @@
+Opening a note jitters less: the hidden list is no longer re-measured while the keyboard opens.

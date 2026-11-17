@@ -1,0 +1,1 @@
+Behoben: Beim Antippen einer Notiz springt die Karte nicht mehr weg, auch nicht, wenn vorher eine andere Notiz offen war. In der Kachelansicht schwimmt sie nicht mehr kurz.

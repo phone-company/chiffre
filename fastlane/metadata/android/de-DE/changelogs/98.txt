@@ -1,0 +1,1 @@
+Öffnen einer Notiz ruckelt weniger: die verdeckte Liste wird nicht mehr neu vermessen, während die Tastatur aufgeht.

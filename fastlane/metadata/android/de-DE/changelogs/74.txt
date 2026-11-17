@@ -1,0 +1,1 @@
+Korrektur: In der Kachelansicht konnte beim Bearbeiten eine andere Notiz über die geöffnete Karte ragen. Der Platz der Karten wird jetzt auch während der Bewegung richtig berechnet.

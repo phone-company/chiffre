@@ -1,0 +1,1 @@
+Easier to find: Reset expiry is visible again in the edit area. More options now looks like a button and lists what is inside: colour, pin, auto-delete.

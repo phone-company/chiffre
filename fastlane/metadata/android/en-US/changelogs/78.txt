@@ -1,0 +1,1 @@
+Ticking with circles: open is an empty circle, ticked has the tick inside the circle, never filled. Applies to the done mark and to checklists, both look the same.

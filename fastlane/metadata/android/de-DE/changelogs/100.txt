@@ -1,0 +1,1 @@
+Sprung beim ersten Öffnen behoben: Direkt nach dem Start wird die offene Tastatur jetzt erkannt, die Bewegung wartet auf sie.

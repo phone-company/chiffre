@@ -1,0 +1,1 @@
+New (Advanced): repeating reminders, daily, weekly or monthly. Pick Wiederholung (repeat) in the bell panel. Done jumps to the next occurrence.

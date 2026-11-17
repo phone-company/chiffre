@@ -1,0 +1,1 @@
+Jump on first open: removed the blur behind buttons in notes (it cost a frame the first time).

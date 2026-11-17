@@ -1,0 +1,1 @@
+Neu: Im Editor gibt es unter Weitere Optionen das Häkchen "Notiz sperren". Erinnerung setzen, sperren, speichern, ohne die Notiz ein zweites Mal zu öffnen.

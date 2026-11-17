@@ -1,0 +1,1 @@
+New: feature set Simple/Advanced in settings (new vaults start simple). Advanced adds find-in-note in the menu and arrows for checklist sub-items.

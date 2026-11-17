@@ -1,0 +1,1 @@
+Notes now slide in from the bottom when opened and slide back down when closed.

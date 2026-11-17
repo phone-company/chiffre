@@ -1,0 +1,1 @@
+Fix: in tile view another note could overlap the open card while editing. The space for cards is now calculated correctly during the animation as well.

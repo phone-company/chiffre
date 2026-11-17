@@ -1,0 +1,1 @@
+New: the note page has a bell, pin and three-dot menu at the top. The menu opens a list from the bottom: colour, expiry, copy, lock, delete. Reminder and colour can be changed directly.

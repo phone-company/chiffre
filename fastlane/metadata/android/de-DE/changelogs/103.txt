@@ -1,0 +1,1 @@
+Wischen von Schreiben nach Notizen springt nicht mehr: Die Seite gleitet sofort, die Tastatur geht dabei zu.

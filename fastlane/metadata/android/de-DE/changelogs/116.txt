@@ -1,0 +1,1 @@
+Aufgeräumte Menüs: Editor-Menü ohne Doppelte (Bild, Foto, Zeichnen, Checkliste liegen unter Plus und in der Leiste), Auto-Löschen im Fenster Ablauf ändern, Funktionsumfang unter Aussehen.

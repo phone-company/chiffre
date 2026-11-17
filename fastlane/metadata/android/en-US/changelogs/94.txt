@@ -1,0 +1,1 @@
+Smoother page change between Write and Notes: both pages glide together, the keyboard appears only afterwards.

@@ -1,0 +1,1 @@
+New: a tapped note opens as a full page with back arrow, lock and edit at the top. The list behind it no longer jumps. Unsaved text is not lost with a single gesture.

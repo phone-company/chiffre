@@ -1,0 +1,1 @@
+Neu: verstecktes Diagnose-Protokoll (nur Zeiten, kein Inhalt) zur Suche nach dem Sprung beim ersten Öffnen.

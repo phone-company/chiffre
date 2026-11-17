@@ -1,0 +1,2 @@
+Notiz bearbeiten ist aufgeräumter: Textfeld ohne Rahmen, Cursor und Tastatur sofort da.
+Erinnerung, Ablauf, Farbe, Sperre und Auto-Löschen liegen im Menü (⋮).

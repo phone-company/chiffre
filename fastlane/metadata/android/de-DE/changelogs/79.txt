@@ -1,0 +1,1 @@
+Korrektur: Der Knopf Link kopieren sitzt nicht mehr direkt an der Linie unter der Notiz, sondern hat etwas Abstand. Gilt in Liste und Kacheln, mit und ohne Ablauf.

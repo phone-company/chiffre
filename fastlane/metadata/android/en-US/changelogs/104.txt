@@ -1,0 +1,1 @@
+New: multi-select. Long-press a note, tap more, then pin, colour, extend or delete (with undo).

@@ -1,0 +1,1 @@
+Long-press now reliably selects notes on Android too. The diagnostics log also records long presses.

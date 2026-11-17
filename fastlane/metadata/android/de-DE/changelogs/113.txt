@@ -1,0 +1,1 @@
+Neu: Funktionsumfang Einfach/Erweitert in den Einstellungen (neue Tresore starten einfach). Erweitert: Suche in der Notiz im Menü, Pfeile für Unterpunkte in Checklisten.

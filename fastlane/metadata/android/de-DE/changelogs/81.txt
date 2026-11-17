@@ -1,0 +1,1 @@
+Neu: Eine angetippte Notiz öffnet als ganze Seite, mit Zurück-Pfeil, Schloss und Bearbeiten oben. Die Liste dahinter springt nicht mehr. Ungespeicherter Text geht nicht mit einer Geste verloren.

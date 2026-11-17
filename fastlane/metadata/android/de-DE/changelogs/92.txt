@@ -1,0 +1,1 @@
+Ablauf ändern: Ein Tipp auf "Datum wählen" öffnet gleich die Datumsauswahl und übernimmt das Datum sofort.

@@ -1,0 +1,1 @@
+Die untere Leiste blendet weich aus und ein und bleibt nach dem Wischen nicht mehr hängen, auch wenn die Tastatur gerade zugeht.

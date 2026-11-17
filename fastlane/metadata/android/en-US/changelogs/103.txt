@@ -1,0 +1,1 @@
+Swiping from Write to Notes no longer jumps: the page glides at once while the keyboard closes.

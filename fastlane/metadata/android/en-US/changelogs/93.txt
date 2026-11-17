@@ -1,0 +1,2 @@
+The eye locks a note against editing, the pencil unlocks it and opens the editor.
+"Lock note" is gone from the menu and read page, the lock on the card stays.

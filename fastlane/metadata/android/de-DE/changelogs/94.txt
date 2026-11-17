@@ -1,0 +1,1 @@
+Weicherer Seitenwechsel zwischen Schreiben und Notizen: beide Seiten gleiten zusammen, die Tastatur kommt erst danach.

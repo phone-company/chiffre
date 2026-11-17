@@ -1,0 +1,1 @@
+The tick stays, after ticking a small fine circle sits tightly around it, unfilled. Checklist boxes are square again. Locked notes can no longer be marked done, checklist items still can.

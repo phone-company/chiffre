@@ -1,0 +1,1 @@
+Fix: a note that moves far (e.g. when unpinned to the very bottom) no longer flies across other notes but fades in at its new place. Short moves still glide.

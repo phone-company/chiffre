@@ -1,0 +1,1 @@
+Fehler im Gleiten behoben: Beim Schließen sprang die Seite wieder hoch statt nach unten zu sinken. Die Tastatur geht erst nach dem Hereingleiten auf.

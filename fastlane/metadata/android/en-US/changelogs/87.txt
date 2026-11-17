@@ -1,0 +1,3 @@
+Writing a new note is now a full page: title, text field, cursor and keyboard ready at once.
+Top: back, bell, pin and save. Bottom: plus, checklist, undo, redo and more.
+Expiry is a line under the title, colour and auto-delete are in the menu.

@@ -1,0 +1,1 @@
+Better checklists: done items move to the bottom (can be turned off in settings), sub-items via indent, move items with arrow buttons, "Delete done items" in the menu.

@@ -1,0 +1,1 @@
+New: the editor now has a "Lock note" tick under More options. Set a reminder, lock, save, without opening the note a second time.

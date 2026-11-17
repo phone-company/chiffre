@@ -1,0 +1,1 @@
+New: hidden diagnostics log (timings only, no content) to track down the jump on first open.

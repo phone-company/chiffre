@@ -1,0 +1,1 @@
+Smoother: notes glide to their new place when saved, ticked or pinned, editing and More options open and close softly, the list scrolls up gently. With reduced animations everything stays instant.

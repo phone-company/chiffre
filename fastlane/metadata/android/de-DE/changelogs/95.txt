@@ -1,0 +1,1 @@
+Notizen gleiten beim Öffnen von unten herein und beim Schließen wieder nach unten weg.

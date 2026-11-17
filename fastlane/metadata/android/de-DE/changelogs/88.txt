@@ -1,0 +1,1 @@
+Auto-Löschen zeigt sich sofort: in der Ablaufzeile beim Schreiben und oben im Editor, dazu ein Hinweis.

@@ -11,8 +11,10 @@ Chiffre is a plain notes app with one twist: every note gets an expiry date when
 • Optional: delete the vault after many wrong passwords (off by default)
 • Finger drawings
 • Images attached to notes, encrypted
-• Checklists, titles and labels (#keyword)
-• Search, undo after deleting, sorting, and copying with an automatically cleared clipboard
+• Checklists with sub-items, titles and labels (#keyword)
+• Reminders for single notes, optionally repeating daily, weekly or monthly
+• Search across notes and within a note, undo after deleting, sorting, and copying with an automatically cleared clipboard
+• Simple or advanced: new vaults start plain, you switch on extra features in the settings when you want them
 • Light and dark theme. The interface is available in German and English.
 
 Important: the password cannot be reset. Without it the notes cannot be read. The encryption uses standard methods but has not been independently audited. Chiffre is a hobby project and the source code is open.

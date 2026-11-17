@@ -1,0 +1,1 @@
+Checklist arrow row on the Write page now only shows when the cursor is in a checklist item.

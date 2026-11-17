@@ -1,0 +1,1 @@
+Reminder panel (Advanced): repeat now sits below the time. The panel stays open after picking a time, close it with Fertig (Done).
