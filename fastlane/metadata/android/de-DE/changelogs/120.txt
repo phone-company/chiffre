@@ -1,0 +1,1 @@
+Die untere Leiste erscheint beim Hin- und Herwischen nicht mehr zu früh und springt nicht mehr ein zweites Mal, sondern gleitet einmal sanft herein.

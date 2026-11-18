@@ -1,0 +1,1 @@
+After unlocking, the bottom bar now glides in from below instead of just appearing with the page.

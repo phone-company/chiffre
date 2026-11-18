@@ -1,0 +1,1 @@
+When swiping from Write to Notes, the bottom bar now comes into view with the keyboard instead of jumping in.

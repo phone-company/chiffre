@@ -1,0 +1,1 @@
+The "Backup reminder" setting is now in the Backup section, right below the last backup.

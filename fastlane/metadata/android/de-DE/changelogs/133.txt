@@ -1,0 +1,1 @@
+Das Aufklappen der Bereiche in den Einstellungen läuft jetzt ohne Ruckler.

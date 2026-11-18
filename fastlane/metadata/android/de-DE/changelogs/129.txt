@@ -1,0 +1,1 @@
+Die untere Leiste gleitet nach dem Schließen der Tastatur wieder sanft von unten herein.

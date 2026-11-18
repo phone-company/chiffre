@@ -1,0 +1,1 @@
+Beim Wischen vom Schreiben zu den Notizen kommt die untere Leiste mit der Tastatur ins Bild, statt hereinzuspringen.

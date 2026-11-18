@@ -1,0 +1,1 @@
+Ursache fürs Springen der unteren Leiste beim Wischen behoben: Die Seite wird beim Gleiten nicht mehr kurz verkleinert, die Leiste bleibt an ihrem Platz.

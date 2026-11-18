@@ -1,0 +1,1 @@
+Neue Einstellungen: eine gemeinsame Karte mit Symbolen und Kurzinfo je Bereich. Kein grünes Aufblitzen mehr beim Tippen.

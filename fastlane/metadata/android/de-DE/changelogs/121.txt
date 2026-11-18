@@ -1,0 +1,1 @@
+Beim Wischen mit geöffneter Notiz springt deren untere Leiste nicht mehr, wenn die Tastatur zugeht. Sie bleibt an ihrem Platz.

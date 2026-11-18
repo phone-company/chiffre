@@ -1,0 +1,1 @@
+Die untere Leiste (Schreiben und Notizen) gleitet nach dem Wischen weicher herein, auch wenn die App gerade rechnet.

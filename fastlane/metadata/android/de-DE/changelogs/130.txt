@@ -1,0 +1,1 @@
+Der leere Startbildschirm und „Über Chiffre" zeigen jetzt das Logo. Der Startbildschirm erklärt in einem Satz, wozu Chiffre da ist.

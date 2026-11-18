@@ -1,0 +1,1 @@
+New settings: one shared card with icons and a short status line per section. No more green flash when tapping.

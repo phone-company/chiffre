@@ -1,0 +1,1 @@
+The bottom bar no longer shows up too early when swiping back and forth and no longer jumps a second time; it glides in once, smoothly.

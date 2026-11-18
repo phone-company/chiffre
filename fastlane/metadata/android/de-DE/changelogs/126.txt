@@ -1,0 +1,1 @@
+Die untere Leiste blendet nur noch ein und aus, ohne Bewegung. Das Diagnoseprotokoll misst sie nach Seitenwechseln mit.

@@ -1,0 +1,1 @@
+The bottom bar now appears when swiping to Notes only once the keyboard is fully closed, then glides in once.

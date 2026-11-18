@@ -1,0 +1,1 @@
+Die untere Leiste erscheint beim Wischen zu den Notizen erst, wenn die Tastatur ganz zu ist, und gleitet dann einmal herein.

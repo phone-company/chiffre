@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover">
 <title>Chiffre</title>
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="description" content="Verschlüsselte Notizen mit Ablaufdatum. Alles bleibt auf deinem Gerät.">
@@ -16,6 +16,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
+* { -webkit-tap-highlight-color: transparent; }
 /* Material 3: Farbrollen als Variablen, Standard ist das Chiffre-Grün. Auf Android 12+ ersetzt die App sie durch die Systemfarben (Material You, siehe applySystemColors). Keine externen Schriften oder Anfragen. */
 :root {
   color-scheme: light;
@@ -232,10 +233,11 @@ svg.i { width: 24px; height: 24px; fill: currentColor; flex: none; }
 @media (hover: hover) { .tab:hover .pill { background: var(--state); } }
 .tab[aria-selected="true"] { color: var(--on-surface); font-weight: 700; }
 .tab[aria-selected="true"] .pill { background: var(--secondary-container); color: var(--on-secondary-container); }
-body.kb .tabs { transform: translateY(110%); opacity: 0; visibility: hidden; pointer-events: none; }
+body.kb .tabs { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(100%); }
 @media (prefers-reduced-motion: no-preference) {
-  .tabs { transition: transform 0.22s ease, opacity 0.22s ease, visibility 0s; }
-  body.kb .tabs { transition: transform 0.22s ease, opacity 0.22s ease, visibility 0s linear 0.22s; }
+  /* Die Leiste gleitet von unten herein und blendet dabei ein. Sie erscheint erst, wenn das Fenster zur Ruhe gekommen ist (siehe initKeyboardWatch) */
+  .tabs { will-change: transform, opacity; transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease, visibility 0s; }
+  body.kb .tabs { transition: transform 0.2s ease-in, opacity 0.15s ease, visibility 0s linear 0.2s; }
 }
 body.nav { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
 body.nav .toast { bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
@@ -368,9 +370,24 @@ body.kb .savebar { bottom: 0; }
 .warnbox { font-size: calc(14px*var(--fs)); color: var(--on-surface-variant); border-left: 4px solid var(--warn); background: var(--sc-low); border-radius: 4px 12px 12px 4px; padding: 10px 12px; }
 details.panel > summary { cursor: pointer; font-family: var(--font-display); font-weight: 500; font-size: calc(18px*var(--fs)); list-style: none; display: flex; justify-content: space-between; align-items: center; min-height: 32px; }
 details.panel > summary::-webkit-details-marker { display: none; }
-details.panel > summary::after { content: ""; width: 10px; height: 10px; border-right: 2px solid var(--on-surface-variant); border-bottom: 2px solid var(--on-surface-variant); transform: rotate(45deg); margin: -4px 4px 0 0; transition: transform 0.15s; }
+details.panel > summary::after { content: ""; width: 10px; height: 10px; border-right: 2px solid var(--on-surface-variant); border-bottom: 2px solid var(--on-surface-variant); transform: rotate(45deg); margin: -4px 4px 0 0; transition: transform 0.15s, margin-top 0.15s; }
 details.panel[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
 details.panel[open] { gap: 0; }
+.setcard { background: var(--sc); border-radius: 24px; overflow: hidden; }
+.setcard > details.panel { background: transparent; border-radius: 0; padding: 0 20px; gap: 0; }
+.setcard > details.panel + details.panel { border-top: 1px solid var(--outline-variant); }
+.setcard > details.panel[open] { padding-bottom: 20px; }
+details.panel.closing > summary::after { transform: rotate(45deg); margin-top: -4px; }
+details.panel > * { flex-shrink: 0; }
+.setcard > details.panel > summary { margin: 0 -20px; padding: 14px 20px; gap: 14px; justify-content: flex-start; min-height: 44px; }
+.setcard > details.panel > summary:active { background: var(--sc-high, var(--sc-low)); }
+.setcard > details.panel > summary::after { margin-left: auto; flex: none; }
+.si { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--primary-container); color: var(--on-primary-container); display: grid; place-items: center; }
+.si svg { width: 22px; height: 22px; fill: currentColor; }
+.stx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.st { font-family: var(--font-display); font-weight: 500; font-size: calc(17px*var(--fs)); color: var(--on-surface); }
+.ss { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss:empty { display: none; }
 .sel { user-select: text; -webkit-user-select: text; word-break: break-all; }
 details.panel[open] > :not(summary) { margin-top: 16px; }
 .sep { border: 0; border-top: 1px solid var(--outline-variant); margin: 2px 0; width: 100%; }
@@ -390,6 +407,8 @@ details.panel[open] > :not(summary) { margin-top: 16px; }
 .chip-own { position: relative; overflow: hidden; cursor: pointer; display: inline-flex; align-items: center; }
 .chip-pick { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0; margin: 0; cursor: pointer; }
 .chip:active { box-shadow: inset 0 0 0 999px var(--state); }
+.more > summary:active { box-shadow: inset 0 0 0 999px var(--state); }
+.note-main:active { opacity: 0.88; }
 @media (hover: hover) { .chip:hover { box-shadow: inset 0 0 0 999px var(--state); } }
 .chip[aria-pressed="true"] { background: var(--secondary-container); border-color: transparent; color: var(--on-secondary-container); }
 .chip[aria-pressed="true"]::before { content: "\2713"; margin-right: 8px; font-weight: 700; }
@@ -566,11 +585,18 @@ li.ghost { visibility: hidden; pointer-events: none; flex: none; }
 .meter[data-l="3"] i { background: var(--primary); }
 .meterwrap { display: grid; gap: 2px; }
 .empty.first { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 36px 20px; }
+.logo { width: 88px; height: 88px; display: block; }
+.logo .seg { fill: none; stroke: var(--primary); stroke-width: 8; stroke-linecap: round; }
+.logo .mid { fill: var(--primary); }
+.wm { font-family: var(--font-display); font-weight: 500; font-size: calc(28px*var(--fs)); letter-spacing: 0; color: var(--on-surface); margin-bottom: 10px; }
 .empty.first .ico { width: 56px; height: 56px; border-radius: 50%; background: var(--sc-high, var(--sc-low)); color: var(--primary); display: grid; place-items: center; margin-bottom: 4px; }
 .empty.first .ico svg { width: 28px; height: 28px; fill: currentColor; }
 .empty.first strong { font-family: var(--font-display); font-weight: 500; font-size: calc(18px*var(--fs)); color: var(--on-surface); }
 .empty.first span { max-width: 28ch; }
 .empty.first .btn { margin-top: 10px; }
+.about-logo { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0 12px; }
+.about-logo .logo { width: 72px; height: 72px; }
+.about-logo .wm { font-size: calc(24px*var(--fs)); margin: 0; }
 .empty { color: var(--on-surface-variant); text-align: center; padding: 28px 12px; background: var(--sc-low); border-radius: 20px; font-size: calc(15px*var(--fs)); }
 
 /* Schalter (Material) */
@@ -830,8 +856,9 @@ body.selecting .note.sel:not(.open)::after { content: "✓"; right: 13px; bottom
       <button class="btn icon" id="menuClose" type="button" aria-label="Schließen"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg><span class="sr">Schließen</span></button>
       <h2 id="menuTitle">Einstellungen</h2>
     </header>
+        <div class="setcard">
         <details class="panel" id="themePanel">
-          <summary>Aussehen</summary>
+          <summary><span class="si" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.3c3 0 5.4-2.4 5.4-5.4C22.7 6.4 18 3 12 3zM6.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg></span><span class="stx"><span class="st">Aussehen</span><span class="sublabel ss" id="sumTheme"></span></span></summary>
           <div>
             <p class="sublabel" style="margin-bottom:8px">Funktionsumfang</p>
             <div class="chips" id="modeChips" role="group" aria-label="Funktionsumfang">
@@ -875,7 +902,7 @@ body.selecting .note.sel:not(.open)::after { content: "✓"; right: 13px; bottom
         </details>
 
         <details class="panel" id="listPanel">
-          <summary>Notizenliste</summary>
+          <summary><span class="si" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 14h4v-4H3v4zm0 5h4v-4H3v4zM3 9h4V5H3v4zm5 5h13v-4H8v4zm0 5h13v-4H8v4zM8 5v4h13V5H8z"/></svg></span><span class="stx"><span class="st">Notizenliste</span><span class="sublabel ss" id="sumList"></span></span></summary>
           <div>
             <p class="sublabel" style="margin-bottom:8px">Ansicht</p>
             <div class="chips" id="viewChips" role="group" aria-label="Ansicht der Notizen">
@@ -913,7 +940,7 @@ body.selecting .note.sel:not(.open)::after { content: "✓"; right: 13px; bottom
           </div>
         </details>
         <details class="panel" id="secPanel">
-          <summary>Sicherheit</summary>
+          <summary><span class="si" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></span><span class="stx"><span class="st">Sicherheit</span><span class="sublabel ss" id="sumSec"></span></span></summary>
           <section class="sub first">
             <h3>Sperre</h3>
           <label class="field" for="lockSel">Automatisch sperren
@@ -1000,7 +1027,7 @@ body.selecting .note.sel:not(.open)::after { content: "✓"; right: 13px; bottom
         </details>
 
         <details class="panel" id="remindPanel">
-          <summary>Benachrichtigungen</summary>
+          <summary><span class="si" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></span><span class="stx"><span class="st">Benachrichtigungen</span><span class="sublabel ss" id="sumRemind"></span></span></summary>
           <p class="lead" id="remindWebNote">Meldungen bei Ablauf und Erinnerung gibt es nur in der Android-App. Hier erscheinen betroffene Notizen oben, sobald du Chiffre öffnest.</p>
           <div class="stack" id="remindNative" hidden>
           <label class="check" for="remindToggle"><input type="checkbox" id="remindToggle"> Benachrichtigen, wenn eine Notiz abläuft</label>
@@ -1016,6 +1043,16 @@ body.selecting .note.sel:not(.open)::after { content: "✓"; right: 13px; bottom
           <p class="lead" id="remindNext" aria-live="polite"></p>
           <button class="btn small" type="button" id="remindTest" hidden>Test in 1 Minute</button>
           </div>
+        </details>
+
+        <details class="panel" id="backup">
+          <summary><span class="si" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg></span><span class="stx"><span class="st">Sicherung</span><span class="sublabel ss" id="sumBackup"></span></span></summary>
+          <p class="lead">Die Sicherung ist so verschlüsselt wie dein Tresor und nur mit deinem Passwort lesbar. Sie enthält die Notizen zum Zeitpunkt des Exports, auch wenn sie später ablaufen. Lösche alte Sicherungen, wenn sie nicht mehr gebraucht werden.</p>
+          <div class="row">
+            <button class="btn small" type="button" id="expDownload">Als Datei sichern</button>
+            <button class="btn small" type="button" id="expCopy">Text kopieren</button>
+          </div>
+          <p class="sublabel" id="bkLast" aria-live="polite"></p>
           <label class="field" for="bkSel">Ans Sichern erinnern
             <select id="bkSel">
               <option value="0">Nie</option>
@@ -1024,16 +1061,6 @@ body.selecting .note.sel:not(.open)::after { content: "✓"; right: 13px; bottom
               <option value="90">Alle 3 Monate</option>
             </select>
           </label>
-        </details>
-
-        <details class="panel" id="backup">
-          <summary>Sicherung</summary>
-          <p class="lead">Die Sicherung ist so verschlüsselt wie dein Tresor und nur mit deinem Passwort lesbar. Sie enthält die Notizen zum Zeitpunkt des Exports, auch wenn sie später ablaufen. Lösche alte Sicherungen, wenn sie nicht mehr gebraucht werden.</p>
-          <div class="row">
-            <button class="btn small" type="button" id="expDownload">Als Datei sichern</button>
-            <button class="btn small" type="button" id="expCopy">Text kopieren</button>
-          </div>
-          <p class="sublabel" id="bkLast" aria-live="polite"></p>
           <details class="more" id="impMore">
             <summary><span>Aus einer Sicherung hinzufügen</span></summary>
             <div class="more-body">
@@ -1056,7 +1083,8 @@ body.selecting .note.sel:not(.open)::after { content: "✓"; right: 13px; bottom
         </details>
 
         <details class="panel" id="aboutPanel">
-          <summary>Über Chiffre</summary>
+          <summary><span class="si" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></span><span class="stx"><span class="st">Über Chiffre</span><span class="sublabel ss" id="sumAbout"></span></span></summary>
+          <div class="about-logo" id="aboutLogo" aria-hidden="true"></div>
           <div>
             <p class="sublabel" style="margin-bottom:4px">Version</p>
             <p id="aboutVer"></p>
@@ -1077,6 +1105,7 @@ body.selecting .note.sel:not(.open)::after { content: "✓"; right: 13px; bottom
           </div>
           <p class="lead">Alles bleibt auf diesem Gerät. Chiffre sendet nichts ins Internet.</p>
         </details>
+        </div>
   </div>
 </div>
 <div class="sheet" id="drawSheet" role="dialog" aria-modal="true" aria-labelledby="drawTitle" hidden>
@@ -1359,7 +1388,7 @@ async function persist() {
 }
 
 /* Sprache: Deutsch ist die Vorlage, Englisch wird beim Anzeigen eingesetzt. Fehlt ein Eintrag, bleibt es Deutsch. */
-const EN = {"Zurück": "Back", "Weitere Sicherheitsoptionen": "More security options", "Wiederholung": "Repeat", "Täglich": "Daily", "Wöchentlich": "Weekly", "Monatlich": "Monthly", "täglich": "daily", "wöchentlich": "weekly", "monatlich": "monthly", "Nächste Erinnerung: {when}": "Next reminder: {when}", "Erledigt. Nächste Erinnerung: {when}": "Done. Next reminder: {when}", "Funktionsumfang": "Feature set", "Einfach": "Simple", "Erweitert zeigt zusätzliche Funktionen in den Menüs, etwa die Suche in einer Notiz und die Pfeile für Unterpunkte in Checklisten.": "Advanced shows extra functions in the menus, such as searching within a note and the arrows for sub-items in checklists.", "In Notiz suchen": "Find in note", "{n} Treffer": "{n} matches", "1 Treffer": "1 match", "Vorheriger Treffer": "Previous match", "Nächster Treffer": "Next match", "Suche schließen": "Close search", "löscht automatisch": "deletes automatically", "Löscht nach Ablauf automatisch": "Deletes automatically after expiry", "Löscht nicht automatisch": "Does not delete automatically", "Ablauf am {date}": "Expires on {date}", "Entwurf verwerfen": "Discard draft", "Nur lesen": "Read only", "Wiederholen": "Redo", "Beim Antippen einer Notiz": "When tapping a note", "Lesen": "Read", "Änderungen verwerfen": "Discard changes", "Auto-Löschen ausschalten": "Turn off auto-delete", "Farbe ändern": "Change colour", "Ablauf ändern": "Change expiry", "Keine Erinnerung": "No reminder", "Erinnerung entfernt": "Reminder removed", "Tresor sperren": "Lock vault", "Wird beim Speichern gesperrt": "Will be locked when you save", "Wird beim Speichern entsperrt": "Will be unlocked when you save", "Sperre beim Speichern aufheben": "Remove lock when saving", "Übernehmen": "Apply", "Notiz": "Note", "Bearbeiten": "Edit", "Nicht gespeichert. Noch einmal zurück verwirft die Änderungen.": "Not saved. Going back once more discards the changes.", "Farbe · Anheften · Auto-Löschen": "Colour · Pin · Auto-delete", "Erinnerung · Ablauf · Farbe · Sperren": "Reminder · Expiry · Colour · Lock", "Notiz sperren (gegen Bearbeiten und Abhaken)": "Lock note (against editing and ticking off)", "Titel": "Title", "Mehr": "More", "Weniger": "Less", "Eigene Zeit": "Custom time", "Erinnern am": "Remind me on", "Datum und Uhrzeit": "Date and time", "Notiz ist gesperrt. Zum Lösen mit dem Stift entsperren.": "Note is locked. Unlock it with the pencil first to unpin.", "Notiz ist gesperrt. Zum Erledigen mit dem Stift entsperren.": "Note is locked. Unlock it with the pencil first to mark it done.", "Gesperrt": "Locked", "Gesperrt: mit dem Stift entsperren, dann bearbeiten": "Locked: unlock first to edit", "Notiz entsperren": "Unlock note", "Notiz sperren": "Lock note", "Notiz gesperrt": "Note locked", "Notiz entsperrt": "Note unlocked", "Notiz ist gesperrt. Zum Bearbeiten mit dem Stift entsperren.": "Note is locked. Unlock it with the pencil first to edit.", "Link kopieren": "Copy link", "Als erledigt markieren": "Mark as done", "Erledigt, tippen für wieder offen": "Done, tap to reopen", "Wieder offen": "Open again", "Bearbeitet": "Edited", "Angeheftet, dann zuletzt bearbeitet": "Pinned first, then last edited", "In 1 Stunde": "In 1 hour", "Heute Abend": "This evening", "Morgen früh": "Tomorrow morning", "Nächste Woche": "Next week", "Erinnerung schnell wählen": "Quick reminder choice", "Erledigt": "Done", "Behalten": "Keep", "Einstellungen": "Settings", "Sperren": "Lock", "Passwort": "Password", "Passwort wiederholen": "Repeat password", "Dieses Passwort lässt sich nicht zurücksetzen. Ohne Passwort sind die Notizen nicht lesbar. Gespeichert wird nur auf diesem Gerät. Mit einer Sicherung kannst du Notizen später auf ein anderes Gerät oder in eine neue Installation übertragen.": "This password cannot be reset. Without it your notes cannot be read. Everything is stored on this device only. With a backup you can later move your notes to another device or a new installation.", "Mit Fingerabdruck entsperren": "Unlock with fingerprint", "Sicherung wiederherstellen": "Restore backup", "Tresor löschen": "Delete vault", "Damit werden alle Notizen unwiderruflich gelöscht. Zurückholen kannst du sie nur mit einer Sicherungsdatei. Tippe zur Bestätigung das Wort": "This deletes all notes permanently. You can only get them back with a backup file. To confirm, type the word", "LÖSCHEN": "DELETE", "ein.": "", "Bestätigung": "Confirmation", "Tresor endgültig löschen": "Delete vault for good", "Abbrechen": "Cancel", "Wähle die Sicherungsdatei oder füge ihren Text ein. Dann gib das Passwort ein, das beim Erstellen der Sicherung galt.": "Choose the backup file or paste its text. Then enter the password that was valid when the backup was made.", "Sicherungsdatei": "Backup file", "oder Text der Sicherung": "or backup text", "Passwort der Sicherung": "Backup password", "Wiederherstellen": "Restore", "Dieser Browser erlaubt kein Speichern. Die Notizen bleiben nur, solange diese Seite offen ist.": "This browser does not allow saving. Your notes only last while this page stays open.", "Jetzt sichern": "Back up now", "In 3 Tagen erinnern": "Remind me in 3 days", "Seiten": "Pages", "Schreiben": "Write", "Notizen": "Notes", "Neue Notiz": "New note", "Text": "Text", "Was soll nur für kurze Zeit existieren?": "What should only exist for a short time?", "Checkliste": "Checklist", "Mit #Stichwort versiehst du Notizen mit Etiketten.": "Add #keywords to give notes labels.", "Ablauf nach": "Expires after", "Ablaufzeit": "Expiry time", "Datum": "Date", "Farbe": "Color", "Oben anheften": "Pin to top", "Nach Ablauf automatisch löschen": "Delete automatically after expiry", "Ohne Häkchen fragt Chiffre beim Ablauf nach. Mit Häkchen wird die Notiz beim nächsten Öffnen der App ohne Nachfrage gelöscht.": "Without the tick, Chiffre asks when a note expires. With the tick, the note is deleted without asking the next time you open the app.", "Verschlüsselt speichern": "Save encrypted", "Notizen durchsuchen": "Search notes", "Suche leeren": "Clear search", "Etiketten": "Labels", "Abgelaufen": "Expired", "Was soll damit passieren?": "What should happen to them?", "Aktiv": "Active", "Angeheftet, dann bald ablaufend": "Pinned first, then expiring soonest", "Schließen": "Close", "Darstellung": "Appearance", "System": "System", "Hell": "Light", "Dunkel": "Dark", "Ansicht der Notizen": "Note layout", "Liste": "List", "Kacheln": "Tiles", "Sortieren nach": "Sort by", "Ablauf": "Expiry", "Neueste": "Newest", "Beim Öffnen zeigen": "Show on opening", "Farben": "Colors", "Hintergrundbild": "Wallpaper", "Chiffre-Grün": "Chiffre green", "Fingerabdruck": "Fingerprint", "Passwort zur Bestätigung": "Password to confirm", "Fingerabdruck einrichten": "Set up fingerprint", "Fingerabdruck ausschalten": "Turn off fingerprint", "Passwort trotzdem abfragen": "Ask for the password anyway", "Nie": "Never", "Jede Woche": "Every week", "Alle 2 Wochen": "Every 2 weeks", "Alle 4 Wochen": "Every 4 weeks", "Sicherheit": "Security", "Automatisch sperren": "Lock automatically", "Sofort beim Verlassen": "Immediately when leaving", "Nach 1 Minute": "After 1 minute", "Nach 5 Minuten": "After 5 minutes", "Tresor nach Fehlversuchen löschen": "Delete vault after failed attempts", "Aus": "Off", "Nach 5 falschen Passwörtern": "After 5 wrong passwords", "Nach 10 falschen Passwörtern": "After 10 wrong passwords", "Nach 20 falschen Passwörtern": "After 20 wrong passwords", "Einschalten": "Turn on", "Erinnerung": "Reminder", "Benachrichtigen, wenn eine Notiz abläuft": "Notify me when a note expires", "Vorwarnung vor dem automatischen Löschen": "Warning before automatic deletion", "1 Stunde vorher": "1 hour before", "6 Stunden vorher": "6 hours before", "12 Stunden vorher": "12 hours before", "1 Tag vorher": "1 day before", "Die Meldungen sind neutral: „Eine Notiz ist abgelaufen“ und, bei Notizen mit automatischem Löschen, „Eine Notiz wird bald gelöscht“. Der Text der Notiz steht nie darin.": "The messages are neutral: “A note has expired” and, for notes with automatic deletion, “A note will be deleted soon”. The note text is never included.", "Test in 1 Minute": "Test in 1 minute", "Sicherung": "Backup", "Die Sicherung ist so verschlüsselt wie dein Tresor und nur mit deinem Passwort lesbar. Sie enthält die Notizen zum Zeitpunkt des Exports, auch wenn sie später ablaufen. Lösche alte Sicherungen, wenn sie nicht mehr gebraucht werden.": "The backup is encrypted like your vault and can only be read with your password. It contains the notes as of the export, even if they expire later. Delete old backups when you no longer need them.", "Als Datei sichern": "Save as file", "Text kopieren": "Copy text", "Ans Sichern erinnern": "Remind me to back up", "Alle 3 Monate": "Every 3 months", "Notizen aus einer Sicherung hinzufügen. Vorhandene Notizen bleiben erhalten.": "Add notes from a backup. Existing notes are kept.", "Hinzufügen": "Add", "Sprache": "Language", "Titel (optional)": "Title (optional)", "Erweitert": "Advanced", "Löschen nach {n} Fehlversuchen": "Wipe after {n} failed attempts", "Aus einer Sicherung hinzufügen": "Add from a backup", "Vorhandene Notizen bleiben erhalten.": "Existing notes are kept.", "Aussehen": "Appearance", "Design": "Theme", "Farbschema": "Color scheme", "Notizenliste": "Note list", "Ansicht": "View", "Benachrichtigungen": "Notifications", "Meldungen bei Ablauf und Erinnerung gibt es nur in der Android-App. Hier erscheinen betroffene Notizen oben, sobald du Chiffre öffnest.": "Notifications for expiry and reminders only exist in the Android app. Here, affected notes appear at the top as soon as you open Chiffre.", "Anhängen": "Attach", "Was soll nur für kurze Zeit existieren? Mit #Stichwort ordnest du Notizen.": "What should only exist for a short time? Use #tag to organize notes.", "Aus: Chiffre fragt beim Ablauf nach. An: Die Notiz wird ohne Nachfrage gelöscht.": "Off: Chiffre asks when it expires. On: the note is deleted without asking.", "Erinnerung": "Reminder", "Diese Notizen warten auf dich": "These notes are waiting for you", "Erinnern am (Datum und Uhrzeit)": "Remind me on (date and time)", "Erinnerung: {when}": "Reminder: {when}", "Erinnert am {when}": "Reminder on {when}", "Erledigt": "Done", "+1 Std.": "+1 hr", "Erinnerung erledigt": "Reminder done", "Erinnerung neu gesetzt: {when}": "Reminder moved to {when}", "Die Erinnerung liegt in der Vergangenheit.": "The reminder is in the past.", "Gespeichert. Der Ablauf wurde hinter die Erinnerung gelegt.": "Saved. The expiry was moved to after the reminder.", "Erinnerung an eine Notiz": "Reminder for a note", "Ohne die Android-App steht die Notiz oben, sobald du Chiffre öffnest. Eine Meldung gibt es dort nicht.": "Without the Android app, the note appears at the top as soon as you open Chiffre. There is no notification.", "Chiffre meldet sich ohne Inhalt. Die Notiz steht dann oben, sobald du Chiffre öffnest.": "Chiffre notifies you without showing any content. The note then appears at the top when you open Chiffre.", "Meldungen sind aus. Einschalten unter Einstellungen > Erinnerung. Die Notiz steht trotzdem oben, sobald du Chiffre öffnest.": "Notifications are off. Turn them on under Settings > Reminder. The note still appears at the top when you open Chiffre.", "Noch keine Notiz": "No notes yet", "Schreib die erste und leg fest, wann sie verfällt.": "Write the first one and choose when it expires.", "Notiz schreiben": "Write a note", "Schriftgröße": "Text size", "Klein": "Small", "Normal": "Normal", "Groß": "Large", "Sehr groß": "Extra large", "Weitere Optionen": "More options", "Angeheftet": "Pinned", "Löscht automatisch": "Auto-delete", "Passwort anzeigen": "Show password", "Passwort verbergen": "Hide password", "Sperre": "Locking", "Das hat nicht geklappt. Bitte erneut versuchen.": "That did not work. Please try again.", "Zu kurz. Mindestens {n} Zeichen.": "Too short. At least {n} characters.", "Schwach: enthält ein sehr häufiges Muster.": "Weak: contains a very common pattern.", "Schwach. Länger und mit mehr Wörtern wird es besser.": "Weak. Longer and with more words is better.", "Mittel. Mehr Länge macht es deutlich sicherer.": "Fair. More length makes it much safer.", "Stark.": "Strong.", "Mindestens {n} Zeichen.": "At least {n} characters.", "Tipp: Am besten 5 bis 6 zufällige Wörter, mit Bindestrich verbunden. Das merkt man sich leicht und es ist sehr schwer zu erraten.": "Tip: ideally 5 to 6 random words joined with hyphens. Easy to remember and very hard to guess.", "Passwort ändern": "Change password", "Lege ein neues Passwort fest. Notizen und Bilder werden dabei neu verschlüsselt, das dauert einen Moment.": "Set a new password. Notes and images are re-encrypted, which takes a moment.", "Aktuelles Passwort": "Current password", "Neues Passwort": "New password", "Neues Passwort wiederholen": "Repeat new password", "Das aktuelle Passwort ist falsch.": "The current password is wrong.", "Bitte das aktuelle Passwort eingeben.": "Please enter the current password.", "Das neue Passwort ist gleich dem aktuellen.": "The new password is the same as the current one.", "Passwort geändert.": "Password changed.", "Passwort geändert": "Password changed", "Ältere Sicherungen gelten weiter nur mit dem alten Passwort. Lege jetzt eine neue Sicherung an.": "Older backups still only work with the old password. Create a new backup now.", "Der Fingerabdruck wurde ausgeschaltet. Richte ihn unter Fingerabdruck neu ein.": "Fingerprint unlock was switched off. Set it up again under Fingerprint.", "Zum Bearbeiten den Stift antippen": "Tap the pencil to edit", "Alle": "All", "Läuft bald ab": "Expiring soon", "In den nächsten 24 Stunden": "In the next 24 hours", "Bild": "Image", "Foto": "Photo", "Bild {n}": "Image {n}", "Bild entfernen": "Remove image", "Bild fehlt": "Image missing", "Vorheriges Bild": "Previous image", "Nächstes Bild": "Next image", "Dieses Bild kann nicht gelesen werden.": "This image cannot be read.", "Bilder werden hier nicht unterstützt.": "Images are not supported here.", "Höchstens {n} Bilder pro Notiz.": "At most {n} images per note.", "Insgesamt sind höchstens {n} Bilder möglich.": "At most {n} images in total.", "Die Sicherung ist zu groß. Entferne einige Bilder.": "The backup is too large. Remove some images.", "Text kopiert. Bilder sind nur in der Datei.": "Text copied. Images are only in the file.", "Zeichnen": "Draw", "Zeichnung": "Drawing", "Zeichnung bearbeiten": "Edit drawing", "Zeichnung entfernen": "Remove drawing", "Fertig": "Done", "Stiftfarbe": "Pen color", "Strichstärke": "Stroke width", "Tinte": "Ink", "Dünn": "Thin", "Mittel": "Medium", "Dick": "Thick", "Radierer": "Eraser", "Alles löschen": "Clear all", "Zeichenfläche": "Drawing area", "Nochmal tippen, um die Änderungen zu verwerfen.": "Tap again to discard the changes.", "Über Chiffre": "About Chiffre", "Entwickelt von": "Developed by", "Kontakt": "Contact", "Quellcode": "Source code", "Kopiert": "Copied", "Alles bleibt auf diesem Gerät. Chiffre sendet nichts ins Internet.": "Everything stays on this device. Chiffre sends nothing to the internet.", "Ohne Ablauf": "No expiry", "Ohne Ablauf gesetzt": "Set to no expiry", "z. B. Baumarkt": "e.g. Hardware store", "Rot": "Red", "Orange": "Orange", "Gelb": "Yellow", "Grün": "Green", "Blau": "Blue", "Violett": "Violet", "Keine Farbe": "No color", "1 Stunde": "1 hour", "6 Stunden": "6 hours", "1 Tag": "1 day", "1 Woche": "1 week", "1 Monat": "1 month", "3 Monate": "3 months", "Datum wählen": "Pick a date", "{n} Min.": "{n} min", "{n} Std.": "{n} h", "{n} Tag": "{n} day", "{n} Tagen": "{n} days", "seit {x} abgelaufen": "expired {x} ago", "wird in {x} gelöscht": "deleted in {x}", "läuft in {x} ab": "expires in {x}", "Rückgängig": "Undo", "Speichern fehlgeschlagen.": "Saving failed.", "Oben angeheftet": "Pinned to top", "Nicht mehr angeheftet": "Unpinned", "… und {n} weitere": "… and {n} more", "Angeheftet, zum Lösen tippen": "Pinned, tap to unpin", "Wirklich löschen": "Really delete", "Löschen": "Delete", "+7 Tage": "+7 days", "+30 Tage": "+30 days", "Notiz bearbeiten": "Edit note", "+1 Tag": "+1 day", "+1 Woche": "+1 week", "+1 Monat": "+1 month", "+3 Monate": "+3 months", "Farbe der Notiz": "Note color", "Ablauf neu setzen, gerechnet ab jetzt": "Reset expiry, counted from now", "Speichern": "Save", "Kopieren": "Copy", "Nichts zu kopieren.": "Nothing to copy.", "Kopiert. Die Zwischenablage wird in 30 Sekunden geleert.": "Copied. The clipboard is cleared in 30 seconds.", "Kopieren nicht möglich.": "Copying is not possible.", "Kopieren nicht erlaubt.": "Copying is not allowed.", "Kopiert. Chiffre versucht, die Zwischenablage in 30 Sekunden zu leeren.": "Copied. Chiffre tries to clear the clipboard in 30 seconds.", "1 Notiz wurde automatisch gelöscht": "1 note was deleted automatically", "{n} Notizen wurden automatisch gelöscht": "{n} notes were deleted automatically", "Angeheftet, dann neueste zuerst": "Pinned first, then newest first", "Angeheftet, dann nach Farbe": "Pinned first, then by color", "{n} aktiv": "{n} active", "Keine aktiven Treffer.": "No active matches.", "Keine Treffer.": "No matches.", "Keine aktiven Notizen.": "No active notes.", "Noch keine Notiz. Schreib oben die erste und leg fest, wann sie verfällt.": "No notes yet. Write the first one above and choose when it expires.", "Bitte ein Datum wählen.": "Please pick a date.", "Das Datum liegt in der Vergangenheit.": "The date is in the past.", "Verschlüsselt gespeichert": "Saved encrypted", "Verlängert bis {date}": "Extended until {date}", "Der Text darf nicht leer sein.": "The text must not be empty.", "Gespeichert": "Saved", "Gelöscht": "Deleted", "Wiederhergestellt": "Restored", "Deine letzte Sicherung war vor {x}. Geht das Handy verloren, sind ohne Sicherung alle Notizen weg.": "Your last backup was {x} ago. If your phone is lost, all notes are gone without a backup.", "Du hast noch keine Sicherung gespeichert. Geht das Handy verloren, sind ohne Sicherung alle Notizen weg.": "You have not saved a backup yet. If your phone is lost, all notes are gone without a backup.", "Letzte Sicherung: {date}.": "Last backup: {date}.", "Noch keine Sicherung gespeichert.": "No backup saved yet.", "Aus. Falsche Passwörter haben keine Folgen.": "Off. Wrong passwords have no consequences.", "Nach {n} falschen Passwörtern in Folge wird der Tresor auf diesem Gerät gelöscht. Ein richtiges Passwort setzt den Zähler zurück.": "After {n} wrong passwords in a row the vault on this device is deleted. A correct password resets the counter.", "Chiffre sperrt sich, sobald du die App verlässt. Das Auswählen einer Datei zählt nicht als Verlassen.": "Chiffre locks as soon as you leave the app. Picking a file does not count as leaving.", "Chiffre sperrt sich, wenn du die App {x} lang nicht benutzt. Bildschirm aus zählt mit.": "Chiffre locks when you have not used the app for {x}. Screen off counts too.", "1 Minute": "1 minute", "5 Minuten": "5 minutes", "Nach {n} falschen Passwörtern in Folge löscht Chiffre den Tresor unwiderruflich, auch den Fingerabdruck. Das trifft auch dich, wenn du dich vertippst. Danach hilft nur eine Sicherung. Möchtest du das?": "After {n} wrong passwords in a row Chiffre deletes the vault permanently, including the fingerprint. That applies to you too if you mistype. After that only a backup helps. Do you want this?", "Löschen nach Fehlversuchen ist an": "Deleting after failed attempts is on", "Sicherung erstellt": "Backup created", "Text kopiert": "Text copied", "Kopieren nicht erlaubt. Nutze die Datei.": "Copying is not allowed. Use the file.", "Die Datei ist zu groß.": "The file is too large.", "Bitte Datei wählen oder Text einfügen.": "Please choose a file or paste text.", "Das ist keine gültige Sicherung.": "This is not a valid backup.", "Falsches Passwort oder beschädigte Sicherung.": "Wrong password or damaged backup.", "1 Notiz hinzugefügt": "1 note added", "{n} Notizen hinzugefügt": "{n} notes added", "Das hat nicht geklappt.": "That did not work.", "Tresor entsperren": "Unlock vault", "Tresor einrichten": "Set up vault", "Gib dein Passwort ein. Die Notizen werden erst dann auf diesem Gerät entschlüsselt.": "Enter your password. Your notes are only decrypted on this device after that.", "Lege ein Passwort fest. Alle Notizen werden damit mit AES-256 verschlüsselt, bevor sie gespeichert werden.": "Choose a password. All notes are encrypted with it using AES-256 before they are saved.", "Entsperren": "Unlock", "Tresor anlegen": "Create vault", "Einen Moment …": "One moment …", "Mindestens 8 Zeichen.": "At least 8 characters.", "Die Passwörter stimmen nicht überein.": "The passwords do not match.", "Beispielnotiz: Diese Notiz verfällt in 7 Tagen. Dann fragt Chiffre, ob du sie verlängern oder löschen willst. Du kannst sie jederzeit löschen.": "Sample note: this note expires in 7 days. Then Chiffre asks whether you want to extend or delete it. You can delete it at any time.", "Das hat nicht geklappt. Dein Browser unterstützt die Verschlüsselung eventuell nicht.": "That did not work. Your browser may not support the encryption.", "Falsches Passwort.": "Wrong password.", "Zu viele falsche Passwörter. Der Tresor wurde gelöscht.": "Too many wrong passwords. The vault was deleted.", "Falsches Passwort. Noch 1 Versuch, dann wird der Tresor gelöscht.": "Wrong password. 1 attempt left, then the vault is deleted.", "Falsches Passwort. Noch {n} Versuche, dann wird der Tresor gelöscht.": "Wrong password. {n} attempts left, then the vault is deleted.", "Tresor gelöscht": "Vault deleted", "Benachrichtigungen sind nicht erlaubt. Erlaube sie in den Android-Einstellungen.": "Notifications are not allowed. Allow them in the Android settings.", "Test läuft. In etwa einer Minute kommt eine Benachrichtigung. Du kannst die App schließen.": "Test running. A notification arrives in about a minute. You can close the app.", "Die Erinnerung ist aus.": "The reminder is off.", "Benachrichtigungen sind in Android ausgeschaltet. Erlaube sie in den Android-Einstellungen.": "Notifications are turned off in Android. Allow them in the Android settings.", "Nächste Erinnerung: keine geplant.": "Next reminder: none planned.", "Nächste Erinnerung: {when} Uhr ({kind}). Geplant insgesamt: {count}.": "Next reminder: {when} ({kind}). Planned in total: {count}.", "Vorwarnung vor dem Löschen": "warning before deletion", "Android erlaubt keine genauen Alarme, Meldungen können sich um Stunden verspäten.": "Android does not allow exact alarms, so messages can be hours late.", "Zur Sicherheit bitte jetzt dein Passwort eingeben. Danach geht der Fingerabdruck wieder.": "For safety, please enter your password now. After that the fingerprint works again.", "Chiffre fragt nur nach dem Passwort, wenn du es selbst eintippst.": "Chiffre only asks for the password when you type it yourself.", "Nächste Passwortabfrage spätestens am {date}.": "Next password prompt at the latest on {date}.", "Die Fingerabdrücke auf dem Gerät haben sich geändert. Gib dein Passwort ein und richte den Fingerabdruck neu ein.": "The fingerprints on this device have changed. Enter your password and set up the fingerprint again.", "Der Fingerabdruck hat nicht geklappt. Nutze das Passwort.": "The fingerprint did not work. Use the password.", "Der Fingerabdruck ist nach zu vielen Fehlversuchen kurz gesperrt. Nutze das Passwort oder versuche es gleich noch einmal.": "The fingerprint is locked for a moment after too many failed attempts. Use the password or try again shortly.", "Richte zuerst in den Android-Einstellungen einen Fingerabdruck ein.": "First set up a fingerprint in the Android settings.", "Der Fingerabdruck entsperrt Chiffre. Das Passwort funktioniert weiterhin. Ändern sich die Fingerabdrücke auf dem Gerät, wird er automatisch abgeschaltet.": "The fingerprint unlocks Chiffre. The password still works. If the fingerprints on the device change, it is turned off automatically.", "Entsperre Chiffre zusätzlich mit deinem Fingerabdruck. Dafür merkt sich Android dein Passwort, geschützt durch den Fingerabdruck. Ohne Fingerabdruck ist es nicht lesbar.": "Also unlock Chiffre with your fingerprint. For that Android remembers your password, protected by the fingerprint. Without the fingerprint it cannot be read.", "Bitte das Passwort eingeben.": "Please enter the password.", "Fingerabdruck ist eingerichtet": "Fingerprint is set up", "Das gemerkte Passwort passt nicht mehr. Gib dein Passwort ein.": "The remembered password no longer fits. Enter your password.", "Farbe der neuen Notiz": "Color of the new note", "{n} ausgewählt": "{n} selected", "Auswahl beenden": "End selection", "Alle auswählen": "Select all", "Auswahl aufheben": "Clear selection", "Angeheftet ({n})": "Pinned ({n})", "Nicht mehr angeheftet ({n})": "Unpinned ({n})", "{n} Notizen gelöscht": "{n} notes deleted", "{n} gesperrte Notizen übersprungen": "{n} locked notes skipped", "Erledigte Punkte in Checklisten": "Done items in checklists", "Unten sammeln": "Collect at the bottom", "Stehen lassen": "Leave in place", "Punkt ausrücken": "Outdent item", "Punkt einrücken": "Indent item", "Punkt nach oben": "Move item up", "Punkt nach unten": "Move item down", "Erledigte nach unten sortieren": "Sort done items to the bottom", "Erledigte Punkte löschen": "Delete done items", "Erledigte nach unten sortiert": "Done items sorted to the bottom", "Erledigte Punkte gelöscht": "Done items deleted", "Nichts zu ändern.": "Nothing to change."};
+const EN = {"Sperre, Fingerabdruck, Passwort": "Lock, fingerprint, password", "Erinnerungen und Ablaufhinweise": "Reminders and expiry notices", "Exportieren und wiederherstellen": "Export and restore", "Hier ist alles verschlüsselt": "Everything here is encrypted", "Schreib eine Notiz und lege fest, wann sie verschwindet. Nur du kannst sie lesen.": "Write a note and choose when it disappears. Only you can read it.", "Erste Notiz schreiben": "Write your first note", "Zurück": "Back", "Weitere Sicherheitsoptionen": "More security options", "Wiederholung": "Repeat", "Täglich": "Daily", "Wöchentlich": "Weekly", "Monatlich": "Monthly", "täglich": "daily", "wöchentlich": "weekly", "monatlich": "monthly", "Nächste Erinnerung: {when}": "Next reminder: {when}", "Erledigt. Nächste Erinnerung: {when}": "Done. Next reminder: {when}", "Funktionsumfang": "Feature set", "Einfach": "Simple", "Erweitert zeigt zusätzliche Funktionen in den Menüs, etwa die Suche in einer Notiz und die Pfeile für Unterpunkte in Checklisten.": "Advanced shows extra functions in the menus, such as searching within a note and the arrows for sub-items in checklists.", "In Notiz suchen": "Find in note", "{n} Treffer": "{n} matches", "1 Treffer": "1 match", "Vorheriger Treffer": "Previous match", "Nächster Treffer": "Next match", "Suche schließen": "Close search", "löscht automatisch": "deletes automatically", "Löscht nach Ablauf automatisch": "Deletes automatically after expiry", "Löscht nicht automatisch": "Does not delete automatically", "Ablauf am {date}": "Expires on {date}", "Entwurf verwerfen": "Discard draft", "Nur lesen": "Read only", "Wiederholen": "Redo", "Beim Antippen einer Notiz": "When tapping a note", "Lesen": "Read", "Änderungen verwerfen": "Discard changes", "Auto-Löschen ausschalten": "Turn off auto-delete", "Farbe ändern": "Change colour", "Ablauf ändern": "Change expiry", "Keine Erinnerung": "No reminder", "Erinnerung entfernt": "Reminder removed", "Tresor sperren": "Lock vault", "Wird beim Speichern gesperrt": "Will be locked when you save", "Wird beim Speichern entsperrt": "Will be unlocked when you save", "Sperre beim Speichern aufheben": "Remove lock when saving", "Übernehmen": "Apply", "Notiz": "Note", "Bearbeiten": "Edit", "Nicht gespeichert. Noch einmal zurück verwirft die Änderungen.": "Not saved. Going back once more discards the changes.", "Farbe · Anheften · Auto-Löschen": "Colour · Pin · Auto-delete", "Erinnerung · Ablauf · Farbe · Sperren": "Reminder · Expiry · Colour · Lock", "Notiz sperren (gegen Bearbeiten und Abhaken)": "Lock note (against editing and ticking off)", "Titel": "Title", "Mehr": "More", "Weniger": "Less", "Eigene Zeit": "Custom time", "Erinnern am": "Remind me on", "Datum und Uhrzeit": "Date and time", "Notiz ist gesperrt. Zum Lösen mit dem Stift entsperren.": "Note is locked. Unlock it with the pencil first to unpin.", "Notiz ist gesperrt. Zum Erledigen mit dem Stift entsperren.": "Note is locked. Unlock it with the pencil first to mark it done.", "Gesperrt": "Locked", "Gesperrt: mit dem Stift entsperren, dann bearbeiten": "Locked: unlock first to edit", "Notiz entsperren": "Unlock note", "Notiz sperren": "Lock note", "Notiz gesperrt": "Note locked", "Notiz entsperrt": "Note unlocked", "Notiz ist gesperrt. Zum Bearbeiten mit dem Stift entsperren.": "Note is locked. Unlock it with the pencil first to edit.", "Link kopieren": "Copy link", "Als erledigt markieren": "Mark as done", "Erledigt, tippen für wieder offen": "Done, tap to reopen", "Wieder offen": "Open again", "Bearbeitet": "Edited", "Angeheftet, dann zuletzt bearbeitet": "Pinned first, then last edited", "In 1 Stunde": "In 1 hour", "Heute Abend": "This evening", "Morgen früh": "Tomorrow morning", "Nächste Woche": "Next week", "Erinnerung schnell wählen": "Quick reminder choice", "Erledigt": "Done", "Behalten": "Keep", "Einstellungen": "Settings", "Sperren": "Lock", "Passwort": "Password", "Passwort wiederholen": "Repeat password", "Dieses Passwort lässt sich nicht zurücksetzen. Ohne Passwort sind die Notizen nicht lesbar. Gespeichert wird nur auf diesem Gerät. Mit einer Sicherung kannst du Notizen später auf ein anderes Gerät oder in eine neue Installation übertragen.": "This password cannot be reset. Without it your notes cannot be read. Everything is stored on this device only. With a backup you can later move your notes to another device or a new installation.", "Mit Fingerabdruck entsperren": "Unlock with fingerprint", "Sicherung wiederherstellen": "Restore backup", "Tresor löschen": "Delete vault", "Damit werden alle Notizen unwiderruflich gelöscht. Zurückholen kannst du sie nur mit einer Sicherungsdatei. Tippe zur Bestätigung das Wort": "This deletes all notes permanently. You can only get them back with a backup file. To confirm, type the word", "LÖSCHEN": "DELETE", "ein.": "", "Bestätigung": "Confirmation", "Tresor endgültig löschen": "Delete vault for good", "Abbrechen": "Cancel", "Wähle die Sicherungsdatei oder füge ihren Text ein. Dann gib das Passwort ein, das beim Erstellen der Sicherung galt.": "Choose the backup file or paste its text. Then enter the password that was valid when the backup was made.", "Sicherungsdatei": "Backup file", "oder Text der Sicherung": "or backup text", "Passwort der Sicherung": "Backup password", "Wiederherstellen": "Restore", "Dieser Browser erlaubt kein Speichern. Die Notizen bleiben nur, solange diese Seite offen ist.": "This browser does not allow saving. Your notes only last while this page stays open.", "Jetzt sichern": "Back up now", "In 3 Tagen erinnern": "Remind me in 3 days", "Seiten": "Pages", "Schreiben": "Write", "Notizen": "Notes", "Neue Notiz": "New note", "Text": "Text", "Was soll nur für kurze Zeit existieren?": "What should only exist for a short time?", "Checkliste": "Checklist", "Mit #Stichwort versiehst du Notizen mit Etiketten.": "Add #keywords to give notes labels.", "Ablauf nach": "Expires after", "Ablaufzeit": "Expiry time", "Datum": "Date", "Farbe": "Color", "Oben anheften": "Pin to top", "Nach Ablauf automatisch löschen": "Delete automatically after expiry", "Ohne Häkchen fragt Chiffre beim Ablauf nach. Mit Häkchen wird die Notiz beim nächsten Öffnen der App ohne Nachfrage gelöscht.": "Without the tick, Chiffre asks when a note expires. With the tick, the note is deleted without asking the next time you open the app.", "Verschlüsselt speichern": "Save encrypted", "Notizen durchsuchen": "Search notes", "Suche leeren": "Clear search", "Etiketten": "Labels", "Abgelaufen": "Expired", "Was soll damit passieren?": "What should happen to them?", "Aktiv": "Active", "Angeheftet, dann bald ablaufend": "Pinned first, then expiring soonest", "Schließen": "Close", "Darstellung": "Appearance", "System": "System", "Hell": "Light", "Dunkel": "Dark", "Ansicht der Notizen": "Note layout", "Liste": "List", "Kacheln": "Tiles", "Sortieren nach": "Sort by", "Ablauf": "Expiry", "Neueste": "Newest", "Beim Öffnen zeigen": "Show on opening", "Farben": "Colors", "Hintergrundbild": "Wallpaper", "Chiffre-Grün": "Chiffre green", "Fingerabdruck": "Fingerprint", "Passwort zur Bestätigung": "Password to confirm", "Fingerabdruck einrichten": "Set up fingerprint", "Fingerabdruck ausschalten": "Turn off fingerprint", "Passwort trotzdem abfragen": "Ask for the password anyway", "Nie": "Never", "Jede Woche": "Every week", "Alle 2 Wochen": "Every 2 weeks", "Alle 4 Wochen": "Every 4 weeks", "Sicherheit": "Security", "Automatisch sperren": "Lock automatically", "Sofort beim Verlassen": "Immediately when leaving", "Nach 1 Minute": "After 1 minute", "Nach 5 Minuten": "After 5 minutes", "Tresor nach Fehlversuchen löschen": "Delete vault after failed attempts", "Aus": "Off", "Nach 5 falschen Passwörtern": "After 5 wrong passwords", "Nach 10 falschen Passwörtern": "After 10 wrong passwords", "Nach 20 falschen Passwörtern": "After 20 wrong passwords", "Einschalten": "Turn on", "Erinnerung": "Reminder", "Benachrichtigen, wenn eine Notiz abläuft": "Notify me when a note expires", "Vorwarnung vor dem automatischen Löschen": "Warning before automatic deletion", "1 Stunde vorher": "1 hour before", "6 Stunden vorher": "6 hours before", "12 Stunden vorher": "12 hours before", "1 Tag vorher": "1 day before", "Die Meldungen sind neutral: „Eine Notiz ist abgelaufen“ und, bei Notizen mit automatischem Löschen, „Eine Notiz wird bald gelöscht“. Der Text der Notiz steht nie darin.": "The messages are neutral: “A note has expired” and, for notes with automatic deletion, “A note will be deleted soon”. The note text is never included.", "Test in 1 Minute": "Test in 1 minute", "Sicherung": "Backup", "Die Sicherung ist so verschlüsselt wie dein Tresor und nur mit deinem Passwort lesbar. Sie enthält die Notizen zum Zeitpunkt des Exports, auch wenn sie später ablaufen. Lösche alte Sicherungen, wenn sie nicht mehr gebraucht werden.": "The backup is encrypted like your vault and can only be read with your password. It contains the notes as of the export, even if they expire later. Delete old backups when you no longer need them.", "Als Datei sichern": "Save as file", "Text kopieren": "Copy text", "Ans Sichern erinnern": "Remind me to back up", "Alle 3 Monate": "Every 3 months", "Notizen aus einer Sicherung hinzufügen. Vorhandene Notizen bleiben erhalten.": "Add notes from a backup. Existing notes are kept.", "Hinzufügen": "Add", "Sprache": "Language", "Titel (optional)": "Title (optional)", "Erweitert": "Advanced", "Löschen nach {n} Fehlversuchen": "Wipe after {n} failed attempts", "Aus einer Sicherung hinzufügen": "Add from a backup", "Vorhandene Notizen bleiben erhalten.": "Existing notes are kept.", "Aussehen": "Appearance", "Design": "Theme", "Farbschema": "Color scheme", "Notizenliste": "Note list", "Ansicht": "View", "Benachrichtigungen": "Notifications", "Meldungen bei Ablauf und Erinnerung gibt es nur in der Android-App. Hier erscheinen betroffene Notizen oben, sobald du Chiffre öffnest.": "Notifications for expiry and reminders only exist in the Android app. Here, affected notes appear at the top as soon as you open Chiffre.", "Anhängen": "Attach", "Was soll nur für kurze Zeit existieren? Mit #Stichwort ordnest du Notizen.": "What should only exist for a short time? Use #tag to organize notes.", "Aus: Chiffre fragt beim Ablauf nach. An: Die Notiz wird ohne Nachfrage gelöscht.": "Off: Chiffre asks when it expires. On: the note is deleted without asking.", "Erinnerung": "Reminder", "Diese Notizen warten auf dich": "These notes are waiting for you", "Erinnern am (Datum und Uhrzeit)": "Remind me on (date and time)", "Erinnerung: {when}": "Reminder: {when}", "Erinnert am {when}": "Reminder on {when}", "Erledigt": "Done", "+1 Std.": "+1 hr", "Erinnerung erledigt": "Reminder done", "Erinnerung neu gesetzt: {when}": "Reminder moved to {when}", "Die Erinnerung liegt in der Vergangenheit.": "The reminder is in the past.", "Gespeichert. Der Ablauf wurde hinter die Erinnerung gelegt.": "Saved. The expiry was moved to after the reminder.", "Erinnerung an eine Notiz": "Reminder for a note", "Ohne die Android-App steht die Notiz oben, sobald du Chiffre öffnest. Eine Meldung gibt es dort nicht.": "Without the Android app, the note appears at the top as soon as you open Chiffre. There is no notification.", "Chiffre meldet sich ohne Inhalt. Die Notiz steht dann oben, sobald du Chiffre öffnest.": "Chiffre notifies you without showing any content. The note then appears at the top when you open Chiffre.", "Meldungen sind aus. Einschalten unter Einstellungen > Erinnerung. Die Notiz steht trotzdem oben, sobald du Chiffre öffnest.": "Notifications are off. Turn them on under Settings > Reminder. The note still appears at the top when you open Chiffre.", "Noch keine Notiz": "No notes yet", "Schreib die erste und leg fest, wann sie verfällt.": "Write the first one and choose when it expires.", "Notiz schreiben": "Write a note", "Schriftgröße": "Text size", "Klein": "Small", "Normal": "Normal", "Groß": "Large", "Sehr groß": "Extra large", "Weitere Optionen": "More options", "Angeheftet": "Pinned", "Löscht automatisch": "Auto-delete", "Passwort anzeigen": "Show password", "Passwort verbergen": "Hide password", "Sperre": "Locking", "Das hat nicht geklappt. Bitte erneut versuchen.": "That did not work. Please try again.", "Zu kurz. Mindestens {n} Zeichen.": "Too short. At least {n} characters.", "Schwach: enthält ein sehr häufiges Muster.": "Weak: contains a very common pattern.", "Schwach. Länger und mit mehr Wörtern wird es besser.": "Weak. Longer and with more words is better.", "Mittel. Mehr Länge macht es deutlich sicherer.": "Fair. More length makes it much safer.", "Stark.": "Strong.", "Mindestens {n} Zeichen.": "At least {n} characters.", "Tipp: Am besten 5 bis 6 zufällige Wörter, mit Bindestrich verbunden. Das merkt man sich leicht und es ist sehr schwer zu erraten.": "Tip: ideally 5 to 6 random words joined with hyphens. Easy to remember and very hard to guess.", "Passwort ändern": "Change password", "Lege ein neues Passwort fest. Notizen und Bilder werden dabei neu verschlüsselt, das dauert einen Moment.": "Set a new password. Notes and images are re-encrypted, which takes a moment.", "Aktuelles Passwort": "Current password", "Neues Passwort": "New password", "Neues Passwort wiederholen": "Repeat new password", "Das aktuelle Passwort ist falsch.": "The current password is wrong.", "Bitte das aktuelle Passwort eingeben.": "Please enter the current password.", "Das neue Passwort ist gleich dem aktuellen.": "The new password is the same as the current one.", "Passwort geändert.": "Password changed.", "Passwort geändert": "Password changed", "Ältere Sicherungen gelten weiter nur mit dem alten Passwort. Lege jetzt eine neue Sicherung an.": "Older backups still only work with the old password. Create a new backup now.", "Der Fingerabdruck wurde ausgeschaltet. Richte ihn unter Fingerabdruck neu ein.": "Fingerprint unlock was switched off. Set it up again under Fingerprint.", "Zum Bearbeiten den Stift antippen": "Tap the pencil to edit", "Alle": "All", "Läuft bald ab": "Expiring soon", "In den nächsten 24 Stunden": "In the next 24 hours", "Bild": "Image", "Foto": "Photo", "Bild {n}": "Image {n}", "Bild entfernen": "Remove image", "Bild fehlt": "Image missing", "Vorheriges Bild": "Previous image", "Nächstes Bild": "Next image", "Dieses Bild kann nicht gelesen werden.": "This image cannot be read.", "Bilder werden hier nicht unterstützt.": "Images are not supported here.", "Höchstens {n} Bilder pro Notiz.": "At most {n} images per note.", "Insgesamt sind höchstens {n} Bilder möglich.": "At most {n} images in total.", "Die Sicherung ist zu groß. Entferne einige Bilder.": "The backup is too large. Remove some images.", "Text kopiert. Bilder sind nur in der Datei.": "Text copied. Images are only in the file.", "Zeichnen": "Draw", "Zeichnung": "Drawing", "Zeichnung bearbeiten": "Edit drawing", "Zeichnung entfernen": "Remove drawing", "Fertig": "Done", "Stiftfarbe": "Pen color", "Strichstärke": "Stroke width", "Tinte": "Ink", "Dünn": "Thin", "Mittel": "Medium", "Dick": "Thick", "Radierer": "Eraser", "Alles löschen": "Clear all", "Zeichenfläche": "Drawing area", "Nochmal tippen, um die Änderungen zu verwerfen.": "Tap again to discard the changes.", "Über Chiffre": "About Chiffre", "Entwickelt von": "Developed by", "Kontakt": "Contact", "Quellcode": "Source code", "Kopiert": "Copied", "Alles bleibt auf diesem Gerät. Chiffre sendet nichts ins Internet.": "Everything stays on this device. Chiffre sends nothing to the internet.", "Ohne Ablauf": "No expiry", "Ohne Ablauf gesetzt": "Set to no expiry", "z. B. Baumarkt": "e.g. Hardware store", "Rot": "Red", "Orange": "Orange", "Gelb": "Yellow", "Grün": "Green", "Blau": "Blue", "Violett": "Violet", "Keine Farbe": "No color", "1 Stunde": "1 hour", "6 Stunden": "6 hours", "1 Tag": "1 day", "1 Woche": "1 week", "1 Monat": "1 month", "3 Monate": "3 months", "Datum wählen": "Pick a date", "{n} Min.": "{n} min", "{n} Std.": "{n} h", "{n} Tag": "{n} day", "{n} Tagen": "{n} days", "seit {x} abgelaufen": "expired {x} ago", "wird in {x} gelöscht": "deleted in {x}", "läuft in {x} ab": "expires in {x}", "Rückgängig": "Undo", "Speichern fehlgeschlagen.": "Saving failed.", "Oben angeheftet": "Pinned to top", "Nicht mehr angeheftet": "Unpinned", "… und {n} weitere": "… and {n} more", "Angeheftet, zum Lösen tippen": "Pinned, tap to unpin", "Wirklich löschen": "Really delete", "Löschen": "Delete", "+7 Tage": "+7 days", "+30 Tage": "+30 days", "Notiz bearbeiten": "Edit note", "+1 Tag": "+1 day", "+1 Woche": "+1 week", "+1 Monat": "+1 month", "+3 Monate": "+3 months", "Farbe der Notiz": "Note color", "Ablauf neu setzen, gerechnet ab jetzt": "Reset expiry, counted from now", "Speichern": "Save", "Kopieren": "Copy", "Nichts zu kopieren.": "Nothing to copy.", "Kopiert. Die Zwischenablage wird in 30 Sekunden geleert.": "Copied. The clipboard is cleared in 30 seconds.", "Kopieren nicht möglich.": "Copying is not possible.", "Kopieren nicht erlaubt.": "Copying is not allowed.", "Kopiert. Chiffre versucht, die Zwischenablage in 30 Sekunden zu leeren.": "Copied. Chiffre tries to clear the clipboard in 30 seconds.", "1 Notiz wurde automatisch gelöscht": "1 note was deleted automatically", "{n} Notizen wurden automatisch gelöscht": "{n} notes were deleted automatically", "Angeheftet, dann neueste zuerst": "Pinned first, then newest first", "Angeheftet, dann nach Farbe": "Pinned first, then by color", "{n} aktiv": "{n} active", "Keine aktiven Treffer.": "No active matches.", "Keine Treffer.": "No matches.", "Keine aktiven Notizen.": "No active notes.", "Noch keine Notiz. Schreib oben die erste und leg fest, wann sie verfällt.": "No notes yet. Write the first one above and choose when it expires.", "Bitte ein Datum wählen.": "Please pick a date.", "Das Datum liegt in der Vergangenheit.": "The date is in the past.", "Verschlüsselt gespeichert": "Saved encrypted", "Verlängert bis {date}": "Extended until {date}", "Der Text darf nicht leer sein.": "The text must not be empty.", "Gespeichert": "Saved", "Gelöscht": "Deleted", "Wiederhergestellt": "Restored", "Deine letzte Sicherung war vor {x}. Geht das Handy verloren, sind ohne Sicherung alle Notizen weg.": "Your last backup was {x} ago. If your phone is lost, all notes are gone without a backup.", "Du hast noch keine Sicherung gespeichert. Geht das Handy verloren, sind ohne Sicherung alle Notizen weg.": "You have not saved a backup yet. If your phone is lost, all notes are gone without a backup.", "Letzte Sicherung: {date}.": "Last backup: {date}.", "Noch keine Sicherung gespeichert.": "No backup saved yet.", "Aus. Falsche Passwörter haben keine Folgen.": "Off. Wrong passwords have no consequences.", "Nach {n} falschen Passwörtern in Folge wird der Tresor auf diesem Gerät gelöscht. Ein richtiges Passwort setzt den Zähler zurück.": "After {n} wrong passwords in a row the vault on this device is deleted. A correct password resets the counter.", "Chiffre sperrt sich, sobald du die App verlässt. Das Auswählen einer Datei zählt nicht als Verlassen.": "Chiffre locks as soon as you leave the app. Picking a file does not count as leaving.", "Chiffre sperrt sich, wenn du die App {x} lang nicht benutzt. Bildschirm aus zählt mit.": "Chiffre locks when you have not used the app for {x}. Screen off counts too.", "1 Minute": "1 minute", "5 Minuten": "5 minutes", "Nach {n} falschen Passwörtern in Folge löscht Chiffre den Tresor unwiderruflich, auch den Fingerabdruck. Das trifft auch dich, wenn du dich vertippst. Danach hilft nur eine Sicherung. Möchtest du das?": "After {n} wrong passwords in a row Chiffre deletes the vault permanently, including the fingerprint. That applies to you too if you mistype. After that only a backup helps. Do you want this?", "Löschen nach Fehlversuchen ist an": "Deleting after failed attempts is on", "Sicherung erstellt": "Backup created", "Text kopiert": "Text copied", "Kopieren nicht erlaubt. Nutze die Datei.": "Copying is not allowed. Use the file.", "Die Datei ist zu groß.": "The file is too large.", "Bitte Datei wählen oder Text einfügen.": "Please choose a file or paste text.", "Das ist keine gültige Sicherung.": "This is not a valid backup.", "Falsches Passwort oder beschädigte Sicherung.": "Wrong password or damaged backup.", "1 Notiz hinzugefügt": "1 note added", "{n} Notizen hinzugefügt": "{n} notes added", "Das hat nicht geklappt.": "That did not work.", "Tresor entsperren": "Unlock vault", "Tresor einrichten": "Set up vault", "Gib dein Passwort ein. Die Notizen werden erst dann auf diesem Gerät entschlüsselt.": "Enter your password. Your notes are only decrypted on this device after that.", "Lege ein Passwort fest. Alle Notizen werden damit mit AES-256 verschlüsselt, bevor sie gespeichert werden.": "Choose a password. All notes are encrypted with it using AES-256 before they are saved.", "Entsperren": "Unlock", "Tresor anlegen": "Create vault", "Einen Moment …": "One moment …", "Mindestens 8 Zeichen.": "At least 8 characters.", "Die Passwörter stimmen nicht überein.": "The passwords do not match.", "Beispielnotiz: Diese Notiz verfällt in 7 Tagen. Dann fragt Chiffre, ob du sie verlängern oder löschen willst. Du kannst sie jederzeit löschen.": "Sample note: this note expires in 7 days. Then Chiffre asks whether you want to extend or delete it. You can delete it at any time.", "Das hat nicht geklappt. Dein Browser unterstützt die Verschlüsselung eventuell nicht.": "That did not work. Your browser may not support the encryption.", "Falsches Passwort.": "Wrong password.", "Zu viele falsche Passwörter. Der Tresor wurde gelöscht.": "Too many wrong passwords. The vault was deleted.", "Falsches Passwort. Noch 1 Versuch, dann wird der Tresor gelöscht.": "Wrong password. 1 attempt left, then the vault is deleted.", "Falsches Passwort. Noch {n} Versuche, dann wird der Tresor gelöscht.": "Wrong password. {n} attempts left, then the vault is deleted.", "Tresor gelöscht": "Vault deleted", "Benachrichtigungen sind nicht erlaubt. Erlaube sie in den Android-Einstellungen.": "Notifications are not allowed. Allow them in the Android settings.", "Test läuft. In etwa einer Minute kommt eine Benachrichtigung. Du kannst die App schließen.": "Test running. A notification arrives in about a minute. You can close the app.", "Die Erinnerung ist aus.": "The reminder is off.", "Benachrichtigungen sind in Android ausgeschaltet. Erlaube sie in den Android-Einstellungen.": "Notifications are turned off in Android. Allow them in the Android settings.", "Nächste Erinnerung: keine geplant.": "Next reminder: none planned.", "Nächste Erinnerung: {when} Uhr ({kind}). Geplant insgesamt: {count}.": "Next reminder: {when} ({kind}). Planned in total: {count}.", "Vorwarnung vor dem Löschen": "warning before deletion", "Android erlaubt keine genauen Alarme, Meldungen können sich um Stunden verspäten.": "Android does not allow exact alarms, so messages can be hours late.", "Zur Sicherheit bitte jetzt dein Passwort eingeben. Danach geht der Fingerabdruck wieder.": "For safety, please enter your password now. After that the fingerprint works again.", "Chiffre fragt nur nach dem Passwort, wenn du es selbst eintippst.": "Chiffre only asks for the password when you type it yourself.", "Nächste Passwortabfrage spätestens am {date}.": "Next password prompt at the latest on {date}.", "Die Fingerabdrücke auf dem Gerät haben sich geändert. Gib dein Passwort ein und richte den Fingerabdruck neu ein.": "The fingerprints on this device have changed. Enter your password and set up the fingerprint again.", "Der Fingerabdruck hat nicht geklappt. Nutze das Passwort.": "The fingerprint did not work. Use the password.", "Der Fingerabdruck ist nach zu vielen Fehlversuchen kurz gesperrt. Nutze das Passwort oder versuche es gleich noch einmal.": "The fingerprint is locked for a moment after too many failed attempts. Use the password or try again shortly.", "Richte zuerst in den Android-Einstellungen einen Fingerabdruck ein.": "First set up a fingerprint in the Android settings.", "Der Fingerabdruck entsperrt Chiffre. Das Passwort funktioniert weiterhin. Ändern sich die Fingerabdrücke auf dem Gerät, wird er automatisch abgeschaltet.": "The fingerprint unlocks Chiffre. The password still works. If the fingerprints on the device change, it is turned off automatically.", "Entsperre Chiffre zusätzlich mit deinem Fingerabdruck. Dafür merkt sich Android dein Passwort, geschützt durch den Fingerabdruck. Ohne Fingerabdruck ist es nicht lesbar.": "Also unlock Chiffre with your fingerprint. For that Android remembers your password, protected by the fingerprint. Without the fingerprint it cannot be read.", "Bitte das Passwort eingeben.": "Please enter the password.", "Fingerabdruck ist eingerichtet": "Fingerprint is set up", "Das gemerkte Passwort passt nicht mehr. Gib dein Passwort ein.": "The remembered password no longer fits. Enter your password.", "Farbe der neuen Notiz": "Color of the new note", "{n} ausgewählt": "{n} selected", "Auswahl beenden": "End selection", "Alle auswählen": "Select all", "Auswahl aufheben": "Clear selection", "Angeheftet ({n})": "Pinned ({n})", "Nicht mehr angeheftet ({n})": "Unpinned ({n})", "{n} Notizen gelöscht": "{n} notes deleted", "{n} gesperrte Notizen übersprungen": "{n} locked notes skipped", "Erledigte Punkte in Checklisten": "Done items in checklists", "Unten sammeln": "Collect at the bottom", "Stehen lassen": "Leave in place", "Punkt ausrücken": "Outdent item", "Punkt einrücken": "Indent item", "Punkt nach oben": "Move item up", "Punkt nach unten": "Move item down", "Erledigte nach unten sortieren": "Sort done items to the bottom", "Erledigte Punkte löschen": "Delete done items", "Erledigte nach unten sortiert": "Done items sorted to the bottom", "Erledigte Punkte gelöscht": "Done items deleted", "Nichts zu ändern.": "Nothing to change."};
 function langPref() { try { const v = localStorage.getItem("chiffre.lang"); if (v === "de" || v === "en") return v; } catch (e) {} return "system"; }
 function resolveLang() {
   const p = langPref();
@@ -1500,18 +1529,32 @@ async function snoozeRemind(id, ms) {
   render();
   toast(tr("Erinnerung neu gesetzt: {when}", { when: remindText(n.remind) }));
 }
-function emptyFirst() {
+function logoSvg() {
   const ns = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
-  const p = document.createElementNS(ns, "path");
-  p.setAttribute("d", "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z");
-  svg.append(p);
+  svg.setAttribute("viewBox", "0 0 100 100"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("class", "logo");
+  const N = 13, R = 34;
+  for (let i = 0; i < N; i++) {
+    const a0 = (-90 + i * (360 / N)) * Math.PI / 180, a1 = a0 + 17 * Math.PI / 180;
+    const d = "M" + (50 + R * Math.cos(a0)).toFixed(2) + " " + (50 + R * Math.sin(a0)).toFixed(2) +
+      " A" + R + " " + R + " 0 0 1 " + (50 + R * Math.cos(a1)).toFixed(2) + " " + (50 + R * Math.sin(a1)).toFixed(2);
+    const arc = document.createElementNS(ns, "path");
+    arc.setAttribute("d", d); arc.setAttribute("class", "seg");
+    arc.setAttribute("opacity", (1 - i * 0.065).toFixed(2));
+    svg.append(arc);
+  }
+  const dot = document.createElementNS(ns, "circle");
+  dot.setAttribute("cx", "50"); dot.setAttribute("cy", "50"); dot.setAttribute("r", "5"); dot.setAttribute("class", "mid");
+  svg.append(dot);
+  return svg;
+}
+function emptyFirst() {
   return h("li", { class: "empty first" },
-    h("div", { class: "ico" }, svg),
-    h("strong", {}, tr("Noch keine Notiz")),
-    h("span", {}, tr("Schreib die erste und leg fest, wann sie verfällt.")),
-    h("button", { class: "btn primary", type: "button", id: "emptyWrite", onclick: () => showPage("write") }, tr("Notiz schreiben")));
+    logoSvg(),
+    h("b", { class: "wm" }, "Chiffre"),
+    h("strong", {}, tr("Hier ist alles verschlüsselt")),
+    h("span", {}, tr("Schreib eine Notiz und lege fest, wann sie verschwindet. Nur du kannst sie lesen.")),
+    h("button", { class: "btn primary", type: "button", id: "emptyWrite", onclick: () => showPage("write") }, tr("Erste Notiz schreiben")));
 }
 function pinIcon() {
   const ns = "http://www.w3.org/2000/svg";
@@ -1896,6 +1939,10 @@ function backIcon() {
   return svg;
 }
 const IC = {
+  shield: "M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z",
+  viewlist: "M3 14h4v-4H3v4zm0 5h4v-4H3v4zM3 9h4V5H3v4zm5 5h13v-4H8v4zm0 5h13v-4H8v4zM8 5v4h13V5H8z",
+  archive: "M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z",
+  info: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z",
   more: "M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z",
   edit: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z",
   copy: "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z",
@@ -3335,12 +3382,24 @@ function initWriter() {
   $("pageWrite").addEventListener("mousedown", keep);
 }
 // Seitenwechsel Schreiben <-> Notizen: beide Seiten gleiten zusammen (die alte hinaus, die neue herein)
-let glideAnims = null, glided = false, resizedWhileGliding = false, kbCheckFn = null, glidePin = null;   // glided: die Tastatur und das Vermessen der Liste warten, bis die Seiten angekommen sind
+let glideAnims = null, glided = false, resizedWhileGliding = false, kbCheckFn = null, glidePin = null, kbFullH = 0, pinTimer = 0;   // glided: die Tastatur und das Vermessen der Liste warten, bis die Seiten angekommen sind
 function unpinOpenNote() {
   if (!glidePin) return;
   const { li, pn } = glidePin; glidePin = null;
   pn.style.position = "";
   ["position", "inset", "top", "left", "width", "height"].forEach(k => { li.style[k] = ""; });
+}
+function releasePin(force) {
+  // Geht die Tastatur beim Ankommen noch zu, bleibt die Notiz in voller Höhe stehen: ihre untere Leiste springt dann nicht
+  // bei jedem Zwischenschritt der Tastatur, sondern wartet an ihrem endgültigen Platz.
+  if (!glidePin) return;
+  if (!force && kbFullH && window.innerHeight < kbFullH - 2) {
+    glidePin.hold = true;
+    clearTimeout(pinTimer); pinTimer = setTimeout(() => releasePin(true), 900);
+    return;
+  }
+  clearTimeout(pinTimer);
+  unpinOpenNote();
 }
 function pinOpenNote() {
   // Eine gleitende Seite hat eine Transformation: darin bezieht sich "fixed" auf die Seite, nicht auf den Bildschirm.
@@ -3350,16 +3409,18 @@ function pinOpenNote() {
   if (!li || !pn || pn.hidden) return;
   const r = li.getBoundingClientRect(), pr = pn.getBoundingClientRect();
   pn.style.position = "relative";
-  Object.assign(li.style, { position: "absolute", inset: "auto", top: Math.round(r.top - pr.top) + "px", left: Math.round(r.left - pr.left) + "px", width: Math.round(r.width) + "px", height: Math.round(r.height) + "px" });
+  const full = r.height >= window.innerHeight - 1 ? Math.max(r.height, kbFullH) : r.height;   // eine Vollbild-Notiz steht gleich in der Höhe, die sie ohne Tastatur hat
+  Object.assign(li.style, { position: "absolute", inset: "auto", top: Math.round(r.top - pr.top) + "px", left: Math.round(r.left - pr.left) + "px", width: Math.round(r.width) + "px", height: Math.round(full) + "px" });
   glidePin = { li, pn };
 }
 function refitPinnedNote() {   // geht die Tastatur beim Gleiten zu, wird das Fenster höher: die festgesetzte Notiz wächst mit
   if (!glidePin) return;
   const { li, pn } = glidePin, pr = pn.getBoundingClientRect();
-  Object.assign(li.style, { top: Math.round(-pr.top) + "px", height: window.innerHeight + "px" });
+  Object.assign(li.style, { top: Math.round(-pr.top) + "px", height: Math.max(window.innerHeight, kbFullH) + "px" });
+  if (glidePin.hold) releasePin();
 }
 function settlePages() {
-  unpinOpenNote();
+  releasePin();
   if (glideAnims) { glideAnims.forEach(a => { try { a.cancel(); } catch (e) {} }); glideAnims = null; }
   const toNotes = curPage === "notes";
   $("pageWrite").hidden = toNotes; $("pageNotes").hidden = !toNotes;
@@ -3432,6 +3493,30 @@ function initSmoothDetails() {
     }
   });
 }
+function initPanelGlide() {
+  // Die Bereiche in den Einstellungen klappen weich auf und zu; die Nachbarn rutschen mit
+  document.addEventListener("click", e => {
+    const sum = e.target && e.target.closest ? e.target.closest("details.panel > summary") : null;
+    if (!sum || reducedMotion()) return;
+    const d = sum.parentElement;
+    if (!d.animate) return;
+    e.preventDefault();
+    // Tippen mitten im Gleiten kehrt die Richtung um, ab der aktuellen Höhe
+    const hgt = el => el.getBoundingClientRect().height, busy = !!d._glide, mid = busy ? hgt(d) : 0, opening = busy ? d.classList.contains("closing") : !d.open;
+    if (busy) { d._glide = null; d.getAnimations({ subtree: true }).forEach(x => x.cancel()); d.classList.remove("closing"); d.style.overflow = ""; }
+    const body = [...d.children].filter(c => c !== sum), h0 = busy ? mid : hgt(d);
+    let h1, done = null;
+    if (opening) { d.open = true; h1 = hgt(d); }
+    else { d.open = false; h1 = hgt(d); d.open = true; d.classList.add("closing"); done = () => { d.open = false; d.classList.remove("closing"); }; }
+    const opt = { duration: opening ? 320 : 280, easing: EASE };
+    d.style.overflow = "hidden";
+    const a = d.animate([{ height: h0 + "px" }, { height: h1 + "px" }], opt);
+    d._glide = a;
+    body.forEach(c => c.animate(opening ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }], opt));
+    const end = fin => () => { if (d._glide !== a) return; d._glide = null; d.style.overflow = ""; if (fin && done) done(); };
+    a.onfinish = end(true); a.oncancel = end(false);
+  });
+}
 function initTileLayout() {
   // Klappt man "Weitere Optionen" in einer Kachel auf oder zu, ändert sich ihre Höhe: Kacheln neu anordnen
   document.addEventListener("toggle", e => { if (e.target && e.target.matches && e.target.matches("details") && e.target.closest("li.note")) layoutTiles(); }, true);
@@ -3473,6 +3558,20 @@ function initDiag() {
   };
   const wrap = (name, tag) => { const o = window[name]; if (typeof o !== "function") return; window[name] = function () { diag(tag, [].map.call(arguments, a => typeof a === "string" && a.length < 12 ? a : "").join(" ")); watch(1500); const t0 = performance.now(); const r = o.apply(this, arguments); diag(tag + "-fertig", Math.round(performance.now() - t0) + "ms"); return r; }; };
   wrap("render", "render"); wrap("showPage", "showPage"); wrap("focusEditor", "focusEditor");
+  // Untere Leiste nach einem Seitenwechsel Bild für Bild: Lage und Deckkraft, nur Änderungen
+  { const o = window.showPage; let tw = 0;
+    window.showPage = function () {
+      const r = o.apply(this, arguments);
+      const bar = document.querySelector(".tabs"); if (!bar || tw) return r;
+      const end = performance.now() + 1800; let last = "";
+      tw = 1; (function f() {
+        const b = bar.getBoundingClientRect(), op = getComputedStyle(bar).opacity;
+        const k = Math.round(b.top) + " h" + innerHeight + " o" + (+op).toFixed(2) + (document.body.classList.contains("kb") ? " kb" : "");
+        if (k !== last) { last = k; diag("leiste", k); }
+        if (performance.now() < end) requestAnimationFrame(f); else tw = 0;
+      })();
+      return r;
+    }; }
   document.addEventListener("click", e => { const m = e.target.closest && e.target.closest(".note-main, .note-head button, .tab"); if (m) { diag("tipp", nm(m)); watch(1500); } }, true);
   // Verstecktes Kopieren: 5 Tipps auf die Versionsnummer in "Über Chiffre"
   const ver = $("aboutVer"); let taps = 0, tt = 0;
@@ -3487,29 +3586,48 @@ function initDiag() {
 }
 function initKeyboardWatch() {
   // Tastatur offen = Fensterhöhe deutlich kleiner als zuvor: untere Leiste ausblenden
-  let max = window.innerHeight;
+  // Fensterhöhe ohne Ausreißer: manche WebViews melden während einer Animation kurz eine viel zu große Höhe (im Protokoll 1560 statt 828)
+  const vh = () => {
+    const v = window.visualViewport;
+    return Math.min(window.innerHeight, v ? v.height * v.scale : window.innerHeight);
+  };
+  let max = vh();
+  kbFullH = max;
+  document.addEventListener("pointerdown", () => { if (glidePin && glidePin.hold) releasePin(true); }, true);
   const coarse = () => { try { return window.matchMedia("(pointer: coarse)").matches; } catch (e) { return false; } };
   const typing = () => {
     const a = document.activeElement;
     return !!a && (a.tagName === "TEXTAREA" || a.isContentEditable || (a.tagName === "INPUT" && !/^(checkbox|radio|button|submit|range|file|color)$/.test(a.type)));
   };
   // final: letzte Prüfung nach dem Zugehen. Hat auf dem Handy kein Textfeld mehr den Fokus, kann keine Tastatur offen sein.
+  let lastResize = 0, lastBlur = 0, calmT = 0;
   const check = final => {
-    if (window.innerHeight > max) max = window.innerHeight;
-    if (glided) return;   // mitten im Seitenwechsel bleibt alles stehen; danach prüft settlePages
-    let kb = window.innerHeight < max - 150;
-    if (kb && final === true && coarse() && !typing()) kb = false;
+    if (vh() > max) max = vh();
+    kbFullH = max;
+    if (glided) return;
+    const now = performance.now();   // mitten im Seitenwechsel bleibt alles stehen; danach prüft settlePages
+    let kb = vh() < max - 150;
+    // Nur eingreifen, wenn sich das Fenster seit einer Weile nicht mehr bewegt: sonst geht die Tastatur gerade noch zu,
+    // die Leiste würde zu früh über ihr erscheinen und beim Ende der Bewegung ein zweites Mal springen.
+    if (kb && final === true && coarse() && !typing() && performance.now() - Math.max(lastResize, lastBlur) > 900) kb = false;
+    // Die Leiste erscheint erst, wenn das Fenster zur Ruhe gekommen ist: geht die Tastatur zu, wächst das Fenster in Schritten,
+    // und eine Leiste, die schon gleitet, würde bei jedem Schritt ein Stück springen.
+    if (!kb && document.body.classList.contains("kb") && now - lastResize < 160) {
+      kb = true;
+      clearTimeout(calmT); calmT = setTimeout(() => check(), 180);
+    }
+    if (kb !== document.body.classList.contains("kb")) { try { diag(kb ? "kb-an" : "kb-aus", Math.round(vh()) + "/" + Math.round(max)); } catch (e) {} }
     document.body.classList.toggle("kb", kb);
   };
   // Die Tastatur braucht beim Zugehen etwas Zeit und meldet das Ende nicht immer: ein paar Mal nachprüfen, damit die Leiste nie hängen bleibt
   let soonT = [];
-  const soon = () => { soonT.forEach(clearTimeout); soonT = [250, 700, 1500].map(t => setTimeout(() => check(true), t)); };
+  const soon = () => { soonT.forEach(clearTimeout); soonT = [1000, 1800].map(t => setTimeout(() => check(true), t)); };
   kbCheckFn = () => { check(); soon(); };
-  window.addEventListener("resize", () => check());
+  window.addEventListener("resize", () => { lastResize = performance.now(); check(); });
   setInterval(() => { if (document.body.classList.contains("kb")) check(true); }, 1000);   // hängt die Leiste trotzdem, löst sich das hier spätestens nach einer Sekunde
-  document.addEventListener("focusout", soon, true);
+  document.addEventListener("focusout", () => { lastBlur = performance.now(); soon(); }, true);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { check(); soon(); } });
-  window.addEventListener("orientationchange", () => { setTimeout(() => { max = window.innerHeight; check(); }, 300); });
+  window.addEventListener("orientationchange", () => { setTimeout(() => { max = vh(); kbFullH = max; check(); }, 300); });
 }
 
 function initKeepFocus() {
@@ -3981,7 +4099,7 @@ function refreshNewDraw() {
   $("drawNew").textContent = tr(newDraw ? "Zeichnung bearbeiten" : "Zeichnen");
   $("addBtn").disabled = !($("composer").value.trim() || $("titleNew").value.trim() || newDraw || newImgs.length);
 }
-const ABOUT = { version: "1.45.3", name: "Andree Wijchers", mail: "chiffre@tuta.com", repo: "github.com/phone-company/chiffre" };
+const ABOUT = { version: "1.45.17", name: "Andree Wijchers", mail: "chiffre@tuta.com", repo: "github.com/phone-company/chiffre" };
 function copyPlain(text) {
   const n = window.ChiffreNative;
   if (n && typeof n.copyText === "function") {
@@ -3990,17 +4108,41 @@ function copyPlain(text) {
   }
   navigator.clipboard.writeText(text).then(() => toast("Kopiert"), () => toast("Kopieren nicht erlaubt."));
 }
+function refreshSetSums() {
+  const set = (id, t) => { const e = $(id); if (e) e.textContent = t; };
+  const th = themeMode(), pal = !$("paletteRow").hidden ? (paletteMode() === "green" ? "Chiffre-Grün" : "Hintergrundbild") : "";
+  set("sumTheme", [tr(th === "light" ? "Hell" : th === "dark" ? "Dunkel" : "System"), pal && tr(pal)].filter(Boolean).join(" · "));
+  set("sumList", tr(viewMode() === "tiles" ? "Kacheln" : "Liste") + " · " + tr(sortMode() === "expiry" ? "Ablauf" : "Bearbeitet"));
+  set("sumSec", tr("Sperre, Fingerabdruck, Passwort"));
+  set("sumRemind", tr("Erinnerungen und Ablaufhinweise"));
+  set("sumBackup", $("bkLast").textContent || tr("Exportieren und wiederherstellen"));
+  set("sumAbout", tr("Version") + " " + ABOUT.version);
+}
+let menuAnim = null;
 function openMenu() {
-  $("menuSheet").hidden = false;
-  $("menuSheet").scrollTop = 0;
+  const sh = $("menuSheet");
+  if (menuAnim) { menuAnim.cancel(); menuAnim = null; }
+  sh.hidden = false;
+  refreshSetSums();
+  sh.scrollTop = 0;
   refreshBio();
   refreshRemindStatus();
-  $("menuClose").focus();
+  $("menuClose").focus({ preventScroll: true });
+  // Das Menü gleitet von rechts herein (bei "Animationen entfernen" sofort)
+  if (!reducedMotion() && sh.animate) {
+    const a = sh.animate([{ transform: "translateX(100%)" }, { transform: "none" }], { duration: 320, easing: EASE });
+    menuAnim = a; a.onfinish = a.oncancel = () => { if (menuAnim === a) menuAnim = null; };
+  }
 }
 function closeMenu() {
-  if ($("menuSheet").hidden) return;
-  $("menuSheet").hidden = true;
-  $("menuBtn").focus();
+  const sh = $("menuSheet");
+  if (sh.hidden) return;
+  if (menuAnim) { menuAnim.cancel(); menuAnim = null; }
+  const done = () => { sh.hidden = true; $("menuBtn").focus({ preventScroll: true }); };
+  if (reducedMotion() || !sh.animate) { done(); return; }
+  const a = sh.animate([{ transform: "none" }, { transform: "translateX(100%)" }], { duration: 280, easing: EASE, fill: "forwards" });
+  menuAnim = a;
+  a.onfinish = () => { if (menuAnim !== a) return; menuAnim = null; a.cancel(); done(); };
 }
 
 /* Fingerabdruck (nur in der Android-App) */
@@ -4503,6 +4645,7 @@ function refreshPwNextSafe() { if (!$("pwWrap").hidden) refreshPwNext(); }
   initKeyboardWatch();
   initTileLayout();
   initSmoothDetails();
+  initPanelGlide();
   $("menuClose").addEventListener("click", closeMenu);
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
   $("resetBtn").addEventListener("click", onReset);
@@ -4531,6 +4674,8 @@ function refreshPwNextSafe() { if (!$("pwWrap").hidden) refreshPwNext(); }
   $("wipeArmOk").addEventListener("click", onWipeArmOk);
   $("wipeArmNo").addEventListener("click", onWipeArmNo);
   $("bkSel").addEventListener("change", () => { lsSet("chiffre.backupEvery", $("bkSel").value); refreshBackupHint(); });
+  ["click", "change"].forEach(ev => $("menuSheet").addEventListener(ev, () => setTimeout(refreshSetSums, 60)));
+  $("aboutLogo").append(logoSvg(), h("b", { class: "wm" }, "Chiffre"));
   $("aboutVer").textContent = ABOUT.version;
   $("aboutName").textContent = ABOUT.name;
   $("aboutMail").textContent = ABOUT.mail;
