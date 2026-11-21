@@ -1,0 +1,1 @@
+Calmer header: flatter search, quieter tags, count shown in the section instead of the header.

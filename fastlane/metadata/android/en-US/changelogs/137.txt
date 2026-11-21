@@ -1,0 +1,1 @@
+True black now also applies to the editor, the opened note and the tab bar. Note colours are kept.

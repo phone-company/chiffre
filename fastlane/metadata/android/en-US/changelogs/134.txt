@@ -1,0 +1,1 @@
+The empty start screen is now shown completely in tile view.

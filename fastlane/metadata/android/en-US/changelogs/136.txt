@@ -1,0 +1,1 @@
+New: Settings > Appearance > Dark background > True black. Saves power on OLED screens. The app remembers the colour so nothing flashes on start.

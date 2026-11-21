@@ -17,11 +17,14 @@ Gepflegt wird nur die jeweils neueste Version, die unter [Releases](https://gith
 - Alle Notizen, Zeichnungen und Bilder liegen verschlüsselt im privaten Speicher der App. Verfahren: AES-256-GCM, Schlüssel per PBKDF2-SHA-256 (600.000 Runden) aus deinem Passwort, Web Crypto API.
 - Die App hat keine Internet-Berechtigung. Daten verlassen das Gerät nur, wenn du selbst eine Sicherung exportierst.
 - Screenshots und die Vorschau in der App-Übersicht sind blockiert. Das Android-Backup ist ausgeschaltet.
+- Fingerabdruck (optional): Android merkt sich dein Passwort, verschlüsselt mit einem Schlüssel aus dem Android Keystore (bei den meisten Geräten in Sicherheits-Hardware). Der Schlüssel ist nur nach einem erfolgreichen Fingerabdruck mit starker Biometrie benutzbar. Kommt auf dem Gerät ein weiterer Fingerabdruck hinzu, wird er ungültig, und Chiffre fragt wieder nach dem Passwort. Wer das Gerät samt Gerätesperre kennt und einen eigenen Finger einträgt, kommt damit also nicht an die Notizen. Ohne die Fingerabdruck-Funktion wird nichts gemerkt.
 
 ## Was nicht geschützt wird
 
 - Ein Passwort, das jemand erraten kann. Wer eine Kopie der Daten oder einer Sicherungsdatei hat, kann das Passwort offline beliebig oft probieren. Die Stärke deines Passworts bestimmt die Sicherheit. Chiffre verlangt mindestens 12 Zeichen und zeigt beim Anlegen eine Einschätzung. Empfohlen sind 5 bis 6 zufällige Wörter.
 - Ein Gerät mit Schadsoftware, Tastaturmitschnitt oder einem bösartigen Bedienungshilfe-Dienst.
+- Zwang: Wer dich dazu bringt, deinen Finger aufzulegen, kommt mit eingeschaltetem Fingerabdruck an die Notizen. Wer das nicht riskieren will, schaltet die Funktion ab oder sperrt die App vorher.
+- Die Sicherheit des Fingerabdrucks hängt an der Hardware und dem Android deines Geräts. Auf Geräten ohne Sicherheits-Hardware schützt der Keystore schwächer. Das Passwort selbst bleibt der eigentliche Schlüssel und funktioniert immer.
 - Metadaten: Die Ablaufzeitpunkte und Erinnerungszeiten der Notizen (nur Uhrzeiten, nie Text) liegen für die Erinnerungen unverschlüsselt im privaten App-Speicher. Auch die ungefähre Größe des Tresors ist sichtbar.
 - Nach der Eingabe liegt der Schlüssel im Arbeitsspeicher, bis die App sich sperrt.
 

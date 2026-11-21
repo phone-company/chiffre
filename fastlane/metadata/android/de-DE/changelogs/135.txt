@@ -1,0 +1,1 @@
+Fingerabdruck einrichten klappt jetzt auch auf Geräten, die den Schlüssel zunächst mit „User not authenticated" ablehnen.

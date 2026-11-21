@@ -9,8 +9,10 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.os.Build;
@@ -104,6 +106,8 @@ public class MainActivity extends Activity {
         root.addView(web, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        // Letzte Hintergrundfarbe der Seite sofort malen, damit beim Start nichts aufblitzt
+        applyStoredLook();
         // Notizinhalt gehört nicht dem Autofill-Dienst des Systems; das spart außerdem den Aufbau beim ersten Fokus im Textfeld
         if (Build.VERSION.SDK_INT >= 26) {
             root.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
@@ -113,6 +117,53 @@ public class MainActivity extends Activity {
 
         configureWebView();
         web.loadUrl(START_URL);
+    }
+
+    private static final String LOOK_PREFS = "chiffre_look";
+
+    private boolean nightNow() {
+        return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    /** Malt beim Start die zuletzt gemeldete Farbe der Seite als Fensterhintergrund und für die Leisten. */
+    @SuppressWarnings("deprecation")
+    private void applyStoredLook() {
+        try {
+            SharedPreferences p = getSharedPreferences(LOOK_PREFS, MODE_PRIVATE);
+            if (!p.contains("color")) {
+                return;
+            }
+            boolean explicit = p.getBoolean("explicit", false);
+            if (!explicit && p.getBoolean("sysnight", false) != nightNow()) {
+                return; // Das System ist inzwischen zwischen Hell und Dunkel gewechselt
+            }
+            int color = p.getInt("color", 0);
+            boolean dark = p.getBoolean("dark", false);
+            getWindow().setBackgroundDrawable(new ColorDrawable(color));
+            getWindow().setStatusBarColor(color);
+            getWindow().setNavigationBarColor(color);
+            View decor = getWindow().getDecorView();
+            int flags = decor.getSystemUiVisibility();
+            int mask = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            if (Build.VERSION.SDK_INT >= 26) mask |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            decor.setSystemUiVisibility(dark ? (flags & ~mask) : (flags | mask));
+        } catch (RuntimeException e) {
+            // Optik ist nicht wichtig genug, um den Start zu stören
+        }
+    }
+
+    /** Ab Android 13: Der Startbildschirm des Systems wird beim nächsten Start schwarz, wenn echtes Schwarz an ist. */
+    @SuppressLint("NewApi")
+    private void rememberSplash(boolean black) {
+        if (Build.VERSION.SDK_INT < 33) {
+            return;
+        }
+        try {
+            getSplashScreen().setSplashScreenTheme(black ? R.style.Theme_Chiffre_SplashBlack : R.style.Theme_Chiffre);
+        } catch (RuntimeException e) {
+            // ohne Folgen
+        }
     }
 
     private void applyInsets(View root) {
@@ -320,6 +371,30 @@ public class MainActivity extends Activity {
          * Darstellung (0 = System, 1 = Hell, 2 = Dunkel): Statusleiste und Navigationsleiste
          * passen sich der gewählten Darstellung an, sonst blieben sie in der Farbe des Systems.
          */
+        /** Merkt die Farbe der Seite für den nächsten Start (leer = nichts merken, Standard gilt). */
+        @JavascriptInterface
+        public void rememberLook(final String hex, final boolean dark, final boolean explicit) {
+            runOnUiThread(() -> {
+                SharedPreferences.Editor e = getSharedPreferences(LOOK_PREFS, MODE_PRIVATE).edit();
+                int color = 0;
+                boolean ok;
+                try {
+                    color = Color.parseColor(hex);
+                    ok = true;
+                } catch (RuntimeException ex) {
+                    ok = false;
+                }
+                if (ok) {
+                    e.putInt("color", color).putBoolean("dark", dark).putBoolean("explicit", explicit)
+                            .putBoolean("sysnight", nightNow());
+                } else {
+                    e.clear();
+                }
+                e.apply();
+                rememberSplash(ok && color == 0xFF000000);
+            });
+        }
+
         @JavascriptInterface
         @SuppressWarnings("deprecation")
         public void setBars(final int mode, final String hex) {

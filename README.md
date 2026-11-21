@@ -20,7 +20,7 @@ Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Abl
 - Bereich „Läuft bald ab“ oben in den Notizen für alles, was in den nächsten 24 Stunden abläuft, deutlich markiert
 - Notizen ohne Ablaufdatum möglich („Ohne Ablauf“)
 - Kopieren-Knopf: Die Zwischenablage wird nach 30 Sekunden wieder geleert, Android blendet den Text dabei nicht in der Vorschau ein
-- Hell und dunkel im Material-Stil. Ab Android 12 passen sich die Farben dem Hintergrundbild an (Material You). Die Oberfläche gibt es auf Deutsch und Englisch (folgt dem Handy, im Menü umstellbar)
+- Hell und dunkel im Material-Stil, auf Wunsch mit echtem Schwarz für OLED-Bildschirme. Ab Android 12 passen sich die Farben dem Hintergrundbild an (Material You). Die Oberfläche gibt es auf Deutsch und Englisch (folgt dem Handy, im Menü umstellbar)
 
 ## Installieren
 
@@ -33,7 +33,7 @@ Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Abl
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.17.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
+Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.23.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
@@ -74,7 +74,7 @@ Du brauchst Android Studio (aktuelle Version) oder ein JDK 17 oder neuer mit dem
 
 Die APK liegt danach unter `app/build/outputs/apk/release/`. Ohne `keystore.properties` ist sie unsigniert. Wie du einen Schlüssel erzeugst und eine signierte APK baust, steht in [docs/RELEASE.md](docs/RELEASE.md).
 
-Die App hat keine Abhängigkeiten außer dem Android-Plugin für Gradle. Der gesamte Code besteht aus einer Java-Klasse (`MainActivity.java`) und der Web-App in `app/src/main/assets/index.html`.
+Die App hat keine Abhängigkeiten außer dem Android-Plugin für Gradle. Die Web-App steckt in einer einzigen Datei, `app/src/main/assets/index.html`. Die Android-Hülle besteht aus wenigen Java-Klassen unter `app/src/main/java/app/chiffre/`: `MainActivity` (Fenster und Brücke zur Web-App), `Biometrics` (Fingerabdruck), `Reminders` und `ReminderReceiver` (Alarme und Benachrichtigungen) sowie `CaptureProvider` (Kamera-Foto).
 
 ## Lizenz
 

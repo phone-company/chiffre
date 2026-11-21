@@ -162,18 +162,31 @@ final class Biometrics {
         String step = "key";
         try {
             clear(a);
-            SecretKey key;
-            try {
-                key = createKey(true);
-            } catch (Exception first) {
-                // Manche Geräte lehnen "nur bei entsperrtem Gerät" ab. Der Schlüssel braucht auch dann
-                // bei jeder Benutzung einen Fingerabdruck.
-                clear(a);
-                key = createKey(false);
+            // Erst mit "nur bei entsperrtem Gerät". Manche Geräte lehnen das beim Anlegen des Schlüssels ab
+            // oder melden erst beim Start der Verschlüsselung "User not authenticated". Dann klappt der zweite
+            // Versuch ohne diese Zusatzbedingung. Der Schlüssel braucht auch dann bei jeder Benutzung einen Fingerabdruck.
+            Cipher ready = null;
+            for (int attempt = 0; attempt < 2 && ready == null; attempt++) {
+                SecretKey key;
+                step = "key";
+                try {
+                    key = createKey(attempt == 0);
+                } catch (Exception e) {
+                    if (attempt == 1) throw e;
+                    clear(a);
+                    continue;
+                }
+                step = "init";
+                try {
+                    Cipher c = Cipher.getInstance(TRANSFORMATION);
+                    c.init(Cipher.ENCRYPT_MODE, key);
+                    ready = c;
+                } catch (Exception e) {
+                    if (attempt == 1) throw e;
+                    clear(a);
+                }
             }
-            step = "init";
-            cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.ENCRYPT_MODE, key);
+            cipher = ready;
         } catch (Exception e) {
             clear(a);
             Arrays.fill(secret, (byte) 0);
@@ -259,8 +272,10 @@ final class Biometrics {
                 try {
                     cb.onSuccess(cipher.doFinal(blob));
                 } catch (Exception e) {
-                    clear(a);
-                    cb.onFailure(KIND_INVALID, "final:" + describe(e));
+                    // "User not authenticated" ist ein Aussetzer, kein kaputter Schlüssel: nichts löschen
+                    boolean flaky = "UserNotAuthenticatedException".equals(e.getClass().getSimpleName());
+                    if (!flaky) clear(a);
+                    cb.onFailure(flaky ? KIND_ERROR : KIND_INVALID, "final:" + describe(e));
                 }
             }
 

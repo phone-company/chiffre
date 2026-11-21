@@ -1,0 +1,1 @@
+Neu: Einstellungen > Aussehen > Dunkler Hintergrund > Echtes Schwarz. Spart bei OLED-Bildschirmen Strom. Die App merkt sich die Farbe, damit beim Start nichts aufblitzt.

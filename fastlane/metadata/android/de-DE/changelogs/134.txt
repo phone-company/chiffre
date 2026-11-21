@@ -1,0 +1,1 @@
+Der leere Startbildschirm wird in der Kachelansicht jetzt vollständig dargestellt.

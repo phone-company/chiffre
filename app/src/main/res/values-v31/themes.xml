@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Startbildschirm in echtem Schwarz (wird ab Android 13 zur Laufzeit gewählt, wenn "Echtes Schwarz" an ist). -->
+    <style name="Theme.Chiffre.SplashBlack">
+        <item name="android:windowBackground">@color/oled_black</item>
+        <item name="android:statusBarColor">@color/oled_black</item>
+        <item name="android:navigationBarColor">@color/oled_black</item>
+        <item name="android:windowSplashScreenBackground">@color/oled_black</item>
+    </style>
+</resources>

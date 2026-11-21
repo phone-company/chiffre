@@ -1,0 +1,1 @@
+Setting up the fingerprint now also works on devices that first reject the key with "User not authenticated".
