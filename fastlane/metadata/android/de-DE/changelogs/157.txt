@@ -1,0 +1,1 @@
+Beim Entsperren friert die Oberfläche nicht mehr ein: Argon2 rechnet jetzt in einem eigenen Thread. Klappt das nicht, rechnet die App wie bisher selbst.

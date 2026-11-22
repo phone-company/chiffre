@@ -1,0 +1,1 @@
+Key derivation (Argon2id) now uses 6 passes instead of 3. Existing vaults are strengthened automatically at the next unlock. The notes list is rebuilt only when the clock changes something on screen, which reduces jank.

@@ -1,0 +1,1 @@
+Speicherwarnung: Ist auf dem Handy weniger als 200 MB frei oder der Tresor fast voll, zeigt Chiffre beim Entsperren einen ruhigen Hinweis. "Verstanden" blendet ihn für 7 Tage aus.

@@ -1,0 +1,1 @@
+New in Advanced mode: notes that delete themselves after reading. Choose per note under "More options": after it is closed for the first time, or one hour after it is first opened. Chiffre asks when you turn it on and before the first opening, and a clear notice is shown at the top of the note.

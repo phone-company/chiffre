@@ -1,0 +1,1 @@
+Landscape: more room for the list, slimmer bar. Tablet: editor and notes with readable line length. Copy text (backup) clears the clipboard after 30 seconds.

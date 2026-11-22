@@ -1,0 +1,1 @@
+Doppeltes Tippen auf Speichern legt keine zweite Notiz mehr an. Die Verbindung zu Android wird nur noch bei Änderungen angesprochen. Das Diagnoseprotokoll zeigt, wo beim Speichern Zeit vergeht.

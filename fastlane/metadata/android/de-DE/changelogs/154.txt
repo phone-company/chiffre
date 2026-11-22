@@ -1,0 +1,1 @@
+Über Chiffre zeigt Verschlüsselung und Schlüsselableitung in zwei Zeilen. Hinweistexte im hellen Design haben besseren Kontrast. Das Diagnoseprotokoll nennt die Dauer der Schlüsselableitung.

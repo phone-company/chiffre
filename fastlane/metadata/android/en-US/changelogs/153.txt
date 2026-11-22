@@ -1,0 +1,1 @@
+The key is now derived with Argon2id instead of PBKDF2, making guessing on GPUs far more expensive. Older vaults are upgraded automatically at the next unlock. English: Panic code.

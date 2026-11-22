@@ -1,0 +1,1 @@
+Neu im Modus Erweitert: Sicherungsordner. Chiffre legt die verschlüsselte Sicherung selbst als eine Datei in einem Ordner ab, den du wählst (etwa SD-Karte oder USB-Stick), beim Sperren oder nur von Hand. Ist der Ordner nicht erreichbar, erinnert dich Chiffre ruhig.

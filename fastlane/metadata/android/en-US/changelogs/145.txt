@@ -1,0 +1,1 @@
+New in Advanced mode: backup folder. Chiffre saves the encrypted backup as a single file in a folder you choose (such as an SD card or USB stick), when locking, at most once a day, or manually only. If the folder is not reachable, Chiffre reminds you quietly.

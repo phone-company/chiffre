@@ -1,0 +1,1 @@
+Der Schlüssel entsteht jetzt mit Argon2id statt PBKDF2: Raten auf Grafikkarten wird viel teurer. Ältere Tresore werden beim nächsten Entsperren automatisch umgestellt. Englisch: Panic code.

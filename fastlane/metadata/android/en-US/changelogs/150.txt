@@ -1,0 +1,1 @@
+New in Advanced (Security): destruction code. Entering it in the code field or the password field makes Chiffre delete everything without asking, including the Android app data. It requires the code after fingerprint. Also fixed: a fingerprint error message reset the code state.

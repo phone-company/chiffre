@@ -1,0 +1,1 @@
+Neu im Modus Erweitert: Notizen, die sich nach dem Lesen selbst löschen. Pro Notiz unter "Weitere Optionen" wählbar: nach dem ersten Schließen oder eine Stunde nach dem ersten Öffnen. Beim Einschalten und vor dem ersten Öffnen fragt Chiffre nach, oben in der Notiz steht ein deutlicher Hinweis.

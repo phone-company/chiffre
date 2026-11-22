@@ -1,0 +1,1 @@
+Querformat mit Tastatur: Das Textfeld wird nicht mehr von der unteren Leiste verdeckt. Der Speichern-Knopf oben im Editor ist auch bei leerer Notiz gut lesbar.

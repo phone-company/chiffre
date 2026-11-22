@@ -1,0 +1,1 @@
+Read-and-gone notes: the "Delete after reading" choice (Advanced mode only) is now in the menu (three dots) when writing and editing. The note is deleted after it is first closed or one hour after it is first opened.

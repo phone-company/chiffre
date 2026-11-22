@@ -1,0 +1,1 @@
+Die Schlüsselableitung (Argon2id) läuft jetzt mit 6 statt 3 Durchläufen. Bestehende Tresore werden beim nächsten Entsperren automatisch verstärkt. Die Notizliste wird nur noch neu aufgebaut, wenn sich durch die Uhrzeit etwas ändert, das spart Ruckler.

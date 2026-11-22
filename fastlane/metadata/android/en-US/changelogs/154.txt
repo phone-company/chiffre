@@ -1,0 +1,1 @@
+About shows encryption and key derivation on two lines. Hint texts in the light theme have better contrast. The diagnostics log shows how long the key derivation took.

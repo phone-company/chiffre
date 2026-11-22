@@ -1,0 +1,1 @@
+Lese-und-weg-Notizen: Die Auswahl "Nach dem Lesen löschen" (nur im Modus Erweitert) liegt jetzt im Menü (drei Punkte) beim Schreiben und Bearbeiten. Nach dem ersten Schließen oder eine Stunde nach dem ersten Öffnen wird die Notiz gelöscht.

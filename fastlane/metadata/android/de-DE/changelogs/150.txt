@@ -1,0 +1,1 @@
+Neu in Erweitert (Sicherheit): Zerstörungscode. Gibst du ihn im Codefeld oder im Passwortfeld ein, löscht Chiffre alles ohne Rückfrage, auch die Android-App-Daten. Voraussetzung ist der Code nach dem Fingerabdruck. Außerdem behoben: Eine Fehlermeldung beim Fingerabdruck setzte den Code-Stand zurück.

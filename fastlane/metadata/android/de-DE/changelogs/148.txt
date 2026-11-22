@@ -1,0 +1,1 @@
+Löschen repariert: Beim Löschen des Tresors (von Hand oder nach zu vielen Fehlversuchen) koppelt Chiffre jetzt auch den Sicherungsordner ab und räumt dessen Merker auf. Eine bestehende Sicherung im Ordner wird danach nicht mehr vom neuen Tresor überschrieben.

@@ -1,0 +1,1 @@
+Einstellungen aufgeräumt (Erweitert): Sicherheit ist in die Gruppen Entsperren, Passwort und Notfall geteilt, jede mit Statuszeile. Der Sicherungsordner ist eine eigene Gruppe. In Einfach bleibt alles wie bisher.

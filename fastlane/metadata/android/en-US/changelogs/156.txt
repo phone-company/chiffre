@@ -1,0 +1,1 @@
+Tapping Save twice no longer creates a second note. The link to Android is only used when something changed. The diagnostics log shows where time goes while saving.

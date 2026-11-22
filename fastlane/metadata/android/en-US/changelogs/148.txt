@@ -1,0 +1,1 @@
+Delete fixed: when the vault is deleted (by hand or after too many wrong attempts), Chiffre now also unlinks the backup folder and clears its markers. An existing backup in the folder is no longer overwritten by the new vault.

@@ -1,6 +1,8 @@
 package app.chiffre;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.NotificationManager;
 import android.content.ActivityNotFoundException;
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -10,16 +12,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
+import android.content.UriPermission;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.database.Cursor;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PersistableBundle;
+import android.os.StatFs;
 import android.os.SystemClock;
 import android.util.Base64;
 import android.view.View;
@@ -67,6 +73,10 @@ public class MainActivity extends Activity {
     private static final int REQ_SAVE = 2;
     private static final int REQ_NOTIFICATIONS = 3;
     private static final int REQ_CAPTURE = 4;
+    private static final int REQ_TREE = 5;
+    private static final String PREFS_BK = "chiffre_bk";
+    private static final String BK_FILE = "chiffre-sicherung.json";
+    private static final String BK_TMP = "chiffre-sicherung-neu.json";
 
     /** Größte Sicherung, die gespeichert wird (Zeichen). */
     private static final int MAX_SAVE_CHARS = 32 * 1024 * 1024;
@@ -334,6 +344,42 @@ public class MainActivity extends Activity {
             return lockDelaySeconds();
         }
 
+        /** Freier Speicher im internen Speicher der App in MB, oder -1, wenn er sich nicht ermitteln lässt. */
+        @JavascriptInterface
+        public int freeSpaceMb() {
+            try {
+                return (int) Math.min(Integer.MAX_VALUE, new StatFs(getFilesDir().getPath()).getAvailableBytes() / (1024L * 1024L));
+            } catch (RuntimeException e) {
+                return -1;
+            }
+        }
+
+        /** Sicherungsordner: öffnet die Ordnerauswahl von Android (die App sieht nur den gewählten Ordner). */
+        @JavascriptInterface
+        public void pickBackupDir() {
+            runOnUiThread(() -> startPickTree());
+        }
+
+        /** Stand des Sicherungsordners als JSON: {set, name, state} mit state ok, away (nicht erreichbar) oder perm (Freigabe verloren). */
+        @JavascriptInterface
+        public String backupDirInfo() {
+            return bkInfo();
+        }
+
+        @JavascriptInterface
+        public void clearBackupDir() {
+            bkClear();
+        }
+
+        /** Schreibt die Sicherung in den Ordner. Antwort: ok, none, perm, away oder err. */
+        @JavascriptInterface
+        public String writeBackupFile(String text) {
+            if (text == null || text.length() > MAX_SAVE_CHARS) {
+                return "err";
+            }
+            return bkWrite(text);
+        }
+
         /** Kopiert einen Notiztext. Android blendet ihn nicht in der Vorschau ein und er wird nach 30 s geleert. */
         @JavascriptInterface
         public void copyText(final String text) {
@@ -502,6 +548,48 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> startBioEnable(secret));
         }
 
+        /**
+         * Zerstörungscode, letzte Stufe: Android löscht alle Daten der App, wie "Speicher löschen" in den
+         * Android-Einstellungen. Die App beendet sich dabei. Vorher wird alles Wichtige einzeln entfernt,
+         * damit auch ein Fehlschlag dieses Aufrufs nichts übrig lässt.
+         */
+        @JavascriptInterface
+        public void wipeAppData() {
+            runOnUiThread(() -> {
+                try {
+                    Reminders.setTimes(MainActivity.this, "");
+                } catch (RuntimeException e) {
+                    // weiter
+                }
+                try {
+                    Biometrics.clear(MainActivity.this);
+                } catch (RuntimeException e) {
+                    // weiter
+                }
+                try {
+                    bkClear();
+                } catch (RuntimeException e) {
+                    // weiter
+                }
+                try {
+                    NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    if (nm != null) {
+                        nm.cancelAll();
+                    }
+                } catch (RuntimeException e) {
+                    // weiter
+                }
+                try {
+                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                    if (am != null) {
+                        am.clearApplicationUserData();
+                    }
+                } catch (RuntimeException e) {
+                    // die einzelnen Schritte oben sind schon erledigt
+                }
+            });
+        }
+
         @JavascriptInterface
         public void disableBiometric() {
             runOnUiThread(() -> {
@@ -665,6 +753,171 @@ public class MainActivity extends Activity {
         return getSharedPreferences(PREFS_LOCK, MODE_PRIVATE).getInt("seconds", DEFAULT_LOCK_SECONDS);
     }
 
+    // ---- Sicherungsordner: nur der gewählte Ordner, nur über die Android-Ordnerauswahl, ohne Internet ----
+    private Uri bkTree() {
+        String raw = getSharedPreferences(PREFS_BK, MODE_PRIVATE).getString("tree", null);
+        return raw == null ? null : Uri.parse(raw);
+    }
+
+    private boolean bkHasPermission(Uri tree) {
+        try {
+            for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
+                if (p.getUri().equals(tree) && p.isWritePermission()) {
+                    return true;
+                }
+            }
+        } catch (RuntimeException e) {
+            return false;
+        }
+        return false;
+    }
+
+    private Uri bkDirUri(Uri tree) {
+        return DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree));
+    }
+
+    /** Anzeigename des Ordners, oder null, wenn er gerade nicht erreichbar ist (zum Beispiel Stick nicht gesteckt). */
+    private String bkDirName(Uri tree) {
+        try (Cursor c = getContentResolver().query(bkDirUri(tree), new String[] {
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME, DocumentsContract.Document.COLUMN_FLAGS }, null, null, null)) {
+            if (c != null && c.moveToFirst()) {
+                int flags = c.getInt(1);
+                if ((flags & DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE) == 0) {
+                    return null;
+                }
+                String n = c.getString(0);
+                return n == null ? "" : n;
+            }
+        } catch (RuntimeException e) {
+            return null;
+        }
+        return null;
+    }
+
+    private String bkInfo() {
+        try {
+            org.json.JSONObject o = new org.json.JSONObject();
+            Uri tree = bkTree();
+            if (tree == null) {
+                o.put("set", false);
+                return o.toString();
+            }
+            o.put("set", true);
+            if (!bkHasPermission(tree)) {
+                o.put("name", "");
+                o.put("state", "perm");
+                return o.toString();
+            }
+            String name = bkDirName(tree);
+            o.put("name", name == null ? getSharedPreferences(PREFS_BK, MODE_PRIVATE).getString("name", "") : name);
+            o.put("state", name == null ? "away" : "ok");
+            return o.toString();
+        } catch (org.json.JSONException | RuntimeException e) {
+            return "{\"set\":false}";
+        }
+    }
+
+    private void bkClear() {
+        Uri tree = bkTree();
+        if (tree != null) {
+            try {
+                getContentResolver().releasePersistableUriPermission(tree,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            } catch (RuntimeException e) {
+                // schon weg
+            }
+        }
+        getSharedPreferences(PREFS_BK, MODE_PRIVATE).edit().clear().apply();
+    }
+
+    private Uri bkFind(Uri tree, String name) {
+        Uri kids = DocumentsContract.buildChildDocumentsUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree));
+        try (Cursor c = getContentResolver().query(kids, new String[] {
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME }, null, null, null)) {
+            while (c != null && c.moveToNext()) {
+                if (name.equals(c.getString(1))) {
+                    return DocumentsContract.buildDocumentUriUsingTree(tree, c.getString(0));
+                }
+            }
+        } catch (RuntimeException e) {
+            return null;
+        }
+        return null;
+    }
+
+    private void bkDelete(Uri doc) {
+        if (doc == null) {
+            return;
+        }
+        try {
+            DocumentsContract.deleteDocument(getContentResolver(), doc);
+        } catch (Exception e) {
+            // bleibt stehen; der nächste Lauf räumt auf
+        }
+    }
+
+    /** Schreibt zuerst eine neue Datei und ersetzt die alte erst danach: bricht das Schreiben ab, bleibt die letzte Sicherung heil. */
+    private synchronized String bkWrite(String text) {
+        Uri tree = bkTree();
+        if (tree == null) {
+            return "none";
+        }
+        if (!bkHasPermission(tree)) {
+            return "perm";
+        }
+        if (bkDirName(tree) == null) {
+            return "away";
+        }
+        byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
+        Uri tmp = null;
+        try {
+            bkDelete(bkFind(tree, BK_TMP));
+            tmp = DocumentsContract.createDocument(getContentResolver(), bkDirUri(tree), "application/json", BK_TMP);
+            if (tmp == null) {
+                return "away";
+            }
+            try (OutputStream out = getContentResolver().openOutputStream(tmp, "wt")) {
+                if (out == null) {
+                    bkDelete(tmp);
+                    return "away";
+                }
+                out.write(bytes);
+                out.flush();
+            }
+            try (Cursor c = getContentResolver().query(tmp, new String[] { DocumentsContract.Document.COLUMN_SIZE }, null, null, null)) {
+                if (c != null && c.moveToFirst() && !c.isNull(0) && c.getLong(0) != bytes.length) {
+                    bkDelete(tmp);
+                    return "err";
+                }
+            }
+            bkDelete(bkFind(tree, BK_FILE));
+            try {
+                DocumentsContract.renameDocument(getContentResolver(), tmp, BK_FILE);
+            } catch (Exception e) {
+                // Umbenennen geht nicht überall; die neue Datei ist trotzdem eine vollständige Sicherung
+            }
+            return "ok";
+        } catch (SecurityException e) {
+            return "perm";
+        } catch (IOException | RuntimeException e) {
+            bkDelete(tmp);
+            return "away";
+        }
+    }
+
+    private void startPickTree() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+        try {
+            skipLockOnce = true;
+            startActivityForResult(intent, REQ_TREE);
+        } catch (ActivityNotFoundException e) {
+            skipLockOnce = false;
+            Toast.makeText(this, R.string.backup_failed, Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void startSave(String name, String text) {
         pendingSave = text;
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
@@ -689,6 +942,31 @@ public class MainActivity extends Activity {
             pendingSave = null;
             if (resultCode == RESULT_OK && data != null && data.getData() != null && text != null) {
                 writeText(data.getData(), text);
+            }
+        } else if (requestCode == REQ_TREE) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                Uri tree = data.getData();
+                try {
+                    getContentResolver().takePersistableUriPermission(tree,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    Uri old = bkTree();
+                    if (old != null && !old.equals(tree)) {
+                        try {
+                            getContentResolver().releasePersistableUriPermission(old,
+                                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        } catch (RuntimeException e) {
+                            // schon weg
+                        }
+                    }
+                    String name = bkDirName(tree);
+                    getSharedPreferences(PREFS_BK, MODE_PRIVATE).edit()
+                            .putString("tree", tree.toString()).putString("name", name == null ? "" : name).apply();
+                    if (web != null) {
+                        web.evaluateJavascript("window.chiffreBackupDir && window.chiffreBackupDir();", null);
+                    }
+                } catch (SecurityException e) {
+                    Toast.makeText(this, R.string.backup_failed, Toast.LENGTH_LONG).show();
+                }
             }
         } else if (requestCode == REQ_PICK) {
             Uri[] result = null;

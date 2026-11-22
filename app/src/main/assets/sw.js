@@ -1,7 +1,7 @@
 // Service Worker für Chiffre: macht die App offline nutzbar.
 // Bei jeder Änderung an den Dateien die Versionsnummer hochzählen, damit Geräte die neue Fassung holen.
-const CACHE = "chiffre-v131";
-const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
+const CACHE = "chiffre-v149";
+const FILES = ["./", "index.html", "argon-worker.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

@@ -1,0 +1,1 @@
+Sicherungsordner einfacher: Statt einer Auswahlliste gibt es jetzt einen Schalter "Automatisch beim Sperren sichern". Aus heißt: nur von Hand mit "Jetzt sichern".

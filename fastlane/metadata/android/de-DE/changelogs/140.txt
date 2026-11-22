@@ -1,0 +1,1 @@
+Querformat: Liste mit mehr Platz, schlankere Leiste. Tablet: Editor und Notiz mit lesbarer Zeilenlänge. Text kopieren (Sicherung) leert die Zwischenablage nach 30 Sekunden.

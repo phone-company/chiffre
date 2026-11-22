@@ -1,0 +1,1 @@
+Simpler backup folder: instead of a list there is now one switch, "Back up automatically when locking". Off means manual only, with "Back up now".

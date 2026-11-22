@@ -1,0 +1,1 @@
+Storage warning: if less than 200 MB are free on the phone or the vault is almost full, Chiffre shows a calm notice when unlocking. "Understood" hides it for 7 days.

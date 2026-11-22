@@ -1,0 +1,1 @@
+Icons in front of the groups in settings (Advanced) and wrapping status lines.

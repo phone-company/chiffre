@@ -1,0 +1,1 @@
+Settings tidied up (Advanced): Security is split into the groups Unlock, Password and Emergency, each with a status line. The backup folder is its own group. Simple mode stays as before.

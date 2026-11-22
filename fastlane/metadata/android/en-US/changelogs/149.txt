@@ -1,0 +1,1 @@
+New in Advanced (Security): code after fingerprint. After the fingerprint, Chiffre asks for a number code with 4 to 8 digits. Without the code the fingerprint is useless. After 5 wrong codes only the password opens it. The password always works.

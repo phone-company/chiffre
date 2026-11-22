@@ -1,0 +1,1 @@
+Neu in Erweitert (Sicherheit): Code nach dem Fingerabdruck. Nach dem Fingerabdruck fragt Chiffre einen Zahlencode mit 4 bis 8 Ziffern. Ohne den Code bleibt der Fingerabdruck wertlos. Nach 5 falschen Codes öffnet nur noch das Passwort. Das Passwort öffnet immer.
