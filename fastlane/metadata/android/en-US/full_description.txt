@@ -1,13 +1,15 @@
 Chiffre is a plain notes app with one twist: every note gets an expiry date when you create it. When it runs out, the app asks whether to keep or delete the note (or, if you choose so for that note, deletes it without asking), so old, finished notes do not pile up for years.
 
-• Encrypted with your password (AES-256-GCM, key derived with PBKDF2)
+• Encrypted with your password (AES-256-GCM, key derived with Argon2id, 64 MiB of memory)
 • No account, no cloud, no ads, no analytics
 • No internet access
 • Optional: a neutral notification when a note expires or is about to be deleted automatically (no note text, can be turned off)
 • Screenshots and the recent-apps preview are blocked
 • Locks itself in the background: immediately, after 1 or 5 minutes (adjustable)
-• Optional: unlock with your fingerprint in addition to the password
-• Encrypted backup file for restoring or moving to another device, with a backup reminder
+• Optional: unlock with your fingerprint in addition to the password, and in the advanced mode a code after the fingerprint
+• Optional panic code (advanced): a second code that wipes the vault immediately
+• Encrypted backup file for restoring or moving to another device, with a backup reminder; in the advanced mode also automatically into a folder you choose
+• Notes that delete themselves after reading (advanced)
 • Optional: delete the vault after many wrong passwords (off by default)
 • Finger drawings
 • Images attached to notes, encrypted
@@ -17,4 +19,4 @@ Chiffre is a plain notes app with one twist: every note gets an expiry date when
 • Simple or advanced: new vaults start plain, you switch on extra features in the settings when you want them
 • Light and dark theme. The interface is available in German and English.
 
-Important: the password cannot be reset. Without it the notes cannot be read. The encryption uses standard methods but has not been independently audited. Chiffre is a hobby project and the source code is open.
+Important: the password cannot be reset. Without it the notes cannot be read. The encryption uses standard methods, plus an own Argon2id implementation, and has not been independently audited. Chiffre is a hobby project and the source code is open.
