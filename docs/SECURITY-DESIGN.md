@@ -152,7 +152,7 @@ One thing leaves the app unencrypted only on request: the plain-text export (Adv
 
 ## 8. Verifying a build
 
-Chiffre aims at builds that anyone can check against the source. Status: **reproducible**. For 1.45.41 a fresh clone of the tag, built on macOS without the signing key, gave an APK whose contents match the GitHub release byte for byte (signature excluded). Please check later releases yourself with the steps below.
+Chiffre aims at builds that anyone can check against the source. Status: **reproducible**. For 1.45.41 and 1.45.43 a fresh clone of the tag, built on macOS without the signing key, gave an APK whose contents match the GitHub release byte for byte (signature excluded). Please check later releases yourself with the steps below.
 
 1. Check out the release tag (`v<version>`) in a clean directory and build it (`./gradlew assembleRelease`, see [docs/RELEASE.md](RELEASE.md)).
 2. Compare your APK with the one from the GitHub release with `tools/compare-apks.sh`. It ignores the signature (`META-INF`) and compares everything else byte by byte.

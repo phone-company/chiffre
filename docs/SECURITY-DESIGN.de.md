@@ -152,7 +152,7 @@ Nur auf ausdrücklichen Wunsch verlässt etwas die App unverschlüsselt: Der Kla
 
 ## 8. Einen Build prüfen
 
-Chiffre soll sich von jedem gegen den Quellcode prüfen lassen. Stand: **reproduzierbar**. Für 1.45.41 ergab ein frischer Clone des Tags, gebaut unter macOS ohne Signaturschlüssel, eine APK, deren Inhalt Byte für Byte mit der GitHub-Veröffentlichung übereinstimmt (Signatur ausgenommen). Spätere Versionen prüfst du am besten selbst mit den Schritten unten.
+Chiffre soll sich von jedem gegen den Quellcode prüfen lassen. Stand: **reproduzierbar**. Für 1.45.41 und 1.45.43 ergab ein frischer Clone des Tags, gebaut unter macOS ohne Signaturschlüssel, eine APK, deren Inhalt Byte für Byte mit der GitHub-Veröffentlichung übereinstimmt (Signatur ausgenommen). Spätere Versionen prüfst du am besten selbst mit den Schritten unten.
 
 1. Den Release-Tag (`v<Version>`) in einem sauberen Ordner auschecken und bauen (`./gradlew assembleRelease`, siehe [docs/RELEASE.md](RELEASE.md)).
 2. Deine APK mit der aus dem GitHub-Release vergleichen: `tools/compare-apks.sh`. Das Skript ignoriert die Signatur (`META-INF`) und vergleicht alles andere Byte für Byte.

@@ -40,7 +40,7 @@ Requires Android 8.0 (API 26) or newer.
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-You can check it with `apksigner verify --print-certs chiffre-1.45.43.apk`. It shows the same value in lowercase and without colons:
+You can check it with `apksigner verify --print-certs chiffre-1.45.44.apk`. It shows the same value in lowercase and without colons:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
