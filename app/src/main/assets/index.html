@@ -1228,6 +1228,20 @@ html.simple .ico > summary > svg { display: none; }
             </div>
             </div>
           </details>
+          <details class="more ico" id="txtExpWrap" hidden>
+            <summary><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg><span>Als Klartext exportieren</span></summary>
+            <div class="more-body">
+          <form id="txtExpForm" class="panel plain" autocomplete="off">
+            <p class="lead">Erstellt eine Markdown-Datei mit allen Notizen, lesbar mit jedem Texteditor und in andere Notiz-Apps übertragbar. Die Datei ist <strong>nicht verschlüsselt</strong>: Wer sie findet, kann alles lesen. Bilder, Zeichnungen und Lese-und-weg-Notizen sind nicht enthalten. Lösche die Datei, wenn du sie nicht mehr brauchst.</p>
+            <label class="field" for="txtExpPw">Passwort zur Bestätigung
+              <input type="password" id="txtExpPw" autocomplete="off">
+            </label>
+            <label class="check" for="txtExpAck"><input type="checkbox" id="txtExpAck"> Ich weiß, dass die Datei unverschlüsselt ist.</label>
+            <p class="msg" id="txtExpMsg" role="alert"></p>
+            <button class="btn small" type="submit" id="txtExpGo">Exportieren</button>
+          </form>
+            </div>
+          </details>
           <details class="more" id="impMore">
             <summary><span>Aus einer Sicherung hinzufügen</span></summary>
             <div class="more-body">
@@ -1517,6 +1531,7 @@ const MAX_BACKUP = 48 * 1024 * 1024;
 let memVault = null, storageOk = true;
 let key = null, meta = null, notes = [];
 let openId = null, readId = null, armedId = null, armTimer = null, tickTimer = null, hiddenAt = 0;
+let lockGen = 0;   // zählt jede Sperre, auch eine, die kommt, während noch entsperrt wird: ein laufendes Entsperren sieht daran, dass es nicht mehr öffnen darf
 /* Auto-Sperre: Sekunden im Hintergrund, bevor Chiffre sich sperrt */
 const LOCK_CHOICES = [0, 60, 300];
 let pickerUntil = 0;
@@ -1671,6 +1686,8 @@ Object.assign(EN, {"Code nach Fingerabdruck": "Code after fingerprint", "Fingera
 Object.assign(EN, {"Zerstörungscode": "Panic code", "Dieser Code löscht den Tresor sofort und ohne Rückfrage. Sicherungen auf dem Handy, im Sicherungsordner oder auf einem Stick bleiben bestehen. Im Speicher des Handys können Reste liegen bleiben, und man sieht, dass Chiffre gelöscht wurde. Die rechtliche Lage kann je nach Land heikel sein. Probiere es zuerst mit einem Test-Tresor aus.": "This code deletes the vault immediately and without asking. Backups on the phone, in the backup folder or on a stick remain. Traces can stay in the phone's storage, and it is visible that Chiffre was wiped. The legal situation can be tricky depending on the country. Try it with a test vault first.", "Aktueller Code": "Current code", "Zerstörungscode (4 bis 8 Ziffern)": "Panic code (4 to 8 digits)", "Zerstörungscode wiederholen": "Repeat panic code", "Ich habe die Hinweise gelesen. Gelöscht wird ohne Rückfrage.": "I have read the notes. Deleting happens without asking.", "Zerstörungscode einrichten": "Set up panic code", "Zerstörungscode ändern": "Change panic code", "Zerstörungscode ausschalten": "Turn off panic code", "Zerstörungscode ist eingerichtet": "Panic code is set up", "Zerstörungscode ist ausgeschaltet": "Panic code is turned off", "Bitte den aktuellen Code eingeben.": "Please enter the current code.", "Der Zerstörungscode darf nicht dein Passwort sein.": "The panic code must not be your password.", "Der Zerstörungscode muss sich in mindestens 3 Stellen vom Code unterscheiden.": "The panic code must differ from the code in at least 3 digits.", "Bitte bestätige, dass du die Hinweise gelesen hast.": "Please confirm that you have read the notes.", "Lege den Finger auf, damit Chiffre den aktuellen Code prüfen kann.": "Place your finger so Chiffre can check the current code.", "Der Code nach Fingerabdruck ist nicht eingerichtet.": "The code after fingerprint is not set up.", "Der aktuelle Code ist falsch.": "The current code is wrong.", "Aktiv. Gibst du ihn im Codefeld oder im Passwortfeld ein, löscht Chiffre alles ohne Rückfrage. Er wird ausgeschaltet, sobald du den Code änderst oder ausschaltest.": "On. If you enter it in the code field or the password field, Chiffre deletes everything without asking. It is turned off as soon as you change or turn off the code.", "Ein zweiter Code, der den Tresor sofort löscht. Wähle ihn so, dass du ihn nicht mit deinem echten Code verwechselst.": "A second code that deletes the vault immediately. Choose it so you won't confuse it with your real code."});
 Object.assign(EN, {"Tresor auf Argon2id umgestellt": "Vault upgraded to Argon2id", "Schlüsselableitung verstärkt": "Key derivation strengthened", "Verschlüsselung": "Encryption", "Schlüssel aus Passwort": "Key from password"});
 Object.assign(EN, {"Entsperren": "Unlock", "Notfall": "Emergency", "Sperre sofort": "Lock immediately", "Sperre nach 1 Minute": "Lock after 1 minute", "Sperre nach 5 Minuten": "Lock after 5 minutes", "Fingerabdruck an": "Fingerprint on", "Fingerabdruck aus": "Fingerprint off", "Code an": "Code on", "Passwortabfrage nie": "Password prompt never", "Passwortabfrage jede Woche": "Password prompt every week", "Passwortabfrage alle {n} Wochen": "Password prompt every {n} weeks", "Zerstörungscode an": "Panic code on", "Nicht eingerichtet": "Not set up", "Fehler, Ordner prüfen": "Error, check the folder", "An, nur von Hand": "On, by hand only", "An, beim Sperren": "On, when locking"});
+Object.assign(EN, {"Löscht sich nach dem Lesen": "Deletes itself after reading", "Oder nach dem Lesen löschen": "Or delete after reading", "Die Notiz bleibt, bis sie abläuft oder du sie löschst.": "The note stays until it expires or you delete it.", "Die Notiz wird 1 Stunde nach dem ersten Öffnen gelöscht.": "The note will be deleted 1 hour after it is first opened.", "Version": "Version", "Text kopiert. Die Zwischenablage wird in 30 Sekunden geleert.": "Text copied. The clipboard will be cleared in 30 seconds.", "Kopieren nicht möglich. Nutze die Datei.": "Copying is not possible. Use the file.", "Text kopiert.": "Text copied.", "Bilder sind nur in der Datei.": "Images are only in the file.", "Das hat gerade nicht geklappt. Versuche es noch einmal oder gib dein Passwort ein.": "That did not work just now. Try again or enter your password."});
+Object.assign(EN, {"Als Klartext exportieren": "Export as plain text", "Erstellt eine Markdown-Datei mit allen Notizen, lesbar mit jedem Texteditor und in andere Notiz-Apps übertragbar. Die Datei ist": "Creates a Markdown file with all notes, readable in any text editor and transferable to other notes apps. The file is", "nicht verschlüsselt": "not encrypted", ": Wer sie findet, kann alles lesen. Bilder, Zeichnungen und Lese-und-weg-Notizen sind nicht enthalten. Lösche die Datei, wenn du sie nicht mehr brauchst.": ": anyone who finds it can read everything. Images, drawings and read-and-gone notes are not included. Delete the file when you no longer need it.", "Ich weiß, dass die Datei unverschlüsselt ist.": "I know that the file is not encrypted.", "Exportieren": "Export", "Chiffre – Export": "Chiffre – Export", "Exportiert am {d}": "Exported on {d}", "1 Notiz": "1 note", "{n} Notizen": "{n} notes", "Unverschlüsselt. Bilder, Zeichnungen und Lese-und-weg-Notizen sind nicht enthalten.": "Not encrypted. Images, drawings and read-and-gone notes are not included.", "Ohne Titel": "Untitled", "Erstellt: {d}": "Created: {d}", "Bearbeitet: {d}": "Edited: {d}", "Ohne Ablauf": "No expiry", "Abgelaufen: {d}": "Expired: {d}", "Läuft ab: {d}": "Expires: {d}", "löscht automatisch": "deletes automatically", "Erinnerung: {d}": "Reminder: {d}", "erledigt": "done", "angeheftet": "pinned", "gesperrt": "locked", "Status: {s}": "Status: {s}", "1 Bild": "1 image", "{n} Bilder": "{n} images", "eine Zeichnung": "a drawing", "Nicht enthalten: {s}": "Not included: {s}", "Bitte bestätige, dass die Datei unverschlüsselt ist.": "Please confirm that the file is not encrypted.", "Export erstellt": "Export created"});
 function langPref() { try { const v = localStorage.getItem("chiffre.lang"); if (v === "de" || v === "en") return v; } catch (e) {} return "system"; }
 function resolveLang() {
   const p = langPref();
@@ -3445,14 +3462,14 @@ async function onExportFile() {
 async function onExportCopy() {
   const v = loadVault(); if (!v) return;
   const text = JSON.stringify(v), n = window.ChiffreNative;
-  const imgs = imgTotal() ? " Bilder sind nur in der Datei." : "";
+  const imgs = imgTotal() ? " " + tr("Bilder sind nur in der Datei.") : "";
   // Die Android-Hülle leert die Zwischenablage nach 30 Sekunden (und kopiert ohne Vorschau). Sehr große Texte gehen nur über den Browser-Weg.
   if (n && typeof n.copyText === "function" && text.length <= 200000) {
-    try { n.copyText(text); markBackup(); toast("Text kopiert. Die Zwischenablage wird in 30 Sekunden geleert." + imgs); }
+    try { n.copyText(text); markBackup(); toast(tr("Text kopiert. Die Zwischenablage wird in 30 Sekunden geleert.") + imgs); }
     catch (e) { toast("Kopieren nicht möglich. Nutze die Datei."); }
     return;
   }
-  try { await navigator.clipboard.writeText(text); markBackup(); toast("Text kopiert." + imgs); }
+  try { await navigator.clipboard.writeText(text); markBackup(); toast(tr("Text kopiert.") + imgs); }
   catch (e) { toast("Kopieren nicht erlaubt. Nutze die Datei."); return; }
   clearTimeout(clipTimer);
   clipTimer = setTimeout(async () => {
@@ -3501,7 +3518,7 @@ async function onRestore(e) {
   msg.textContent = ""; btn.disabled = true;
   try {
     const v = await readBackup($("rFile"), $("rPaste"));
-    const rpw = $("rPw").value;
+    const rpw = $("rPw").value, gen = lockGen;
     const { k, notes: incoming } = await openBackup(v, rpw);
     key = k; meta = metaOf(v); notes = incoming;
     const { imgs: bImgs, ...vOnly } = v;
@@ -3510,6 +3527,7 @@ async function onRestore(e) {
     try { if (bioNative()) window.ChiffreNative.disableBiometric(); } catch (e) {}
     markPw(); resetBackupBase();
     const mig = await migrateKdf(rpw);
+    if (gen !== lockGen) { lock(); return; }   // wiederhergestellt, aber inzwischen gesperrt
     enterApp();
     toast("Wiederhergestellt");
     if (mig) toast(mig);
@@ -3517,6 +3535,72 @@ async function onRestore(e) {
   finally { btn.disabled = false; }
 }
 
+/* Klartext-Export (Erweitert): alle Notizen als eine Markdown-Datei, unverschlüsselt, nur nach Passwort und Bestätigung. Bilder, Zeichnungen und Lese-und-weg-Notizen bleiben draußen. */
+function mdDate(ts) { return new Date(ts).toLocaleString(locale(), { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
+function mdBody(text) {
+  return text.split("\n").map(l => {
+    const ck = /^(\s*)\[( |x|X)\]( |$)(.*)$/.exec(l);
+    if (ck) return ck[1] + "- [" + (ck[2] === " " ? " " : "x") + "] " + ck[4];
+    const hd = /^\s*#{1,6}\s+(.*\S.*)$/.exec(l);
+    if (hd) return "### " + hd[1];
+    return l;
+  }).join("\n").replace(/\s+$/, "");
+}
+function notesMarkdown(list, now) {
+  const keep = list.filter(n => !burnMode(n)).slice().sort(noteCompare);
+  const out = ["# " + tr("Chiffre – Export"), "",
+    tr("Exportiert am {d}", { d: mdDate(now) }) + " · " + (keep.length === 1 ? tr("1 Notiz") : tr("{n} Notizen", { n: keep.length })),
+    tr("Unverschlüsselt. Bilder, Zeichnungen und Lese-und-weg-Notizen sind nicht enthalten."), ""];
+  for (const n of keep) {
+    let { title, body } = splitTitle(n.text);
+    if (!title) {   // ohne Überschrift: eine kurze erste Zeile wird zur Überschrift (und steht nicht doppelt da), sonst ein Auszug
+      const ls = body.split("\n"), i = ls.findIndex(x => x.trim()), f = i >= 0 ? ls[i].trim() : "";
+      if (f && f.length <= 60 && !CK_LINE.test(ls[i])) { title = f; body = ls.slice(i + 1).join("\n").replace(/^\n+/, ""); }
+      else if (f) title = f.replace(/^\[( |x|X)\]\s*/, "").slice(0, 57) + "…";
+    }
+    const head = title || tr("Ohne Titel");
+    const meta = [tr("Erstellt: {d}", { d: mdDate(n.created) })];
+    if (n.edited > 0) meta.push(tr("Bearbeitet: {d}", { d: mdDate(n.edited) }));
+    meta.push(isNever(n) ? tr("Ohne Ablauf") : (n.expires <= now ? tr("Abgelaufen: {d}", { d: mdDate(n.expires) }) : tr("Läuft ab: {d}", { d: mdDate(n.expires) })) + (n.auto ? " (" + tr("löscht automatisch") + ")" : ""));
+    if (hasRemind(n)) meta.push(tr("Erinnerung: {d}", { d: mdDate(n.remind) }) + (cleanRepeat(n.repeat) ? " (" + repeatLabel(n.repeat) + ")" : ""));
+    const flags = [n.done ? tr("erledigt") : "", n.pinned ? tr("angeheftet") : "", n.locked ? tr("gesperrt") : ""].filter(Boolean);
+    if (flags.length) meta.push(tr("Status: {s}", { s: flags.join(", ") }));
+    const imgs = (n.img || []).length, extra = [];
+    if (imgs) extra.push(imgs === 1 ? tr("1 Bild") : tr("{n} Bilder", { n: imgs }));
+    if (n.draw) extra.push(tr("eine Zeichnung"));
+    if (extra.length) meta.push(tr("Nicht enthalten: {s}", { s: extra.join(", ") }));
+    out.push("---", "", "## " + head.replace(/\s+/g, " "), "", ...meta.map(m => "- " + m), "");
+    const b = mdBody(body);
+    if (b) out.push(b, "");
+  }
+  return out.join("\n") + "\n";
+}
+async function onTxtExport(e) {
+  e.preventDefault();
+  const msg = $("txtExpMsg"), btn = $("txtExpGo"), pw = $("txtExpPw").value, vault = loadVault();
+  msg.textContent = "";
+  if (!key || !vault) return;
+  if (!pw) { msg.textContent = tr("Bitte das Passwort eingeben."); return; }
+  if (!$("txtExpAck").checked) { msg.textContent = tr("Bitte bestätige, dass die Datei unverschlüsselt ist."); return; }
+  btn.disabled = true;
+  const startKey = key;
+  try {
+    try { await unseal(await keyFor(pw, vault), vault); } catch (err) { msg.textContent = tr("Falsches Passwort."); return; }
+    if (key !== startKey) return;   // inzwischen gesperrt
+    const text = notesMarkdown(notes, Date.now()), d = new Date();
+    const name = "chiffre-export-" + d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) + ".md";
+    const n = window.ChiffreNative;
+    if (n && typeof n.saveTextFile === "function") n.saveTextFile(name, text);
+    else {
+      const url = URL.createObjectURL(new Blob([text], { type: "text/markdown;charset=utf-8" }));
+      const a = h("a", { href: url, download: name }); document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      toast("Export erstellt");
+    }
+    $("txtExpPw").value = ""; $("txtExpAck").checked = false; $("txtExpWrap").open = false;
+  } catch (err) { msg.textContent = tr("Das hat nicht geklappt."); }
+  finally { btn.disabled = false; }
+}
 /* Sperre */
 /* Passwortfelder mit Auge zum Anzeigen. Beim Sperren wird alles wieder verdeckt. */
 function eyeIcon(slash) {
@@ -3545,6 +3629,7 @@ function addEyes() {
 }
 function hideEyes() { document.querySelectorAll(".pwbox .eye").forEach(b => setEye(b, false)); }
 function lock() {
+  lockGen++;
   try { bkDirAuto(); } catch (e) {}
   $("storeHint").hidden = true;   // zuerst: die Sicherung merkt sich die Bild-Kennungen, bevor die Notizen geleert werden
   closeActions();
@@ -3556,6 +3641,7 @@ function lock() {
   if (dr.open) { dr.open = false; dr.cur = null; dr.strokes = []; dr.hist = []; dr.onDone = null; $("drawSheet").hidden = true; }
   newDraw = null; refreshNewDraw();
   $("iFile").value = ""; $("iPaste").value = ""; $("iPw").value = ""; $("iMsg").textContent = "";
+  $("txtExpPw").value = ""; $("txtExpAck").checked = false; $("txtExpMsg").textContent = ""; $("txtExpWrap").open = false;
   $("backup").open = false;
   searchQ = ""; tagQ = ""; $("searchBox").value = ""; $("searchClear").hidden = true; $("tagRow").hidden = true;
   undoFn = null; $("toast").hidden = true;
@@ -3617,7 +3703,7 @@ function enterApp() {
 }
 async function onLockSubmit(e) {
   e.preventDefault();
-  const pw = $("pw").value, vault = loadVault(), btn = $("lockSubmit");
+  const pw = $("pw").value, vault = loadVault(), btn = $("lockSubmit"), gen = lockGen;
   let migrated = false;
   $("lockMsg").textContent = "";
   btn.disabled = true;
@@ -3643,6 +3729,7 @@ async function onLockSubmit(e) {
       await persist();
     }
     markPw(); lsDel("chiffre.bioLocked"); lsDel("chiffre.codeFails");
+    if (gen !== lockGen) { lock(); return; }   // inzwischen gesperrt (App verlassen): nicht öffnen
     enterApp();
     if (migrated) toast(migrated);
   } catch (err) {
@@ -4611,7 +4698,7 @@ function refreshNewDraw() {
   $("drawNew").textContent = tr(newDraw ? "Zeichnung bearbeiten" : "Zeichnen");
   $("addBtn").disabled = !($("composer").value.trim() || $("titleNew").value.trim() || newDraw || newImgs.length);
 }
-const ABOUT = { version: "1.45.41", name: "Andree Wijchers", mail: "chiffre@tuta.com", repo: "github.com/phone-company/chiffre" };
+const ABOUT = { version: "1.45.43", name: "Andree Wijchers", mail: "chiffre@tuta.com", repo: "github.com/phone-company/chiffre" };
 function copyPlain(text) {
   const n = window.ChiffreNative;
   if (n && typeof n.copyText === "function") {
@@ -4640,6 +4727,7 @@ function refreshGroups() {
   if (!simple && n && st === 2 && on && bioCodeOn() && duressOn()) emerg.push(tr("Zerstörungscode an"));
   if (w > 0) emerg.push(tr("Löschen nach {n} Fehlversuchen", { n: w }));
   set("advSum", emerg.join(" · "));
+  const tx = $("txtExpWrap"); if (tx) { tx.hidden = simple; if (simple) tx.open = false; }
   const bkSet = !!lsGet("chiffre.bkDirSet");
   set("bkDirSum", !bkSet ? tr("Nicht eingerichtet") : lsGet("chiffre.bkDirErr") ? tr("Fehler, Ordner prüfen") : bkDirMode() === "hand" ? tr("An, nur von Hand") : tr("An, beim Sperren"));
 }
@@ -5014,7 +5102,8 @@ async function onCodeSubmit(e) {
       return;
     }
     let ok = false;
-    try { ok = await unlockWithPassword(pw); } catch (err) {}
+    try { ok = await unlockWithPassword(pw); }
+    catch (err) { diag("code-entsperren-fehler", String(err && err.message || err).slice(0, 30)); msg.textContent = tr("Das hat gerade nicht geklappt. Versuche es noch einmal oder gib dein Passwort ein."); return; }   // Fingerabdruck bleibt eingeschaltet
     if (ok) { lsDel("chiffre.codeFails"); codePending = null; $("codeBox").hidden = true; $("codeIn").value = ""; return; }
     try { window.ChiffreNative.disableBiometric(); } catch (err) {}
     hideCodeBox();
@@ -5143,14 +5232,15 @@ function refreshCodePanel(status, on) {
 function bioAuto() {
   if (!key && bioReady()) { try { window.ChiffreNative.unlockBiometric(); } catch (e) {} }
 }
-async function unlockWithPassword(pw) {
-  const vault = loadVault();
+async function unlockWithPassword(pw) {   // false = Passwort passt nicht; technische Fehler werden geworfen
+  const vault = loadVault(), gen = lockGen;
   if (!vault) return false;
   const k = await keyFor(pw, vault);
   let data;
   try { data = await unseal(k, vault); } catch (err) { return false; }
   key = k; meta = metaOf(vault); notes = cleanNotes(data);
   const mig = await migrateKdf(pw);
+  if (gen !== lockGen) { lock(); return true; }   // Passwort stimmte, aber inzwischen gesperrt: nicht öffnen
   enterApp();
   if (mig) toast(mig);
   return true;
@@ -5305,9 +5395,10 @@ function initBiometric() {
     try { pw = new TextDecoder().decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0))); } catch (e) {}
     if (pw.startsWith(CODE_PREFIX)) { if (bioLocked()) { refreshBio(); return; } showCodeBox(pw); return; }
     $("lockMsg").textContent = "";
-    let ok = false;
-    try { ok = pw ? await unlockWithPassword(pw) : false; } catch (e) {}
+    let ok = false, broken = false;
+    try { ok = pw ? await unlockWithPassword(pw) : false; } catch (e) { broken = true; diag("bio-entsperren-fehler", String(e && e.message || e).slice(0, 30)); }
     pw = "";
+    if (broken) { $("lockMsg").textContent = tr("Das hat gerade nicht geklappt. Versuche es noch einmal oder gib dein Passwort ein."); refreshBio(); return; }   // Fingerabdruck bleibt eingeschaltet
     if (!ok) {
       try { n.disableBiometric(); } catch (e) {}
       $("lockMsg").textContent = tr("Das gemerkte Passwort passt nicht mehr. Gib dein Passwort ein.");
@@ -5450,6 +5541,7 @@ function refreshPwNextSafe() { if (!$("pwWrap").hidden) refreshPwNext(); }
   $("impForm").addEventListener("submit", onImport);
   $("expDownload").addEventListener("click", onExportFile);
   $("expCopy").addEventListener("click", onExportCopy);
+  $("txtExpForm").addEventListener("submit", onTxtExport);
   initReminders();
   refreshRemindHint();
   initBiometric();
@@ -5494,14 +5586,14 @@ function refreshPwNextSafe() { if (!$("pwWrap").hidden) refreshPwNext(); }
   };
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) { hiddenAt = Date.now(); return; }
-    if (!key) return;
+    if (!key) { if (!nativeLock() && hiddenAt && Date.now() - hiddenAt >= lockDelay() * 1000) lockGen++; hiddenAt = 0; return; }
     // In der App sperrt die Hülle selbst (sie kennt auch die Dateiauswahl des Systems).
     const picking = Date.now() < pickerUntil;
     pickerUntil = 0;
     if (!nativeLock() && !picking && hiddenAt && Date.now() - hiddenAt >= lockDelay() * 1000) { lock(); bioAuto(); } else render();
     hiddenAt = 0;
   });
-  window.chiffreLock = () => { if (key) { lock(); bioAuto(); } };
+  window.chiffreLock = () => { if (key) { lock(); bioAuto(); } else lockGen++; };   // läuft gerade ein Entsperren, öffnet es danach nicht
   // Zurück-Taste der App-Hülle: schließt zuerst die Einstellungen
   window.chiffreBack = () => { if (iv.open) { closeViewer(); return true; } if (dr.open) { closeDraw(true); return true; } if (!$("menuSheet").hidden) { closeMenu(); return true; } if (actEl) { closeActions(); return true; } if (selecting()) { clearSelection(); return true; } if (openId || readId) return closeNote(); if (document.body.classList.contains("tidy") && curPage === "write") { showPage("notes"); return true; } return false; };
   document.addEventListener("keydown", e => { if (e.key === "Escape" && (actEl || openId || readId) && !iv.open && !dr.open && $("menuSheet").hidden) { e.preventDefault(); if (actEl) closeActions(); else closeNote(); } });

@@ -1,0 +1,1 @@
+New (Advanced): export all notes as plain text, as one Markdown file for any text editor and other notes apps. Only after your password and a confirmation, without images, drawings and read-and-gone notes. Plus the fixes from 1.45.42: locking during unlock, fingerprint on technical errors, no device-to-device transfer.

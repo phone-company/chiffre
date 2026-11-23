@@ -119,7 +119,7 @@ print(key.hex()); print(base64.b64encode(ct).decode())
 ## 5. Runtime protections of the Android app
 
 - `FLAG_SECURE`: screenshots, screen recording and the preview in the app overview are blocked.
-- `allowBackup="false"`: no Android cloud or device backup of the app data.
+- `allowBackup="false"` plus `dataExtractionRules` that exclude everything: no Android cloud backup, no ADB backup and, from Android 12 on, no device-to-device transfer of the app data (`allowBackup` alone does not stop that transfer since Android 12; fixed in 1.45.42).
 - Auto-lock when you leave the app: immediately, after 1 minute (default) or after 5 minutes. The key is dropped from memory on lock.
 - Optional: wipe the vault after 5, 10 or 20 wrong passwords in a row (off by default). This is not forensic deletion.
 - Copying text uses the clipboard marked as sensitive (Android 13 and newer) and clears it after 30 seconds, unless you copied something else in the meantime.
@@ -136,6 +136,8 @@ Be aware of these. They contain times and settings, never note text, passwords o
 - The approximate size of the vault, and the number and approximate size of stored images (IndexedDB keys and record sizes are visible; the image content is not).
 - Whether a fingerprint code or a panic code (destruction code) is set up. The panic code is stored only as a salted PBKDF2 hash, but a code of 4 to 8 digits can be guessed offline by someone who has the app data.
 
+One thing leaves the app unencrypted only on request: the plain-text export (Advanced) writes all notes, except images, drawings and read-and-gone notes, to a Markdown file you choose. It requires the password and a confirmation and does not count as a backup. Wherever you save it, it is readable by anyone with access to that place.
+
 ## 7. Known limitations
 
 - No independent audit.
@@ -150,7 +152,7 @@ Be aware of these. They contain times and settings, never note text, passwords o
 
 ## 8. Verifying a build
 
-Chiffre aims at builds that anyone can check against the source. Status: **not yet verified as reproducible**; the steps below are how to find out.
+Chiffre aims at builds that anyone can check against the source. Status: **reproducible**. For 1.45.41 a fresh clone of the tag, built on macOS without the signing key, gave an APK whose contents match the GitHub release byte for byte (signature excluded). Please check later releases yourself with the steps below.
 
 1. Check out the release tag (`v<version>`) in a clean directory and build it (`./gradlew assembleRelease`, see [docs/RELEASE.md](RELEASE.md)).
 2. Compare your APK with the one from the GitHub release with `tools/compare-apks.sh`. It ignores the signature (`META-INF`) and compares everything else byte by byte.

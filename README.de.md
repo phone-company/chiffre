@@ -14,6 +14,7 @@ Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Abl
 - Optional: Entsperren per Fingerabdruck, zusätzlich zum Passwort. Im Funktionsumfang „Erweitert“ lässt sich nach dem Fingerabdruck ein Code (4 bis 8 Ziffern) als zweiter Schritt verlangen
 - Optional, „Erweitert“: Zerstörungscode, ein zweiter Code (4 bis 8 Ziffern), der den Tresor sofort und ohne Rückfrage löscht, falls dich jemand zwingt, die App zu öffnen
 - Verschlüsselte Sicherung als Datei, zum Wiederherstellen oder für den Umzug auf ein anderes Gerät, mit einstellbarer Erinnerung ans Sichern; im Modus Erweitert auf Wunsch automatisch in einen Ordner deiner Wahl (eine Datei, ohne Internet)
+- Klartext-Export (Erweitert): alle Notizen als eine Markdown-Datei für jeden Texteditor oder andere Notiz-Apps. Sie ist nicht verschlüsselt, deshalb fragt die App vorher nach Passwort und Bestätigung. Bilder, Zeichnungen und Lese-und-weg-Notizen bleiben draußen
 - Notizen, die sich nach dem Lesen selbst löschen (nach dem Schließen oder nach einer Stunde, Modus Erweitert)
 - Optional: Tresor nach 5, 10 oder 20 falschen Passwörtern löschen (standardmäßig aus)
 - Checklisten mit Kästchen: Erledigtes rutscht nach unten (abschaltbar), Unterpunkte durch Einrücken, Punkte lassen sich im Modus „Erweitert“ per Pfeiltasten verschieben, erledigte auf einmal löschen. Jede Notiz mit eigenem Titel, Etiketten per #Stichwort
@@ -39,7 +40,7 @@ Voraussetzung: Android 8.0 (API 26) oder neuer.
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.41.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
+Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.43.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9

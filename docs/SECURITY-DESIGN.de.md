@@ -119,7 +119,7 @@ print(key.hex()); print(base64.b64encode(ct).decode())
 ## 5. Schutz zur Laufzeit in der Android-App
 
 - `FLAG_SECURE`: Screenshots, Bildschirmaufnahmen und die Vorschau in der App-Übersicht sind gesperrt.
-- `allowBackup="false"`: keine Android-Cloud- oder Geräte-Sicherung der App-Daten.
+- `allowBackup="false"` und `dataExtractionRules`, die alles ausschließen: keine Android-Cloud-Sicherung, keine ADB-Sicherung und ab Android 12 auch keine Übertragung von Gerät zu Gerät (`allowBackup` allein verhindert diese Übertragung seit Android 12 nicht; behoben in 1.45.42).
 - Automatische Sperre beim Verlassen: sofort, nach 1 Minute (Standard) oder nach 5 Minuten. Beim Sperren wird der Schlüssel aus dem Arbeitsspeicher entfernt.
 - Optional: Tresor nach 5, 10 oder 20 falschen Passwörtern in Folge löschen (standardmäßig aus). Das ist kein forensisches Löschen.
 - Beim Kopieren wird die Zwischenablage als vertraulich markiert (ab Android 13) und nach 30 Sekunden geleert, außer du hast zwischendurch etwas anderes kopiert.
@@ -136,6 +136,8 @@ Das solltest du wissen. Es enthält Zeiten und Einstellungen, nie Notiztext, Pas
 - Die ungefähre Größe des Tresors sowie Anzahl und ungefähre Größe der gespeicherten Bilder (Schlüssel und Größen in IndexedDB sind sichtbar, der Bildinhalt nicht).
 - Ob ein Code nach dem Fingerabdruck oder ein Zerstörungscode (Panikcode) eingerichtet ist. Der Zerstörungscode liegt nur als gesalzener PBKDF2-Hash vor, aber ein Code aus 4 bis 8 Ziffern lässt sich offline erraten, wenn jemand die App-Daten hat.
 
+Nur auf ausdrücklichen Wunsch verlässt etwas die App unverschlüsselt: Der Klartext-Export (Erweitert) schreibt alle Notizen, außer Bildern, Zeichnungen und Lese-und-weg-Notizen, in eine Markdown-Datei an einem Ort deiner Wahl. Er verlangt Passwort und Bestätigung und zählt nicht als Sicherung. Wo du die Datei ablegst, kann jeder sie lesen, der dort Zugriff hat.
+
 ## 7. Bekannte Grenzen
 
 - Keine unabhängige Prüfung.
@@ -150,7 +152,7 @@ Das solltest du wissen. Es enthält Zeiten und Einstellungen, nie Notiztext, Pas
 
 ## 8. Einen Build prüfen
 
-Chiffre soll sich von jedem gegen den Quellcode prüfen lassen. Stand: **noch nicht als reproduzierbar bestätigt**; die Schritte unten zeigen, wie man es herausfindet.
+Chiffre soll sich von jedem gegen den Quellcode prüfen lassen. Stand: **reproduzierbar**. Für 1.45.41 ergab ein frischer Clone des Tags, gebaut unter macOS ohne Signaturschlüssel, eine APK, deren Inhalt Byte für Byte mit der GitHub-Veröffentlichung übereinstimmt (Signatur ausgenommen). Spätere Versionen prüfst du am besten selbst mit den Schritten unten.
 
 1. Den Release-Tag (`v<Version>`) in einem sauberen Ordner auschecken und bauen (`./gradlew assembleRelease`, siehe [docs/RELEASE.md](RELEASE.md)).
 2. Deine APK mit der aus dem GitHub-Release vergleichen: `tools/compare-apks.sh`. Das Skript ignoriert die Signatur (`META-INF`) und vergleicht alles andere Byte für Byte.

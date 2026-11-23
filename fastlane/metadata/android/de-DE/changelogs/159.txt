@@ -1,0 +1,1 @@
+Neu (Erweitert): Alle Notizen als Klartext exportieren, als eine Markdown-Datei für jeden Texteditor und andere Notiz-Apps. Nur nach Passwort und Bestätigung, ohne Bilder, Zeichnungen und Lese-und-weg-Notizen. Dazu die Fehlerbehebungen aus 1.45.42: Sperren beim Entsperren, Fingerabdruck bei technischem Fehler, keine Gerät-zu-Gerät-Übertragung.

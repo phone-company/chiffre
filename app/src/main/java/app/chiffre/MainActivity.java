@@ -89,6 +89,7 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> pickCallback;
     private Uri captureUri;
     private String pendingSave;
+    private boolean pendingExport;
     private long stoppedAt = 0L;
     /** Gilt nur für einen Rückweg: Dateiauswahl oder Speichern des Systems soll nicht sperren. */
     private boolean skipLockOnce = false;
@@ -329,7 +330,18 @@ public class MainActivity extends Activity {
             }
             final String safeName = name.replaceAll("[^A-Za-z0-9._-]", "_");
             final String content = text;
-            runOnUiThread(() -> startSave(safeName, content));
+            runOnUiThread(() -> startSave(safeName, content, false));
+        }
+
+        /** Klartext-Export als Markdown-Datei. Zählt nicht als Sicherung. */
+        @JavascriptInterface
+        public void saveTextFile(String name, String text) {
+            if (name == null || text == null || text.length() > MAX_SAVE_CHARS) {
+                return;
+            }
+            final String safeName = name.replaceAll("[^A-Za-z0-9._-]", "_");
+            final String content = text;
+            runOnUiThread(() -> startSave(safeName, content, true));
         }
 
         /** Wie lange die App im Hintergrund bleiben darf, bevor sie sich sperrt: 0, 60 oder 300 Sekunden. */
@@ -918,11 +930,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void startSave(String name, String text) {
+    private void startSave(String name, String text, boolean export) {
         pendingSave = text;
+        pendingExport = export;
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/json");
+        intent.setType(export ? "text/markdown" : "application/json");
         intent.putExtra(Intent.EXTRA_TITLE, name);
         try {
             skipLockOnce = true;
@@ -930,7 +943,7 @@ public class MainActivity extends Activity {
         } catch (ActivityNotFoundException e) {
             skipLockOnce = false;
             pendingSave = null;
-            Toast.makeText(this, R.string.backup_failed, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, export ? R.string.export_failed : R.string.backup_failed, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -939,9 +952,11 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_SAVE) {
             String text = pendingSave;
+            boolean export = pendingExport;
             pendingSave = null;
+            pendingExport = false;
             if (resultCode == RESULT_OK && data != null && data.getData() != null && text != null) {
-                writeText(data.getData(), text);
+                writeText(data.getData(), text, export);
             }
         } else if (requestCode == REQ_TREE) {
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
@@ -1000,7 +1015,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void writeText(final Uri uri, final String text) {
+    private void writeText(final Uri uri, final String text, final boolean export) {
         new Thread(() -> {
             boolean ok = false;
             try (OutputStream out = getContentResolver().openOutputStream(uri, "wt")) {
@@ -1015,9 +1030,10 @@ public class MainActivity extends Activity {
             final boolean done = ok;
             runOnUiThread(() -> {
                 Toast.makeText(this,
-                        done ? R.string.backup_saved : R.string.backup_failed,
+                        export ? (done ? R.string.export_saved : R.string.export_failed)
+                                : (done ? R.string.backup_saved : R.string.backup_failed),
                         Toast.LENGTH_SHORT).show();
-                if (done && web != null) {
+                if (done && !export && web != null) {
                     web.evaluateJavascript("window.chiffreSaved && window.chiffreSaved();", null);
                 }
             });

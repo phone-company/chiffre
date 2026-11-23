@@ -1,0 +1,1 @@
+Fehlerbehebungen: Wer während des Entsperrens die App verlässt, findet sie danach gesperrt (vorher konnte sie offen oder leer erscheinen). Ein technischer Fehler beim Entsperren per Fingerabdruck schaltet den Fingerabdruck nicht mehr ab. Ab Android 12 werden die App-Daten auch nicht mehr von Gerät zu Gerät übertragen. Fehlende englische Texte ergänzt.

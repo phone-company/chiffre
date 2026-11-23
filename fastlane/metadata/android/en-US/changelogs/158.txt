@@ -1,0 +1,1 @@
+Fixes: if you leave the app while it unlocks, it is locked when you come back (before it could appear open or empty). A technical error during fingerprint unlock no longer turns the fingerprint off. From Android 12 on, app data is no longer copied in device-to-device transfers either. Added missing English texts.
