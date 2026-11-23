@@ -1,0 +1,1 @@
+Entsperren wieder so schnell wie vor 1.45.46: Das Löschen des Argon2-Arbeitsspeichers nach jeder Ableitung (neu seit der Referenzimplementierung) läuft jetzt deutlich schneller. Der Speicher wird weiterhin gelöscht.

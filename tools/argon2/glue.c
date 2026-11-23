@@ -43,8 +43,19 @@ EXPORT int argon2id(uint32_t pwlen, uint32_t saltlen, uint32_t t, uint32_t m, ui
 }
 
 /* Speicherfunktionen für den Build ohne C-Bibliothek */
-void *memcpy(void *d, const void *s, size_t n) { unsigned char *a = d; const unsigned char *b = s; while (n--) *a++ = *b++; return d; }
-void *memset(void *d, int c, size_t n) { unsigned char *a = d; while (n--) *a++ = (unsigned char)c; return d; }
+void *memcpy(void *d, const void *s, size_t n) {
+    unsigned char *a = d; const unsigned char *b = s;
+    if ((((uintptr_t)a | (uintptr_t)b) & 7) == 0) for (; n >= 8; n -= 8, a += 8, b += 8) *(uint64_t *)a = *(const uint64_t *)b;
+    while (n--) *a++ = *b++;
+    return d;
+}
+void *memset(void *d, int c, size_t n) {
+    unsigned char *a = d; uint64_t v = (unsigned char)c; v |= v << 8; v |= v << 16; v |= v << 32;
+    while (n && ((uintptr_t)a & 7)) { *a++ = (unsigned char)c; n--; }
+    for (; n >= 8; n -= 8, a += 8) *(uint64_t *)a = v;
+    while (n--) *a++ = (unsigned char)c;
+    return d;
+}
 int memcmp(const void *x, const void *y, size_t n) { const unsigned char *a = x, *b = y; for (; n; n--, a++, b++) if (*a != *b) return *a - *b; return 0; }
 size_t strlen(const char *s) { size_t n = 0; while (s[n]) n++; return n; }
 int strncmp(const char *a, const char *b, size_t n) { for (; n; n--, a++, b++) { if (*a != *b) return (unsigned char)*a - (unsigned char)*b; if (!*a) return 0; } return 0; }

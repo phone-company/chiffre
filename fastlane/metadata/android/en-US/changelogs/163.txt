@@ -1,0 +1,1 @@
+Unlocking is as fast as before 1.45.46 again: wiping the Argon2 working memory after each derivation (new with the reference implementation) is now much faster. The memory is still wiped.
