@@ -40,7 +40,7 @@ Requires Android 8.0 (API 26) or newer.
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-You can check it with `apksigner verify --print-certs chiffre-1.45.45.apk`. It shows the same value in lowercase and without colons:
+You can check it with `apksigner verify --print-certs chiffre-1.45.46.apk`. It shows the same value in lowercase and without colons:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
@@ -59,7 +59,7 @@ You can check it with `apksigner verify --print-certs chiffre-1.45.45.apk`. It s
 
 Chiffre protects stored notes when someone has access to the device or its storage but does not know your password. It promises nothing more. To report vulnerabilities, see [SECURITY.md](SECURITY.md). The technical design is in [docs/SECURITY-DESIGN.md](docs/SECURITY-DESIGN.md) ([Deutsch](docs/SECURITY-DESIGN.de.md)).
 
-- The encryption uses standard procedures from the Android WebView (Web Crypto). The one exception is Argon2id, which Web Crypto does not offer: Chiffre contains its own implementation (about 250 lines of C, compiled to a small WebAssembly module). It was checked bit for bit against two independent implementations (libargon2 and Python's `cryptography`), and the app tests it on every start. None of this code has been independently audited.
+- The encryption uses standard procedures from the Android WebView (Web Crypto). The one exception is Argon2id, which Web Crypto does not offer: Chiffre uses the official Argon2 reference implementation (P-H-C/phc-winner-argon2, unchanged), compiled to a small WebAssembly module. It was checked bit for bit against two independent implementations (libargon2 and Python's `cryptography`), and the app tests it on every start. There is no self-written cryptographic code. The app as a whole has not been independently audited.
 - The password cannot be reset. If you forget it, you cannot get to the notes any more. So make backups.
 - Security depends on the password. Argon2id makes guessing expensive, but it does not save a weak password. Use a long passphrase, for example five random words. New passwords need at least 12 characters, and an indicator estimates the strength. Under Settings > Change password you can set a new one later; older backup files then stay readable with the old password. Vaults created with an earlier version are upgraded to Argon2id automatically the next time you unlock.
 - Chiffre does not protect against malware on the unlocked device, against someone watching your screen, or against keyloggers.

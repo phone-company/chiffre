@@ -18,7 +18,7 @@ Only the latest version in [Releases](https://github.com/phone-company/chiffre/r
 
 ### What is protected
 
-- All notes, drawings and images are stored encrypted in the app's private storage. Method: AES-256-GCM, key derived from your password with Argon2id (RFC 9106, 64 MiB of memory, 6 passes, 1 lane) through an own implementation compiled to WebAssembly, Web Crypto API for the rest. Vaults created before version 1.45.37 used PBKDF2-SHA-256 (600,000 rounds) and are upgraded automatically the next time you unlock. The vault header (algorithm and parameters) is authenticated together with the data.
+- All notes, drawings and images are stored encrypted in the app's private storage. Method: AES-256-GCM, key derived from your password with Argon2id (RFC 9106, 64 MiB of memory, 6 passes, 1 lane) through the official Argon2 reference implementation compiled to WebAssembly, Web Crypto API for the rest. Vaults created before version 1.45.37 used PBKDF2-SHA-256 (600,000 rounds) and are upgraded automatically the next time you unlock. The vault header (algorithm and parameters) is authenticated together with the data.
 - The app has no internet permission. Data leaves the device only when you export a backup yourself.
 - Screenshots and the preview in the app switcher are blocked. Android backup is switched off.
 - Fingerprint (optional): Android remembers your password, encrypted with a key from the Android Keystore (in secure hardware on most devices). The key can only be used after a successful fingerprint with strong biometrics. If another fingerprint is added on the device, it becomes invalid and Chiffre asks for the password again. Someone who knows the device lock and enrolls their own finger does not get to the notes that way. Without the fingerprint feature nothing is remembered.
@@ -27,7 +27,7 @@ Only the latest version in [Releases](https://github.com/phone-company/chiffre/r
 ### What is not protected
 
 - A password someone can guess. Anyone who has a copy of the data or of a backup file can try passwords offline as often as they like. The strength of your password decides. Chiffre requires at least 12 characters and shows an estimate when you create it. 5 to 6 random words are recommended. Argon2id makes each guess expensive, but it does not rescue a short or common password.
-- The Argon2id implementation is my own. It matches two independent implementations on all test cases and is tested on every start, but it has not been audited.
+- Argon2id comes from the official reference implementation (unchanged). It matches two independent implementations on all test cases and is tested on every start. The app as a whole has not been audited.
 - A device with malware, a keylogger or a malicious accessibility service.
 - Coercion: someone who makes you put your finger on the sensor gets to the notes if the fingerprint is on. If that is a risk for you, turn the feature off or lock the app beforehand.
 - The security of the fingerprint depends on the hardware and the Android version of your device. On devices without secure hardware the Keystore protects less. The password itself remains the real key and always works.
@@ -55,7 +55,7 @@ Gepflegt wird nur die jeweils neueste Version, die unter [Releases](https://gith
 
 ### Was geschützt wird
 
-- Alle Notizen, Zeichnungen und Bilder liegen verschlüsselt im privaten Speicher der App. Verfahren: AES-256-GCM, Schlüssel per Argon2id (RFC 9106, 64 MiB Speicher, 6 Durchläufe, 1 Spur) aus deinem Passwort, über eine eigene, zu WebAssembly übersetzte Umsetzung, für den Rest die Web Crypto API. Tresore, die vor Version 1.45.37 angelegt wurden, nutzten PBKDF2-SHA-256 (600.000 Runden) und werden beim nächsten Entsperren automatisch umgestellt. Der Kopf des Tresors (Verfahren und Einstellungen) wird zusammen mit den Daten beglaubigt.
+- Alle Notizen, Zeichnungen und Bilder liegen verschlüsselt im privaten Speicher der App. Verfahren: AES-256-GCM, Schlüssel per Argon2id (RFC 9106, 64 MiB Speicher, 6 Durchläufe, 1 Spur) aus deinem Passwort, über die offizielle, zu WebAssembly übersetzte Referenzimplementierung, für den Rest die Web Crypto API. Tresore, die vor Version 1.45.37 angelegt wurden, nutzten PBKDF2-SHA-256 (600.000 Runden) und werden beim nächsten Entsperren automatisch umgestellt. Der Kopf des Tresors (Verfahren und Einstellungen) wird zusammen mit den Daten beglaubigt.
 - Die App hat keine Internet-Berechtigung. Daten verlassen das Gerät nur, wenn du selbst eine Sicherung exportierst.
 - Screenshots und die Vorschau in der App-Übersicht sind blockiert. Das Android-Backup ist ausgeschaltet.
 - Fingerabdruck (optional): Android merkt sich dein Passwort, verschlüsselt mit einem Schlüssel aus dem Android Keystore (bei den meisten Geräten in Sicherheits-Hardware). Der Schlüssel ist nur nach einem erfolgreichen Fingerabdruck mit starker Biometrie benutzbar. Kommt auf dem Gerät ein weiterer Fingerabdruck hinzu, wird er ungültig, und Chiffre fragt wieder nach dem Passwort. Wer das Gerät samt Gerätesperre kennt und einen eigenen Finger einträgt, kommt damit also nicht an die Notizen. Ohne die Fingerabdruck-Funktion wird nichts gemerkt.
@@ -64,7 +64,7 @@ Gepflegt wird nur die jeweils neueste Version, die unter [Releases](https://gith
 ### Was nicht geschützt wird
 
 - Ein Passwort, das jemand erraten kann. Wer eine Kopie der Daten oder einer Sicherungsdatei hat, kann das Passwort offline beliebig oft probieren. Die Stärke deines Passworts bestimmt die Sicherheit. Chiffre verlangt mindestens 12 Zeichen und zeigt beim Anlegen eine Einschätzung. Empfohlen sind 5 bis 6 zufällige Wörter. Argon2id macht jeden Versuch teuer, rettet aber kein kurzes oder gängiges Passwort.
-- Die Argon2id-Umsetzung ist meine eigene. Sie stimmt in allen Testfällen mit zwei unabhängigen Umsetzungen überein und wird bei jedem Start getestet, wurde aber nicht geprüft.
+- Argon2id stammt aus der offiziellen Referenzimplementierung (unverändert). Sie stimmt in allen Testfällen mit zwei unabhängigen Umsetzungen überein und wird bei jedem Start getestet. Die App als Ganzes wurde nicht geprüft.
 - Ein Gerät mit Schadsoftware, Tastaturmitschnitt oder einem bösartigen Bedienungshilfe-Dienst.
 - Zwang: Wer dich dazu bringt, deinen Finger aufzulegen, kommt mit eingeschaltetem Fingerabdruck an die Notizen. Wer das nicht riskieren will, schaltet die Funktion ab oder sperrt die App vorher.
 - Die Sicherheit des Fingerabdrucks hängt an der Hardware und dem Android deines Geräts. Auf Geräten ohne Sicherheits-Hardware schützt der Keystore schwächer. Das Passwort selbst bleibt der eigentliche Schlüssel und funktioniert immer.

@@ -40,7 +40,7 @@ Voraussetzung: Android 8.0 (API 26) oder neuer.
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.45.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
+Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.46.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
@@ -59,7 +59,7 @@ Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.45.apk`. 
 
 Chiffre schützt gespeicherte Notizen, wenn jemand Zugriff auf das Gerät oder seinen Speicher hat, aber dein Passwort nicht kennt. Mehr verspricht es nicht. Meldungen zu Schwachstellen: siehe [SECURITY.md](SECURITY.md). Der technische Aufbau steht in [docs/SECURITY-DESIGN.de.md](docs/SECURITY-DESIGN.de.md) ([English](docs/SECURITY-DESIGN.md)).
 
-- Die Verschlüsselung nutzt Standardverfahren aus dem Android-WebView (WebCrypto). Die eine Ausnahme ist Argon2id, das WebCrypto nicht anbietet: Chiffre enthält dafür eine eigene Umsetzung (rund 250 Zeilen C, zu einem kleinen WebAssembly-Modul übersetzt). Sie wurde Bit für Bit mit zwei unabhängigen Umsetzungen verglichen (libargon2 und Pythons `cryptography`) und wird von der App bei jedem Start getestet. Unabhängig geprüft wurde dieser Code nicht.
+- Die Verschlüsselung nutzt Standardverfahren aus dem Android-WebView (WebCrypto). Die eine Ausnahme ist Argon2id, das WebCrypto nicht anbietet: Chiffre nutzt dafür die offizielle Argon2-Referenzimplementierung (P-H-C/phc-winner-argon2, unverändert), zu einem kleinen WebAssembly-Modul übersetzt. Sie wurde Bit für Bit mit zwei unabhängigen Umsetzungen verglichen (libargon2 und Pythons `cryptography`) und wird von der App bei jedem Start getestet. Selbst geschriebenen Krypto-Code gibt es nicht. Die App als Ganzes wurde nicht unabhängig geprüft.
 - Das Passwort lässt sich nicht zurücksetzen. Wer es vergisst, kommt nicht mehr an die Notizen. Lege deshalb Sicherungen an.
 - Die Sicherheit hängt am Passwort. Argon2id macht Rateversuche teuer, ein schwaches Passwort rettet es aber nicht. Nimm eine lange Passphrase, zum Beispiel fünf zufällige Wörter. Neue Passwörter brauchen mindestens 12 Zeichen, eine Anzeige schätzt die Stärke. Unter Einstellungen > Passwort ändern vergibst du später ein neues; ältere Sicherungsdateien bleiben dann mit dem alten Passwort lesbar. Tresore aus früheren Versionen werden beim nächsten Entsperren automatisch auf Argon2id umgestellt.
 - Chiffre schützt nicht vor Schadsoftware auf dem entsperrten Gerät, vor Mitlesen am Bildschirm oder vor Tastaturmitschnitt.

@@ -48,7 +48,7 @@ for f in ("docs/SECURITY-DESIGN.md", "docs/SECURITY-DESIGN.de.md"):
     check(f + ": nennt die SHA-256-Summe des Moduls", sha in read(f), sha)
 if shutil.which("clang") and "--rebuild" in sys.argv:
     subprocess.run(["sh", "tools/argon2/build.sh"], check=True, stdout=subprocess.DEVNULL)
-    check("Argon2: Neubau aus argon2id.c ergibt dieselbe Datei", open("tools/argon2/argon2id.wasm", "rb").read() == wasm)
+    check("Argon2: Neubau aus der Referenzimplementierung (tools/argon2/ref) ergibt dieselbe Datei", open("tools/argon2/argon2id.wasm", "rb").read() == wasm)
 
 # JavaScript-Syntax
 if shutil.which("node"):

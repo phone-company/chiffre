@@ -1,0 +1,1 @@
+Argon2id now comes from the official reference implementation (P-H-C/phc-winner-argon2, unchanged) instead of own code. Same results, existing vaults open as before. Chiffre no longer contains any self-written cryptographic code.

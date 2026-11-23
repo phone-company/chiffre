@@ -1,0 +1,1 @@
+Argon2id kommt jetzt aus der offiziellen Referenzimplementierung (P-H-C/phc-winner-argon2, unverändert) statt aus eigenem Code. Gleiche Ergebnisse, bestehende Tresore bleiben unverändert lesbar. In Chiffre steckt damit kein selbst geschriebener Krypto-Code mehr.
