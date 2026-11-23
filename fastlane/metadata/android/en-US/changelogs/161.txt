@@ -1,0 +1,1 @@
+Expiry times are now the same everywhere: new and existing notes and multi-select offer the same list in the same order (1 hour to 3 months, Custom time, No expiry). 1 hour and 6 hours are now also available when changing the expiry.

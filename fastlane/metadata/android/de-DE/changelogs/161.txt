@@ -1,0 +1,1 @@
+Ablaufzeiten überall einheitlich: Neue und bestehende Notizen sowie die Mehrfachauswahl bieten dieselbe Liste in derselben Reihenfolge (1 Stunde bis 3 Monate, Eigene Zeit, Ohne Ablauf). 1 Stunde und 6 Stunden gibt es jetzt auch beim Ändern.

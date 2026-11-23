@@ -1689,6 +1689,7 @@ Object.assign(EN, {"Entsperren": "Unlock", "Notfall": "Emergency", "Sperre sofor
 Object.assign(EN, {"Löscht sich nach dem Lesen": "Deletes itself after reading", "Oder nach dem Lesen löschen": "Or delete after reading", "Die Notiz bleibt, bis sie abläuft oder du sie löschst.": "The note stays until it expires or you delete it.", "Die Notiz wird 1 Stunde nach dem ersten Öffnen gelöscht.": "The note will be deleted 1 hour after it is first opened.", "Version": "Version", "Text kopiert. Die Zwischenablage wird in 30 Sekunden geleert.": "Text copied. The clipboard will be cleared in 30 seconds.", "Kopieren nicht möglich. Nutze die Datei.": "Copying is not possible. Use the file.", "Text kopiert.": "Text copied.", "Bilder sind nur in der Datei.": "Images are only in the file.", "Das hat gerade nicht geklappt. Versuche es noch einmal oder gib dein Passwort ein.": "That did not work just now. Try again or enter your password."});
 Object.assign(EN, {"Als Klartext exportieren": "Export as plain text", "Erstellt eine Markdown-Datei mit allen Notizen, lesbar mit jedem Texteditor und in andere Notiz-Apps übertragbar. Die Datei ist": "Creates a Markdown file with all notes, readable in any text editor and transferable to other notes apps. The file is", "nicht verschlüsselt": "not encrypted", ": Wer sie findet, kann alles lesen. Bilder, Zeichnungen und Lese-und-weg-Notizen sind nicht enthalten. Lösche die Datei, wenn du sie nicht mehr brauchst.": ": anyone who finds it can read everything. Images, drawings and read-and-gone notes are not included. Delete the file when you no longer need it.", "Ich weiß, dass die Datei unverschlüsselt ist.": "I know that the file is not encrypted.", "Exportieren": "Export", "Chiffre – Export": "Chiffre – Export", "Exportiert am {d}": "Exported on {d}", "1 Notiz": "1 note", "{n} Notizen": "{n} notes", "Unverschlüsselt. Bilder, Zeichnungen und Lese-und-weg-Notizen sind nicht enthalten.": "Not encrypted. Images, drawings and read-and-gone notes are not included.", "Ohne Titel": "Untitled", "Erstellt: {d}": "Created: {d}", "Bearbeitet: {d}": "Edited: {d}", "Ohne Ablauf": "No expiry", "Abgelaufen: {d}": "Expired: {d}", "Läuft ab: {d}": "Expires: {d}", "löscht automatisch": "deletes automatically", "Erinnerung: {d}": "Reminder: {d}", "erledigt": "done", "angeheftet": "pinned", "gesperrt": "locked", "Status: {s}": "Status: {s}", "1 Bild": "1 image", "{n} Bilder": "{n} images", "eine Zeichnung": "a drawing", "Nicht enthalten: {s}": "Not included: {s}", "Bitte bestätige, dass die Datei unverschlüsselt ist.": "Please confirm that the file is not encrypted.", "Export erstellt": "Export created"});
 Object.assign(EN, {"Datum und Uhrzeit": "Date and time", "Bitte Datum und Uhrzeit wählen.": "Please choose a date and time.", "Die Zeit liegt in der Vergangenheit.": "That time is in the past.", "Läuft ab am {date}": "Expires on {date}", "Läuft ab am {date} (nach der Erinnerung)": "Expires on {date} (after the reminder)"});
+Object.assign(EN, {"Neuer Ablauf, gerechnet ab jetzt": "New expiry, counted from now"});
 function langPref() { try { const v = localStorage.getItem("chiffre.lang"); if (v === "de" || v === "en") return v; } catch (e) {} return "system"; }
 function resolveLang() {
   const p = langPref();
@@ -1763,6 +1764,15 @@ function ownTimeChip(cur, onPick, pressed) {
     onPick(t);
   });
   return h("span", { class: "chip chip-own", "aria-pressed": String(!!pressed) }, tr("Eigene Zeit"), inp);
+}
+/* Ablauf für bestehende Notizen (Lesen, Bearbeiten, Mehrfachauswahl): dieselben Zeiten in derselben Reihenfolge wie beim Schreiben, gerechnet ab jetzt.
+   act("days", d) | act("time", ts) | act("never"). bare: nur die Chips (eine eigene Überschrift steht schon darüber). */
+function expiryChoices(n, act, bare) {
+  const chips = h("div", { class: "chips" },
+    options.map(([l, d]) => h("button", { class: "chip", type: "button", onclick: () => act("days", d) }, tr(l)))
+      .concat([ownTimeChip(n ? n.expires : 0, t => act("time", t), false),
+        h("button", { class: "chip", type: "button", "aria-pressed": String(!!n && isNever(n)), onclick: () => act("never") }, tr("Ohne Ablauf"))]));
+  return bare ? chips : h("div", null, h("p", { class: "sublabel", style: "margin-bottom:8px" }, tr("Neuer Ablauf, gerechnet ab jetzt")), chips);
 }
 function uid() { return (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()); }
 
@@ -2592,10 +2602,7 @@ function noteCard(n, now, expired, probe) {
     menuItems = () => [
       { icon: "edit", label: tr("Bearbeiten"), run: () => unlockAndEdit(n.id) },
       { icon: "palette", label: tr("Farbe ändern"), panel: () => h("div", { class: "act-body" }, n.locked ? (lockedMsg(), h("p", { class: "sublabel" }, tr("Gesperrt: mit dem Stift entsperren, dann bearbeiten"))) : colorPicker(n.color || "", c => setColor(n.id, c), tr("Farbe der Notiz"))) },
-      { icon: "hourglass", label: tr("Ablauf ändern"), panel: () => h("div", { class: "act-body" }, n.locked ? h("p", { class: "sublabel" }, tr("Gesperrt: mit dem Stift entsperren, dann bearbeiten")) : h("div", { class: "chips" },
-          [[tr("+1 Tag"), 1], [tr("+1 Woche"), 7], [tr("+1 Monat"), 30], [tr("+3 Monate"), 90], [tr("Ohne Ablauf"), 0]].map(([l, d]) =>
-            h("button", { class: "chip", type: "button", "aria-pressed": String(d === 0 && isNever(n)), onclick: () => { closeActions(); if (d) extend(n.id, d); else setNever(n.id); } }, l))
-            .concat([ownTimeChip(n.expires, t => { closeActions(); setExpiryAt(n.id, t); }, false)]))) },
+      { icon: "hourglass", label: tr("Ablauf ändern"), panel: () => h("div", { class: "act-body" }, n.locked ? h("p", { class: "sublabel" }, tr("Gesperrt: mit dem Stift entsperren, dann bearbeiten")) : expiryChoices(n, (k, v) => { closeActions(); if (k === "days") extend(n.id, v); else if (k === "time") setExpiryAt(n.id, v); else setNever(n.id); })) },
       ...(advMode() && isChecklist(n.text) && !n.locked && ckNeedsSort(n.text) ? [{ icon: "list", label: tr("Erledigte nach unten sortieren"), run: () => ckNoteOp(n.id, ckSortDone, "Erledigte nach unten sortiert") }] : []),
       ...(isChecklist(n.text) && !n.locked && n.text.split("\n").some(ckDone) ? [{ icon: "trash", label: tr("Erledigte Punkte löschen"), run: () => ckNoteOp(n.id, ckDropDone, "Erledigte Punkte gelöscht") }] : []),
       ...(advMode() ? [{ icon: "search", label: tr("In Notiz suchen"), run: () => { setTimeout(() => openNoteFind(li, null), 80); } }] : []),
@@ -2619,10 +2626,7 @@ function noteCard(n, now, expired, probe) {
     ta.value = parts.body;
     bindChecklistKeys(ta);
     toolsEl = ckTools(ta);
-    const ext = h("div", { class: "chips" },
-      [[tr("+1 Tag"), 1], [tr("+1 Woche"), 7], [tr("+1 Monat"), 30], [tr("+3 Monate"), 90], [tr("Ohne Ablauf"), 0]].map(([l, d]) =>
-        h("button", { class: "chip", type: "button", "aria-pressed": String(d === 0 && isNever(n)), onclick: () => flushThen(() => d ? extend(n.id, d) : setNever(n.id)) }, l))
-        .concat([ownTimeChip(n.expires, t => flushThen(() => setExpiryAt(n.id, t)), false)]));
+    const ext = expiryChoices(n, (k, v) => flushThen(() => k === "days" ? extend(n.id, v) : k === "time" ? setExpiryAt(n.id, v) : setNever(n.id)), true);
     const autoBox = h("input", { type: "checkbox", id: "auto-" + n.id });
     autoBox.checked = !!n.auto;
     // die Zeile oben ("wird in … gelöscht" / "läuft in … ab") folgt der Wahl sofort
@@ -2705,10 +2709,7 @@ function noteCard(n, now, expired, probe) {
       const bb = li.querySelector('.note-head [aria-label="Erinnerung"], .note-head [aria-label="Reminder"]'); if (bb) bb.setAttribute("aria-pressed", String(ts > 0));
       if (ts > 0 && !document.querySelector(".act-panel")) toast(tr("Erinnerung: {when}", { when: remindText(ts) }));
     }, !!fromLocalInput(remindIn.value), fromLocalInput(remindIn.value), editRepeat));
-    const ablaufPanel = () => h("div", { class: "act-body" }, h("div", { class: "chips" },
-          [[tr("+1 Tag"), 1], [tr("+1 Woche"), 7], [tr("+1 Monat"), 30], [tr("+3 Monate"), 90], [tr("Ohne Ablauf"), 0]].map(([l, d]) =>
-            h("button", { class: "chip", type: "button", "aria-pressed": String(d === 0 && isNever(n)), onclick: () => { closeActions(); flushThen(() => d ? extend(n.id, d) : setNever(n.id)); } }, l))
-            .concat([ownTimeChip(n.expires, t => { closeActions(); flushThen(() => setExpiryAt(n.id, t)); }, false)])), isNever(n) ? null : autoRow(),
+    const ablaufPanel = () => h("div", { class: "act-body" }, expiryChoices(n, (k, v) => { closeActions(); flushThen(() => k === "days" ? extend(n.id, v) : k === "time" ? setExpiryAt(n.id, v) : setNever(n.id)); }), isNever(n) ? null : autoRow(),
           advMode() ? burnSection(() => editBurn, v => { editBurn = v; showBurn(); }, () => setTimeout(() => openActions(tr("Ablauf ändern"), [], ablaufPanel), 0)) : null);
     menuItems = () => [
       editDirty() ? { icon: "undo", label: tr("Änderungen verwerfen"), run: () => { armedId = null; openId = null; readId = null; render(); } } : null,
@@ -3093,10 +3094,10 @@ async function addNoteNow() {
 async function extend(id, days) {
   const n = notes.find(x => x.id === id); if (!n) return;
   const now = Date.now();
-  n.created = now; n.expires = now + days * DAY; n.edited = now; delete n.sink; guardExpiry(n);
+  n.created = now; n.expires = now + Math.round(days * DAY); n.edited = now; delete n.sink; guardExpiry(n);
   openId = null; readId = null; armedId = null;
   await persist(); followTop = sortMode() === "edited"; render();
-  toast(tr("Verlängert bis {date}", { date: dateFmt.format(n.expires) }));
+  toast(tr("Läuft ab am {date}", { date: expWhen(n.expires) }));
 }
 async function setExpiryAt(id, ts) {   // eigene Ablaufzeit (Datum und Uhrzeit) für eine bestehende Notiz
   const n = notes.find(x => x.id === id); if (!n || !(ts > Date.now())) return;
@@ -3219,23 +3220,21 @@ function selColor() {
   }, tr("Farbe der Notiz"))));
 }
 function selExtend() {
-  const apply = async days => {
+  const apply = async (days, at) => {   // days: ab jetzt; at: eigene Zeit; beides leer: ohne Ablauf
     const list = selNotes(), now = Date.now();
     const prev = list.map(n => ({ id: n.id, created: n.created, expires: n.expires, auto: n.auto, edited: n.edited, sink: n.sink }));
     list.forEach(n => {
-      if (days) { n.created = now; n.expires = now + days * DAY; n.edited = now; delete n.sink; guardExpiry(n); }
+      if (days || at) { n.created = now; n.expires = at || now + Math.round(days * DAY); n.edited = now; delete n.sink; guardExpiry(n); }
       else { n.expires = NEVER; n.auto = false; n.edited = now; delete n.sink; }
     });
     if (!await selSave()) return;
     selected.clear(); selArmed = false; followTop = sortMode() === "edited"; render(); refreshSelection();
-    toastUndo(days ? tr("Verlängert bis {date}", { date: dateFmt.format(now + days * DAY) }) : tr("Ohne Ablauf gesetzt"), async () => {
+    toastUndo(days || at ? tr("Läuft ab am {date}", { date: expWhen(at || now + Math.round(days * DAY)) }) : tr("Ohne Ablauf gesetzt"), async () => {
       prev.forEach(p => { const m = notes.find(x => x.id === p.id); if (!m) return; m.created = p.created; m.expires = p.expires; if (p.auto === undefined) delete m.auto; else m.auto = p.auto; if (p.edited === undefined) delete m.edited; else m.edited = p.edited; if (p.sink === undefined) delete m.sink; else m.sink = p.sink; });
       await selSave(); render();
     });
   };
-  openActions(tr("Ablauf ändern"), [], () => h("div", { class: "act-body" }, h("div", { class: "chips" },
-    [[tr("+1 Tag"), 1], [tr("+1 Woche"), 7], [tr("+1 Monat"), 30], [tr("+3 Monate"), 90], [tr("Ohne Ablauf"), 0]].map(([l, d]) =>
-      h("button", { class: "chip", type: "button", onclick: () => { closeActions(); apply(d); } }, l)))));
+  openActions(tr("Ablauf ändern"), [], () => h("div", { class: "act-body" }, expiryChoices(null, (k, v) => { closeActions(); if (k === "days") apply(v); else if (k === "time") apply(0, v); else apply(0); })));
 }
 async function selDelete() {
   if (!selArmed) {
@@ -4718,7 +4717,7 @@ function refreshNewDraw() {
   $("drawNew").textContent = tr(newDraw ? "Zeichnung bearbeiten" : "Zeichnen");
   $("addBtn").disabled = !($("composer").value.trim() || $("titleNew").value.trim() || newDraw || newImgs.length);
 }
-const ABOUT = { version: "1.45.44", name: "Andree Wijchers", mail: "chiffre@tuta.com", repo: "github.com/phone-company/chiffre" };
+const ABOUT = { version: "1.45.45", name: "Andree Wijchers", mail: "chiffre@tuta.com", repo: "github.com/phone-company/chiffre" };
 function copyPlain(text) {
   const n = window.ChiffreNative;
   if (n && typeof n.copyText === "function") {

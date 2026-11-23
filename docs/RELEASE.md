@@ -40,13 +40,13 @@ Im Terminal im Projektordner:
 ```
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 ./gradlew assembleRelease
-cp app/build/outputs/apk/release/app-release.apk chiffre-1.45.44.apk
+cp app/build/outputs/apk/release/app-release.apk chiffre-1.45.45.apk
 ```
 
 Prüfen, ob die APK signiert ist und mit welchem Zertifikat (der Pfad zu `apksigner` hängt von deiner Build-Tools-Version ab):
 
 ```
-~/Library/Android/sdk/build-tools/<VERSION>/apksigner verify --print-certs chiffre-1.45.44.apk
+~/Library/Android/sdk/build-tools/<VERSION>/apksigner verify --print-certs chiffre-1.45.45.apk
 ```
 
 Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
@@ -54,7 +54,7 @@ Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
 ## 4. Auf das GrapheneOS-Gerät installieren
 
 - Kopiere die APK per USB-Kabel auf das Handy (Modus „Dateiübertragung“) und öffne sie in der Dateien-App. GrapheneOS fragt, ob diese Quelle Apps installieren darf. Erlaube das nur für diesen Vorgang und nimm die Berechtigung danach unter **Einstellungen > Apps > Spezieller App-Zugriff > Unbekannte Apps installieren** wieder zurück.
-- Oder per adb, wenn du USB-Debugging an hast: `adb install -r chiffre-1.45.44.apk`
+- Oder per adb, wenn du USB-Debugging an hast: `adb install -r chiffre-1.45.45.apk`
 
 ## 5. Updates veröffentlichen
 
@@ -80,13 +80,13 @@ Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
    ```
    Prüfe die Liste. **Weder `keystore.properties` noch eine `.jks`-Datei dürfen darin auftauchen.** Die `.gitignore` schließt sie aus, aber kontrolliere es.
    ```
-   git commit -m "Chiffre 1.45.44"
+   git commit -m "Chiffre 1.45.45"
    git remote add origin https://github.com/BENUTZERNAME/chiffre.git
    git push -u origin main
-   git tag v1.45.44
-   git push origin v1.45.44
+   git tag v1.45.45
+   git push origin v1.45.45
    ```
-4. Auf GitHub unter **Releases > Draft a new release** den Tag `v1.45.44` wählen, `chiffre-1.45.44.apk` anhängen und den SHA-256-Fingerabdruck in die Beschreibung schreiben. Trage ihn auch in der `README.md` ein.
+4. Auf GitHub unter **Releases > Draft a new release** den Tag `v1.45.45` wählen, `chiffre-1.45.45.apk` anhängen und den SHA-256-Fingerabdruck in die Beschreibung schreiben. Trage ihn auch in der `README.md` ein.
 5. Optional, für die Browser-Version: **Settings > Pages > Source: GitHub Actions**. Der Workflow in `.github/workflows/pages.yml` veröffentlicht dann den Ordner `app/src/main/assets`.
 
 Ob du die `applicationId` ändern willst, entscheide **vor dem ersten Release**. Sie steht in `app/build.gradle.kts`. Eine Änderung später macht aus der App eine neue, andere App. Üblich ist `io.github.BENUTZERNAME.chiffre`.
