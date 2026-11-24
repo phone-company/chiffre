@@ -1,0 +1,1 @@
+More modern: the lock screen shows the Chiffre ring, which runs while unlocking and shakes on a wrong password. Haptic feedback when checking, finishing, deleting and unlocking (no new permission). Large title above the note list. Predictive back with preview on Android 14 and later.

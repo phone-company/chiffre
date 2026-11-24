@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: Startbildschirm mit demselben Ring wie der Sperrbildschirm, in der Farbe und auf dem Hintergrund
+         der Seite. Das Logo gleitet danach genau auf den Ring (MainActivity.SplashApi), ohne Farbsprung. -->
+    <style name="Theme.Chiffre" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@color/window_bg</item>
+        <item name="android:statusBarColor">@color/window_bg</item>
+        <item name="android:navigationBarColor">@color/window_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowSplashScreenBackground">@color/window_bg</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_ring</item>
+    </style>
+    <!-- Farbschema "Grün" statt Material You (ab Android 13 für den nächsten Start gewählt) -->
+    <style name="Theme.Chiffre.SplashGreen">
+        <item name="android:windowBackground">@color/window_bg_green</item>
+        <item name="android:statusBarColor">@color/window_bg_green</item>
+        <item name="android:navigationBarColor">@color/window_bg_green</item>
+        <item name="android:windowSplashScreenBackground">@color/window_bg_green</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_ring_green</item>
+    </style>
+    <!-- Startbildschirm in echtem Schwarz (ab Android 13 für den nächsten Start gewählt, wenn "Echtes Schwarz" an ist). -->
+    <style name="Theme.Chiffre.SplashBlack">
+        <item name="android:windowBackground">@color/oled_black</item>
+        <item name="android:statusBarColor">@color/oled_black</item>
+        <item name="android:navigationBarColor">@color/oled_black</item>
+        <item name="android:windowSplashScreenBackground">@color/oled_black</item>
+    </style>
+    <style name="Theme.Chiffre.SplashBlackGreen" parent="Theme.Chiffre.SplashBlack">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_ring_green</item>
+    </style>
+</resources>

@@ -3,4 +3,8 @@
     <color name="window_bg">#eef3ef</color>
     <color name="ic_launcher_background">#0f3b2e</color>
     <color name="oled_black">#000000</color>
+    <!-- Farbe des Rings im Startbildschirm (wie die Farbe primary der Seite) -->
+    <color name="splash_ring">#0f3b2e</color>
+    <color name="splash_ring_green">#0f3b2e</color>
+    <color name="window_bg_green">#eef3ef</color>
 </resources>

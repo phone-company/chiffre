@@ -9,6 +9,8 @@ import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricPrompt;
 import android.os.Build;
 import android.os.CancellationSignal;
+import android.os.Handler;
+import android.os.Looper;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
@@ -51,6 +53,11 @@ final class Biometrics {
         void onFailure(int kind, String detail);
     }
 
+    /** Rückruf, der den von der Abfrage freigegebenen Cipher mitbekommt. */
+    private abstract static class Authed implements Callback {
+        Cipher authed;
+    }
+
     private static final String KEYSTORE = "AndroidKeyStore";
     private static final String KEY_ALIAS = "chiffre_bio_v1";
     private static final String PREFS = "chiffre_bio";
@@ -70,7 +77,7 @@ final class Biometrics {
 
     /** Löscht Schlüssel und gemerktes Passwort. */
     static void clear(Context c) {
-        prefs(c).edit().remove(K_BLOB).remove(K_IV).apply();
+        prefs(c).edit().remove(K_BLOB).remove(K_IV).remove(K_FAILS).apply();
         try {
             KeyStore ks = KeyStore.getInstance(KEYSTORE);
             ks.load(null);
@@ -137,14 +144,33 @@ final class Biometrics {
         }
     }
 
+    /** Kurzer Fehlercode, z. B. "IllegalBlockSizeException/KeyStoreException:-26". Die Zahl ist der Keystore-Code (ab Android 13). */
     private static String describe(Throwable e) {
         String s = e.getClass().getSimpleName();
         Throwable c = e.getCause();
         if (c != null && c != e) {
             s += "/" + c.getClass().getSimpleName();
         }
+        for (Throwable t = e; t != null; t = t.getCause() == t ? null : t.getCause()) {
+            if (Build.VERSION.SDK_INT >= 33 && t instanceof android.security.KeyStoreException) {
+                s += ":" + ((android.security.KeyStoreException) t).getNumericErrorCode();
+                break;
+            }
+        }
         return s;
     }
+
+    /** Steckt irgendwo in der Kette eine Ausnahme dieser Art? */
+    private static boolean has(Throwable e, Class<?> k) {
+        for (Throwable t = e; t != null; t = t.getCause() == t ? null : t.getCause()) {
+            if (k.isInstance(t)) return true;
+        }
+        return false;
+    }
+
+    /** Fehlschläge nach erfolgreichem Fingerabdruck in Folge. Erst nach mehreren wird aufgegeben. */
+    private static final String K_FAILS = "fails";
+    private static final int MAX_FAILS = 3;
 
     private static SecretKey loadKey() throws Exception {
         KeyStore ks = KeyStore.getInstance(KEYSTORE);
@@ -155,66 +181,75 @@ final class Biometrics {
     /** Richtet den Fingerabdruck ein: Schlüssel anlegen, Fingerabdruck abfragen, Passwort verschlüsseln. */
     static void enable(Activity a, byte[] secret, Callback cb) {
         if (Build.VERSION.SDK_INT < 28) {
+            Arrays.fill(secret, (byte) 0);
             cb.onFailure(KIND_ERROR, "api");
             return;
         }
+        enableTry(a, secret, cb, true);
+    }
+
+    /**
+     * Ein Versuch des Einrichtens. Erst mit "nur bei entsperrtem Gerät": manche Geräte lehnen das beim Anlegen ab,
+     * melden "User not authenticated" beim Start oder erst beim Verschlüsseln nach dem Fingerabdruck
+     * (IllegalBlockSizeException/KeyStoreException). Dann folgt ein zweiter Versuch ohne diese Zusatzbedingung,
+     * mit einer zweiten Abfrage. Der Schlüssel braucht auch dann bei jeder Benutzung einen Fingerabdruck.
+     */
+    private static void enableTry(Activity a, byte[] secret, Callback cb, boolean strict) {
         final Cipher cipher;
         String step = "key";
         try {
             clear(a);
-            // Erst mit "nur bei entsperrtem Gerät". Manche Geräte lehnen das beim Anlegen des Schlüssels ab
-            // oder melden erst beim Start der Verschlüsselung "User not authenticated". Dann klappt der zweite
-            // Versuch ohne diese Zusatzbedingung. Der Schlüssel braucht auch dann bei jeder Benutzung einen Fingerabdruck.
-            Cipher ready = null;
-            for (int attempt = 0; attempt < 2 && ready == null; attempt++) {
-                SecretKey key;
-                step = "key";
-                try {
-                    key = createKey(attempt == 0);
-                } catch (Exception e) {
-                    if (attempt == 1) throw e;
-                    clear(a);
-                    continue;
-                }
-                step = "init";
-                try {
-                    Cipher c = Cipher.getInstance(TRANSFORMATION);
-                    c.init(Cipher.ENCRYPT_MODE, key);
-                    ready = c;
-                } catch (Exception e) {
-                    if (attempt == 1) throw e;
-                    clear(a);
-                }
+            SecretKey key;
+            try {
+                key = createKey(strict);
+            } catch (Exception e) {
+                if (!strict) throw e;
+                enableTry(a, secret, cb, false);
+                return;
             }
-            cipher = ready;
+            step = "init";
+            Cipher c = Cipher.getInstance(TRANSFORMATION);
+            try {
+                c.init(Cipher.ENCRYPT_MODE, key);
+            } catch (Exception e) {
+                if (!strict) throw e;
+                enableTry(a, secret, cb, false);
+                return;
+            }
+            cipher = c;
         } catch (Exception e) {
             clear(a);
             Arrays.fill(secret, (byte) 0);
             cb.onFailure(KIND_ERROR, step + ":" + describe(e));
             return;
         }
-        prompt(a, a.getString(R.string.bio_title_enable), cipher, new Callback() {
+        prompt(a, a.getString(R.string.bio_title_enable), cipher, new Authed() {
             @Override
             public void onSuccess(byte[] unused) {
-                String detail = "";
+                Cipher c = authed != null ? authed : cipher;
                 try {
-                    byte[] ct = cipher.doFinal(secret);
+                    byte[] ct = c.doFinal(secret);
                     prefs(a).edit()
                             .putString(K_BLOB, Base64.encodeToString(ct, Base64.NO_WRAP))
-                            .putString(K_IV, Base64.encodeToString(cipher.getIV(), Base64.NO_WRAP))
+                            .putString(K_IV, Base64.encodeToString(c.getIV(), Base64.NO_WRAP))
+                            .putInt(K_FAILS, 0)
                             .commit();
                     if (!isEnabled(a)) {
                         throw new IllegalStateException("prefs");
                     }
-                    cb.onSuccess(new byte[0]);
-                    return;
-                } catch (Exception e) {
-                    detail = "seal:" + describe(e);
-                    clear(a);
-                } finally {
                     Arrays.fill(secret, (byte) 0);
+                    cb.onSuccess(new byte[0]);
+                } catch (Exception e) {
+                    clear(a);
+                    if (strict) {
+                        // Schlüssel ohne "nur bei entsperrtem Gerät" probieren (zweite Abfrage). Kurz warten,
+                        // bis die erste Abfrage ganz zu ist, sonst bricht Android die zweite gleich wieder ab.
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> enableTry(a, secret, cb, false), 400L);
+                        return;
+                    }
+                    Arrays.fill(secret, (byte) 0);
+                    cb.onFailure(KIND_ERROR, "seal:" + describe(e));
                 }
-                cb.onFailure(KIND_ERROR, detail);
             }
 
             @Override
@@ -266,17 +301,32 @@ final class Biometrics {
             cb.onFailure(KIND_ERROR, "init:" + describe(e));
             return;
         }
-        prompt(a, a.getString(R.string.bio_title_unlock), cipher, new Callback() {
+        prompt(a, a.getString(R.string.bio_title_unlock), cipher, new Authed() {
             @Override
             public void onSuccess(byte[] unused) {
+                Cipher c = authed != null ? authed : cipher;
+                byte[] pw;
                 try {
-                    cb.onSuccess(cipher.doFinal(blob));
+                    pw = c.doFinal(blob);
                 } catch (Exception e) {
-                    // "User not authenticated" ist ein Aussetzer, kein kaputter Schlüssel: nichts löschen
-                    boolean flaky = "UserNotAuthenticatedException".equals(e.getClass().getSimpleName());
-                    if (!flaky) clear(a);
-                    cb.onFailure(flaky ? KIND_ERROR : KIND_INVALID, "final:" + describe(e));
+                    // Nur wenn sicher ist, dass Schlüssel oder Daten kaputt sind, wird gelöscht. Ein Keystore-Fehler
+                    // nach erfolgreichem Fingerabdruck kann ein Aussetzer sein: dann bleibt alles, erst nach
+                    // mehreren Fehlschlägen in Folge wird aufgegeben.
+                    boolean broken = has(e, KeyPermanentlyInvalidatedException.class)
+                            || has(e, javax.crypto.AEADBadTagException.class);
+                    int fails = prefs(a).getInt(K_FAILS, 0) + 1;
+                    if (broken || fails >= MAX_FAILS) {
+                        clear(a);
+                        prefs(a).edit().remove(K_FAILS).apply();
+                        cb.onFailure(KIND_INVALID, "final:" + describe(e));
+                    } else {
+                        prefs(a).edit().putInt(K_FAILS, fails).apply();
+                        cb.onFailure(KIND_ERROR, "final:" + describe(e));
+                    }
+                    return;
                 }
+                prefs(a).edit().putInt(K_FAILS, 0).apply();
+                cb.onSuccess(pw);
             }
 
             @Override
@@ -303,6 +353,14 @@ final class Biometrics {
                 a.getMainExecutor(), new BiometricPrompt.AuthenticationCallback() {
                     @Override
                     public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                        // Mit dem Cipher weiterarbeiten, den die Abfrage freigegeben hat
+                        Cipher c = null;
+                        try {
+                            BiometricPrompt.CryptoObject o = result.getCryptoObject();
+                            if (o != null) c = o.getCipher();
+                        } catch (Exception ignored) {
+                        }
+                        if (cb instanceof Authed) ((Authed) cb).authed = c;
                         cb.onSuccess(new byte[0]);
                     }
 

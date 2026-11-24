@@ -1,0 +1,1 @@
+Neu: der Ablauf-Ring. Jede Notiz zeigt oben rechts einen Ring aus zwölf Segmenten wie im Logo, der mit der Restzeit verblasst: in der App-Farbe, gelb wenn es bald soweit ist, auf farbigen Notizen in deren Schriftfarbe. Ersetzt den schmalen Balken.

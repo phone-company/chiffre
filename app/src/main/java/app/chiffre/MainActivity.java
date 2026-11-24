@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.content.ActivityNotFoundException;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -28,10 +29,13 @@ import android.os.PersistableBundle;
 import android.os.StatFs;
 import android.os.SystemClock;
 import android.util.Base64;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.animation.PathInterpolator;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -42,6 +46,11 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import android.window.BackEvent;
+import android.window.OnBackAnimationCallback;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
+import android.window.SplashScreenView;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -86,6 +95,9 @@ public class MainActivity extends Activity {
     private static final String PREFS_LOCK = "chiffre_lock";
 
     private WebView web;
+    /** Zurückwischen ab Android 13: der Rückruf ist nur angemeldet, solange in der Web-App etwas zu schließen ist (sonst übernimmt das System). */
+    private Object backCallback;
+    private boolean backActive = false;
     private ValueCallback<Uri[]> pickCallback;
     private Uri captureUri;
     private String pendingSave;
@@ -101,11 +113,22 @@ public class MainActivity extends Activity {
     private long ownClipAt = 0L;
     private boolean clipListening = false;
     private boolean bioBusy = false;
+    /** Die Seite meldet, dass der erste Bildschirm fertig ist. Bis dahin bleibt der Android-Startbildschirm stehen (sonst sieht man kurz eine leere Fläche). */
+    private volatile boolean pageReady = false;
+    /** Wo der Ring im Entsperrbildschirm sitzt (Anteile der Seitenbreite/-höhe), damit das Logo des Startbildschirms dorthin gleiten kann. */
+    private volatile double ringX = -1, ringY = -1, ringW = -1;
+    private static final long SPLASH_MAX_MS = 2000L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CaptureProvider.cleanAll(this);
+        // Übrig gebliebene Kamerafotos aufräumen, im Hintergrund, damit der Start nicht darauf wartet.
+        // Gelöscht wird nur, was vor diesem Moment entstanden ist; ein neues Foto bleibt unberührt.
+        final long startedAt = System.currentTimeMillis();
+        final Context app = getApplicationContext();
+        Thread cleaner = new Thread(() -> CaptureProvider.cleanOlderThan(app, startedAt), "chiffre-clean");
+        cleaner.setPriority(Thread.MIN_PRIORITY);
+        cleaner.start();
 
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
@@ -117,6 +140,7 @@ public class MainActivity extends Activity {
         root.addView(web, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        holdSplashUntilReady(root);
         // Letzte Hintergrundfarbe der Seite sofort malen, damit beim Start nichts aufblitzt
         applyStoredLook();
         // Notizinhalt gehört nicht dem Autofill-Dienst des Systems; das spart außerdem den Aufbau beim ersten Fokus im Textfeld
@@ -164,14 +188,16 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Ab Android 13: Der Startbildschirm des Systems wird beim nächsten Start schwarz, wenn echtes Schwarz an ist. */
+    /** Ab Android 13: Startbildschirm für den nächsten Start passend zur Seite wählen (Farbschema Grün, echtes Schwarz). */
     @SuppressLint("NewApi")
-    private void rememberSplash(boolean black) {
+    private void rememberSplash(boolean green, boolean black) {
         if (Build.VERSION.SDK_INT < 33) {
             return;
         }
         try {
-            getSplashScreen().setSplashScreenTheme(black ? R.style.Theme_Chiffre_SplashBlack : R.style.Theme_Chiffre);
+            getSplashScreen().setSplashScreenTheme(black
+                    ? (green ? R.style.Theme_Chiffre_SplashBlackGreen : R.style.Theme_Chiffre_SplashBlack)
+                    : (green ? R.style.Theme_Chiffre_SplashGreen : R.style.Theme_Chiffre));
         } catch (RuntimeException e) {
             // ohne Folgen
         }
@@ -413,6 +439,46 @@ public class MainActivity extends Activity {
         }
 
         /** Künftige Zeitpunkte mit Art (e/w/r), kommagetrennt, in Millisekunden. Nie Text von Notizen. */
+        /** Spürbare Rückmeldung (Vibration) über die Ansicht selbst: braucht keine Berechtigung und folgt der Systemeinstellung „Haptisches Feedback“. */
+        @JavascriptInterface
+        public void haptic(String kind) {
+            final String k = kind == null ? "" : kind;
+            runOnUiThread(() -> {
+                if (web == null) return;
+                int c;
+                if ("confirm".equals(k)) c = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.VIRTUAL_KEY;
+                else if ("reject".equals(k)) c = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.REJECT : HapticFeedbackConstants.LONG_PRESS;
+                else if ("long".equals(k)) c = HapticFeedbackConstants.LONG_PRESS;
+                else c = HapticFeedbackConstants.CLOCK_TICK;
+                web.performHapticFeedback(c);
+            });
+        }
+
+        /** Welcher Startbildschirm beim nächsten Start passt: Farbschema Grün, echtes Schwarz. */
+        @JavascriptInterface
+        public void splashStyle(boolean green, boolean black) {
+            runOnUiThread(() -> rememberSplash(green, black));
+        }
+
+        /** Der erste Bildschirm der Seite ist gezeichnet: der Startbildschirm darf gehen. */
+        @JavascriptInterface
+        public void ready() {
+            pageReady = true;
+        }
+
+        /** Wie ready(), dazu die Lage des Rings (Mitte x, Mitte y, Breite als Anteil der Seite). */
+        @JavascriptInterface
+        public void readyAt(double x, double y, double w) {
+            if (x >= 0 && x <= 1 && y >= 0 && y <= 1 && w > 0 && w < 1) { ringX = x; ringY = y; ringW = w; }
+            pageReady = true;
+        }
+
+        /** Die Web-App meldet, ob Zurück gerade etwas in ihr schließt (Notiz, Menü, Fenster). */
+        @JavascriptInterface
+        public void setBackActive(boolean on) {
+            runOnUiThread(() -> updateBack(on));
+        }
+
         @JavascriptInterface
         public void setExpiries(String csv) {
             if (csv != null && csv.length() > 20_000) {
@@ -449,7 +515,6 @@ public class MainActivity extends Activity {
                     e.clear();
                 }
                 e.apply();
-                rememberSplash(ok && color == 0xFF000000);
             });
         }
 
@@ -1038,6 +1103,104 @@ public class MainActivity extends Activity {
                 }
             });
         }).start();
+    }
+
+    /** Android 12+: Startbildschirm stehen lassen, bis die Seite fertig ist (höchstens 2 s), dann weich ausblenden. */
+    private void holdSplashUntilReady(final View root) {
+        if (Build.VERSION.SDK_INT < 31) return;
+        final long start = SystemClock.elapsedRealtime();
+        root.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (pageReady || SystemClock.elapsedRealtime() - start > SPLASH_MAX_MS) {
+                    root.getViewTreeObserver().removeOnPreDrawListener(this);
+                    return true;
+                }
+                root.postDelayed(root::invalidate, 50);
+                return false;
+            }
+        });
+        SplashApi.fadeOut(this);
+    }
+
+    /** Ausgang des Startbildschirms: das Logo gleitet an die Stelle des Rings und wird dabei kleiner, der Hintergrund blendet aus. */
+    @TargetApi(31)
+    private static final class SplashApi {
+        static void fadeOut(MainActivity a) {
+            a.getSplashScreen().setOnExitAnimationListener((SplashScreenView v) -> {
+                PathInterpolator ease = new PathInterpolator(0.2f, 0f, 0f, 1f);
+                View icon = v.getIconView();
+                WebView w = a.web;
+                if (icon != null && w != null && a.ringW > 0 && icon.getWidth() > 0) {
+                    int[] wl = new int[2], il = new int[2];
+                    w.getLocationOnScreen(wl);
+                    icon.getLocationOnScreen(il);
+                    float tx = wl[0] + (float) (a.ringX * w.getWidth()), ty = wl[1] + (float) (a.ringY * w.getHeight());
+                    float cx = il[0] + icon.getWidth() / 2f, cy = il[1] + icon.getHeight() / 2f;
+                    // Das Startlogo ist derselbe Ring: Mittellinie 68 von 150 Einheiten der Symbolfläche,
+                    // im Sperrbildschirm 68 von 100 Einheiten seines Kastens. So landet es deckungsgleich.
+                    float sc = (float) (a.ringW * w.getWidth() * 0.68 / (icon.getWidth() * (68.0 / 150.0)));
+                    sc = Math.max(0.2f, Math.min(1.5f, sc));
+                    icon.animate().translationX(tx - cx).translationY(ty - cy).scaleX(sc).scaleY(sc)
+                            .setDuration(420L).setInterpolator(ease).start();
+                    // Erst wenn das Logo auf dem Ring liegt, blendet der Startbildschirm aus: dann ist darunter derselbe Ring
+                    v.animate().alpha(0f).setStartDelay(380L).setDuration(220L).setInterpolator(new android.view.animation.LinearInterpolator())
+                            .withEndAction(() -> { v.remove(); a.js("window.chiffreSplashDone && window.chiffreSplashDone();"); }).start();
+                } else {
+                    v.animate().alpha(0f).setDuration(260L).withEndAction(() -> { v.remove(); a.js("window.chiffreSplashDone && window.chiffreSplashDone();"); }).start();
+                }
+            });
+        }
+    }
+
+    private void js(String code) {
+        if (web != null) web.evaluateJavascript(code, null);
+    }
+
+    @TargetApi(33)
+    private void updateBack(boolean on) {
+        if (Build.VERSION.SDK_INT < 33 || on == backActive) return;
+        backActive = on;
+        OnBackInvokedDispatcher d = getOnBackInvokedDispatcher();
+        if (on) {
+            if (backCallback == null) backCallback = Build.VERSION.SDK_INT >= 34 ? BackApi.animated(this) : BackApi.simple(this);
+            d.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, (OnBackInvokedCallback) backCallback);
+        } else if (backCallback != null) {
+            d.unregisterOnBackInvokedCallback((OnBackInvokedCallback) backCallback);
+        }
+    }
+
+    /** Rückrufe für das Zurückwischen. Ab Android 14 mit Vorschau: die offene Notiz folgt dem Finger, dahinter erscheint die Liste. */
+    @TargetApi(33)
+    private static final class BackApi {
+        static OnBackInvokedCallback simple(MainActivity a) {
+            return () -> a.js("window.chiffreBack && window.chiffreBack();");
+        }
+
+        @TargetApi(34)
+        static OnBackInvokedCallback animated(MainActivity a) {
+            return new OnBackAnimationCallback() {
+                @Override
+                public void onBackStarted(BackEvent e) {
+                    a.js("window.chiffreBackStart && window.chiffreBackStart(" + (e.getSwipeEdge() == BackEvent.EDGE_RIGHT ? 1 : 0) + ");");
+                }
+
+                @Override
+                public void onBackProgressed(BackEvent e) {
+                    a.js("window.chiffreBackProgress && window.chiffreBackProgress(" + e.getProgress() + ");");
+                }
+
+                @Override
+                public void onBackCancelled() {
+                    a.js("window.chiffreBackCancel && window.chiffreBackCancel();");
+                }
+
+                @Override
+                public void onBackInvoked() {
+                    a.js("window.chiffreBackCommit ? window.chiffreBackCommit() : (window.chiffreBack && window.chiffreBack());");
+                }
+            };
+        }
     }
 
     /** Zurück schließt zuerst die Einstellungen in der Web-App, sonst verhält sich die App wie üblich. */

@@ -2,4 +2,6 @@
 <resources>
     <!-- Android 12+: Hintergrund aus den Systemfarben (Material You), passend zur Seite. -->
     <color name="window_bg">@android:color/system_neutral1_10</color>
+    <!-- Material You: wie die Rolle "primary" der Seite (hell a1-600) -->
+    <color name="splash_ring">@android:color/system_accent1_600</color>
 </resources>

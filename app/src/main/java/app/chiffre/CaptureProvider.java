@@ -54,6 +54,22 @@ public class CaptureProvider extends ContentProvider {
         }
     }
 
+    /**
+     * Löscht übrig gebliebene Fotos, die vor dem Zeitpunkt t entstanden sind. Für das Aufräumen beim Start im
+     * Hintergrund: ein Foto, das danach entsteht, bleibt sicher unberührt.
+     */
+    static void cleanOlderThan(Context c, long t) {
+        File[] list = dir(c).listFiles();
+        if (list == null) {
+            return;
+        }
+        for (File f : list) {
+            if (f.lastModified() < t) {
+                f.delete();
+            }
+        }
+    }
+
     private File resolve(Uri uri) throws FileNotFoundException {
         String name = uri.getLastPathSegment();
         if (name == null || name.contains("/") || name.contains("..") || !name.endsWith(".jpg")) {

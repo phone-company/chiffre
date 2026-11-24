@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="window_bg">#0a241c</color>
+    <color name="splash_ring">#7bd3a4</color>
+    <color name="splash_ring_green">#7bd3a4</color>
+    <color name="window_bg_green">#0a241c</color>
 </resources>

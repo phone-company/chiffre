@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Startbildschirm-Logo: derselbe Ring wie im Sperrbildschirm (13 Segmente, Punkt in der Mitte), damit er
+     nahtlos in den Ring der Seite übergeht. Erzeugt aus logoSvg() in index.html; Strich 5,2 wie dort. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp" android:height="240dp"
+    android:viewportWidth="150" android:viewportHeight="150">
+    <path android:pathData="M75.00,41.00 A34,34 0 0,1 84.94,42.49" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="1.00" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M90.80,44.89 A34,34 0 0,1 98.91,50.83" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.94" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M102.98,55.69 A34,34 0 0,1 107.41,64.71" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.87" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M108.75,70.90 A34,34 0 0,1 108.48,80.95" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.80" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M106.79,87.06 A34,34 0 0,1 101.88,95.82" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.74" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M97.55,100.45 A34,34 0 0,1 89.12,105.93" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.68" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M83.14,108.01 A34,34 0 0,1 73.13,108.95" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.61" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M66.86,108.01 A34,34 0 0,1 57.57,104.19" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.54" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M52.45,100.45 A34,34 0 0,1 46.00,92.75" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.48" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M43.21,87.06 A34,34 0 0,1 41.07,77.24" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.42" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M41.25,70.90 A34,34 0 0,1 43.92,61.21" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.35" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M47.02,55.69 A34,34 0 0,1 53.89,48.35" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.28" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M59.20,44.89 A34,34 0 0,1 68.69,41.59" android:strokeColor="@color/splash_ring_green" android:strokeAlpha="0.22" android:strokeWidth="5.2" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M70,75 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" android:fillColor="@color/splash_ring_green"/>
+</vector>

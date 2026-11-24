@@ -1,0 +1,1 @@
+More modern: the splash logo glides into the lock screen ring, which runs a full turn while unlocking. Haptic feedback, large title, predictive back. Calmer: code and password entry line up exactly, messages no longer move buttons, consistent spacing in settings. Fingerprint more robust: a keystore error no longer removes it, and turning it off has no trap.

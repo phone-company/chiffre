@@ -1,0 +1,1 @@
+Moderner: Der Sperrbildschirm zeigt den Chiffre-Ring, der beim Entsperren reihum läuft und bei falschem Passwort wackelt. Spürbares Feedback beim Abhaken, Erledigen, Löschen und Entsperren (ohne neue Berechtigung). Große Überschrift über der Notizliste. Zurückwischen mit Vorschau ab Android 14.

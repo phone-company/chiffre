@@ -1,0 +1,1 @@
+New: the expiry ring. Every note shows a ring of twelve segments, like the logo, that fades as time runs out: in the app color, yellow when the end is near, and in the text color on colored notes. Replaces the thin bar.
