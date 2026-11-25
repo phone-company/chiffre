@@ -8,7 +8,10 @@ Encrypted notes with an expiry date. Every note gets an expiry date when you cre
 - No account, no cloud, no ads, no analytics
 - The Android app has no internet permission
 - Optional neutral notifications ("A note has expired", and before automatic deletion "A note will be deleted soon", warning time adjustable from 1 hour to 1 day) without note text, can be switched off at any time
-- Reminders for single notes (date and time): the app notifies you without any content, the note sits at the top when you open the app and can be moved on with "Done" or "+1 h". If you want, it repeats daily, weekly or monthly ("Done" then jumps to the next date)
+- Reminders for single notes (date and time): the app notifies you without any content, the note sits at the top when you open the app and can be moved on with "Done" or "+1 h". If you want, it repeats daily, weekly, monthly, yearly or at a custom interval ("Done" then jumps to the next date, and the note does not expire while the series is running). The notification stays until you react and has the buttons "In 15 min", "Tomorrow morning" and "Done". It vibrates strongly (three long pulses). If you want, it rings like an alarm clock, even in vibrate mode, until you respond
+- Focus view: at most four cards with what matters most (due reminders, expired notes, reminders and expiry in the next 24 hours, pinned notes); a switch at the top shows all notes. Reminders show a calm time label: amber for today, blue for this week, grey for later
+- "Paper" colour scheme (warm paper tone, soft charcoal in the dark) and symbols for labels that appear on every card
+- Time detection while typing: if the text says "tomorrow 10am", "Friday at 2pm" or "in 2 hours", Chiffre offers the reminder with one tap (German and English, on the device only)
 - Screenshots and the preview in the app switcher are blocked
 - Locks itself in the background: immediately, after 1 or after 5 minutes (adjustable, default 1 minute)
 - Optional: unlock with your fingerprint, in addition to the password. In the "Advanced" feature set you can add a code (4 to 8 digits) as a second step after the fingerprint
@@ -42,7 +45,7 @@ Requires Android 8.0 (API 26) or newer.
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-You can check it with `apksigner verify --print-certs chiffre-1.45.52.apk`. It shows the same value in lowercase and without colons:
+You can check it with `apksigner verify --print-certs chiffre-1.45.54.apk`. It shows the same value in lowercase and without colons:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
@@ -68,7 +71,7 @@ Chiffre protects stored notes when someone has access to the device or its stora
 - Images are scaled down (longest side 1280 pixels) and stored individually, encrypted with the same key, in the app's storage, not inside the vault text. The original in your gallery stays unchanged and unencrypted until you delete it yourself. A backup file contains the images, "Copy text" does not. Up to 12 images per note, 60 in total.
 - The expiry date is for tidiness. It is not forensically secure deletion.
 - Automatic deletion only happens the next time you unlock the app, because only then can Chiffre read the notes. Until then the note stays on the device, encrypted. An automatically deleted note cannot be brought back, except from an older backup.
-- For the reminders the app remembers the points in time of your notes (expiry, warning and reminder of a note; for repeating reminders also the next dates; only times, never text) unencrypted in the app's private storage. Without reminders this storage stays empty. The alarm is exact as far as Android allows it.
+- For the reminders the app remembers the points in time of your notes (expiry, warning and reminder of a note; for repeating reminders also the next dates; only times, never text) unencrypted in the app's private storage. If you tap "In 15 min", "Tomorrow morning" or "Done" in the notification, Android only keeps "date → new time" until the app is opened next; the app then applies it to the note. Without reminders this storage stays empty. The alarm is exact as far as Android allows it.
 - After you enter it, the key stays in memory until the app locks.
 - With fingerprint, Android remembers your password, encrypted with a key from the security hardware (Android Keystore). The key can only be used after a fingerprint (strong biometrics) and becomes invalid as soon as another fingerprint is added on the device. Someone who can force you to put your finger on the sensor gets to the notes that way. Without the fingerprint feature nothing is remembered. The password always works.
 - The optional code after the fingerprint and the panic code have only 4 to 8 digits. They help against someone who forces you to use the app at the lock screen, but not against an attacker who works on a copy of the data: 4 to 8 digits are guessed quickly offline.

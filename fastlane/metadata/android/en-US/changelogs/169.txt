@@ -1,0 +1,1 @@
+New: while you type, Chiffre recognises times such as "tomorrow 10am", "Friday at 2pm" or "in 2 hours" and offers the reminder with one tap, fully offline. Reminders stay until you react and have buttons right in the notification: "In 15 min", "Tomorrow morning" and "Done". The notification stays neutral, without the note's text.

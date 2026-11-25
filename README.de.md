@@ -8,7 +8,10 @@ Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Abl
 - Kein Konto, keine Cloud, keine Werbung, keine Analyse
 - Die Android-App hat keine Internet-Berechtigung
 - Optional: neutrale Benachrichtigungen („Eine Notiz ist abgelaufen“, bei automatischem Löschen vorher „Eine Notiz wird bald gelöscht“, Vorwarnzeit von 1 Stunde bis 1 Tag einstellbar), ohne Notiztext, jederzeit abschaltbar
-- Erinnerung an einzelne Notizen (Datum und Uhrzeit): Die App meldet sich ohne Inhalt, die Notiz steht beim Öffnen ganz oben und lässt sich mit „Erledigt“ oder „+1 Std.“ weiterschieben. Auf Wunsch wiederholt sie sich täglich, wöchentlich oder monatlich („Erledigt“ springt dann zum nächsten Termin)
+- Erinnerung an einzelne Notizen (Datum und Uhrzeit): Die App meldet sich ohne Inhalt, die Notiz steht beim Öffnen ganz oben und lässt sich mit „Erledigt“ oder „+1 Std.“ weiterschieben. Auf Wunsch wiederholt sie sich täglich, wöchentlich, monatlich, jährlich oder in einem eigenen Abstand („Erledigt“ springt dann zum nächsten Termin, und solange die Serie läuft, läuft die Notiz nicht ab). Die Meldung bleibt stehen, bis du reagierst, und hat die Knöpfe „In 15 Min.“, „Morgen früh“ und „Erledigt“. Sie vibriert kräftig (drei lange Stöße). Auf Wunsch klingelt sie wie ein Wecker, auch im Vibrationsmodus, bis du reagierst
+- Fokus-Ansicht: höchstens vier Karten mit dem Wichtigsten (fällige Erinnerungen, Abgelaufenes, Erinnerungen und Ablauf in den nächsten 24 Stunden, Angeheftetes); ein Umschalter oben zeigt bei Bedarf alle Notizen. Erinnerungen zeigen ein ruhiges Zeit-Etikett: Bernstein für heute, Blau für diese Woche, Grau für später
+- Farbschema „Papier“ (warmer Papierton, im Dunkeln weiches Anthrazit) und Symbole für Etiketten, die auf jeder Karte erscheinen
+- Zeit erkennen beim Schreiben: Steht im Text „morgen 10 Uhr“, „Freitag 14 Uhr“ oder „in 2 Stunden“, schlägt Chiffre die Erinnerung mit einem Tipp vor (Deutsch und Englisch, nur auf dem Gerät)
 - Screenshots und die Vorschau in der App-Übersicht sind gesperrt
 - Sperrt sich im Hintergrund: sofort, nach 1 oder nach 5 Minuten (einstellbar, Standard 1 Minute)
 - Optional: Entsperren per Fingerabdruck, zusätzlich zum Passwort. Im Funktionsumfang „Erweitert“ lässt sich nach dem Fingerabdruck ein Code (4 bis 8 Ziffern) als zweiter Schritt verlangen
@@ -42,7 +45,7 @@ Voraussetzung: Android 8.0 (API 26) oder neuer.
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.52.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
+Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.54.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
@@ -68,7 +71,7 @@ Chiffre schützt gespeicherte Notizen, wenn jemand Zugriff auf das Gerät oder s
 - Bilder werden verkleinert (längste Seite 1280 Pixel) und einzeln mit demselben Schlüssel verschlüsselt im Speicher der App abgelegt, nicht im Tresor-Text. Das Original in deiner Galerie bleibt unverändert und unverschlüsselt, bis du es selbst löschst. Eine Sicherung als Datei enthält die Bilder, „Text kopieren“ nicht. Bis zu 12 Bilder pro Notiz, insgesamt 60.
 - Das Ablaufdatum dient der Ordnung. Es ist kein forensisch sicheres Löschen.
 - Das automatische Löschen geschieht erst beim nächsten Entsperren der App, denn nur dann kann Chiffre die Notizen lesen. Bis dahin liegt die Notiz weiter verschlüsselt auf dem Gerät. Eine automatisch gelöschte Notiz lässt sich nicht zurückholen, außer aus einer älteren Sicherung.
-- Für die Erinnerung merkt sich die App die Ablaufzeitpunkte der Notizen (Ablauf, Vorwarnung und Erinnerung an eine Notiz, bei wiederholten Erinnerungen auch die nächsten Termine, nur Uhrzeiten, nie Text) unverschlüsselt im privaten App-Speicher. Ohne die Erinnerung bleibt dieser Speicher leer. Der Alarm ist genau, sofern Android das erlaubt.
+- Für die Erinnerung merkt sich die App die Ablaufzeitpunkte der Notizen (Ablauf, Vorwarnung und Erinnerung an eine Notiz, bei wiederholten Erinnerungen auch die nächsten Termine, nur Uhrzeiten, nie Text) unverschlüsselt im privaten App-Speicher. Tippst du in der Meldung auf „In 15 Min.“, „Morgen früh“ oder „Erledigt“, merkt sich Android bis zum nächsten Öffnen nur „Termin → neuer Zeitpunkt“; die App trägt das dann in die Notiz ein. Ohne die Erinnerung bleibt dieser Speicher leer. Der Alarm ist genau, sofern Android das erlaubt.
 - Nach der Eingabe liegt der Schlüssel im Arbeitsspeicher, bis die App sich sperrt.
 - Mit Fingerabdruck merkt sich Android dein Passwort, verschlüsselt mit einem Schlüssel aus der Sicherheits-Hardware (Android Keystore). Der Schlüssel ist nur nach einem Fingerabdruck (starke Biometrie) nutzbar und wird ungültig, sobald auf dem Gerät ein Fingerabdruck hinzukommt. Wer dich zwingen kann, deinen Finger aufzulegen, kommt damit an die Notizen. Ohne Fingerabdruck-Funktion wird nichts gemerkt. Das Passwort funktioniert immer.
 - Der optionale Code nach dem Fingerabdruck und der Zerstörungscode haben nur 4 bis 8 Ziffern. Sie helfen gegen jemanden, der dich am Sperrbildschirm zwingt, die App zu benutzen, aber nicht gegen einen Angreifer, der an einer Kopie der Daten arbeitet: 4 bis 8 Ziffern sind offline schnell erraten.

@@ -1,0 +1,1 @@
+Neu: Chiffre erkennt beim Schreiben Zeitangaben wie „morgen 10 Uhr“, „Freitag 14 Uhr“ oder „in 2 Stunden“ und schlägt mit einem Tipp die Erinnerung vor, ganz ohne Internet. Erinnerungen bleiben stehen, bis du reagierst, und haben Knöpfe direkt in der Meldung: „In 15 Min.“, „Morgen früh“ und „Erledigt“. Die Meldung bleibt neutral, ohne Text der Notiz.

@@ -143,6 +143,8 @@ Be aware of these. They contain times and settings, never note text, passwords o
 
 - Expiry, warning and reminder times of notes (needed so that Android can ring the alarm while the app is locked). This storage stays empty if you do not use reminders or expiry notifications.
 - The time of the last password entry and of the last backup.
+- The symbols for labels are stored encrypted with the vault key (AES-256-GCM) in the app's storage. They are not part of the backup.
+- For the buttons in the reminder notification ("In 15 min", "Tomorrow morning", "Done"): the times of the reminders currently shown and, until the app is opened next, pairs "old date → new time". No text, no note identifiers.
 - Settings such as theme, language, lock delay and sort order.
 - The approximate size of the vault, and the number and approximate size of stored images (IndexedDB keys and record sizes are visible; the image content is not).
 - Whether a fingerprint code or a panic code (destruction code) is set up. The panic code is stored only as a salted PBKDF2 hash, but a code of 4 to 8 digits can be guessed offline by someone who has the app data.

@@ -23,8 +23,8 @@ android {
         minSdk = 26
         targetSdk = 36
         // Bei jeder neuen Version beide Werte erhöhen. Wörtliche Zahlen, damit F-Droid sie lesen kann.
-        versionCode = 168
-        versionName = "1.45.52"
+        versionCode = 170
+        versionName = "1.45.54"
     }
 
     signingConfigs {

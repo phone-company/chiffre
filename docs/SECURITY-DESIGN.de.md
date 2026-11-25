@@ -143,6 +143,8 @@ Das solltest du wissen. Es enthält Zeiten und Einstellungen, nie Notiztext, Pas
 
 - Ablauf-, Vorwarn- und Erinnerungszeiten der Notizen (damit Android den Alarm auch bei gesperrter App auslösen kann). Dieser Speicher bleibt leer, wenn du weder Erinnerungen noch Ablauf-Benachrichtigungen nutzt.
 - Der Zeitpunkt der letzten Passworteingabe und der letzten Sicherung.
+- Die Symbole für Etiketten liegen mit dem Tresorschlüssel verschlüsselt (AES-256-GCM) im Speicher der App. Sie sind nicht Teil der Sicherung.
+- Für Knöpfe in der Erinnerungsmeldung („In 15 Min.“, „Morgen früh“, „Erledigt“): die Zeitpunkte der gerade gemeldeten Erinnerungen und, bis zum nächsten Öffnen, Paare „alter Termin → neuer Zeitpunkt“. Keine Texte, keine Kennungen der Notizen.
 - Einstellungen wie Design, Sprache, Sperrzeit und Sortierung.
 - Die ungefähre Größe des Tresors sowie Anzahl und ungefähre Größe der gespeicherten Bilder (Schlüssel und Größen in IndexedDB sind sichtbar, der Bildinhalt nicht).
 - Ob ein Code nach dem Fingerabdruck oder ein Zerstörungscode (Panikcode) eingerichtet ist. Der Zerstörungscode liegt nur als gesalzener PBKDF2-Hash vor, aber ein Code aus 4 bis 8 Ziffern lässt sich offline erraten, wenn jemand die App-Daten hat.

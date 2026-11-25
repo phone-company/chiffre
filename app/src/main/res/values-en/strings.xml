@@ -13,6 +13,10 @@
     <string name="notif_warn_many">Several notes will be deleted soon</string>
     <string name="notif_remind_one">Reminder for a note</string>
     <string name="notif_remind_many">Reminders for several notes</string>
+    <string name="notif_act_15">In 15 min</string>
+    <string name="notif_act_morning">Tomorrow morning</string>
+    <string name="notif_act_done">Done</string>
+    <string name="notif_channel_alarm">Reminders like an alarm clock</string>
     <string name="notif_test">Test: reminders work</string>
     <string name="bio_title_unlock">Unlock Chiffre</string>
     <string name="bio_title_enable">Confirm fingerprint</string>

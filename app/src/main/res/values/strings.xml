@@ -13,6 +13,10 @@
     <string name="notif_warn_many">Mehrere Notizen werden bald gelöscht</string>
     <string name="notif_remind_one">Erinnerung an eine Notiz</string>
     <string name="notif_remind_many">Erinnerung an mehrere Notizen</string>
+    <string name="notif_act_15">In 15 Min.</string>
+    <string name="notif_act_morning">Morgen früh</string>
+    <string name="notif_act_done">Erledigt</string>
+    <string name="notif_channel_alarm">Erinnerungen wie ein Wecker</string>
     <string name="notif_test">Test: Erinnerungen funktionieren</string>
     <string name="bio_title_unlock">Chiffre entsperren</string>
     <string name="bio_title_enable">Fingerabdruck bestätigen</string>

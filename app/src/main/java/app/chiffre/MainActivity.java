@@ -35,6 +35,7 @@ import android.view.ViewTreeObserver;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.view.animation.PathInterpolator;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -483,6 +484,63 @@ public class MainActivity extends Activity {
                 return;
             }
             Reminders.setTimes(MainActivity.this, csv);
+        }
+
+        /** Schlummern und Erledigen aus der Meldung, für die App vorgemerkt: "t:s,t:s" (s = 0: erledigt). */
+        @JavascriptInterface
+        public String takeSnoozed() {
+            return Reminders.takeSnoozed(MainActivity.this);
+        }
+
+        /**
+         * Tastatur zeigen: Beim Öffnen auf "Schreiben" steht der Cursor schon im Textfeld. Android öffnet die
+         * Tastatur bei einem Fokus aus JavaScript nicht von selbst, deshalb hilft die Hülle nach.
+         */
+        @JavascriptInterface
+        public void showKeyboard() {
+            runOnUiThread(() -> {
+                if (web == null || isFinishing()) return;
+                web.requestFocus();
+                if (Build.VERSION.SDK_INT >= 30 && web.getWindowInsetsController() != null) {
+                    web.getWindowInsetsController().show(WindowInsets.Type.ime());
+                } else {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                    if (imm != null) imm.showSoftInput(web, InputMethodManager.SHOW_IMPLICIT);
+                }
+            });
+        }
+
+        /** Erinnerungen wie ein Wecker (Ton über den Wecker-Kanal, wiederholt sich bis zur Reaktion). */
+        @JavascriptInterface
+        public boolean remindAlarm() {
+            return Reminders.alarmMode(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public void setRemindAlarm(final boolean on) {
+            Reminders.setAlarmMode(MainActivity.this, on);
+        }
+
+        /** Öffnet die Android-Seite für Ton und Vibration der Erinnerungen. */
+        @JavascriptInterface
+        public void openRemindSound() {
+            runOnUiThread(() -> {
+                try {
+                    Reminders.ensureChannels(MainActivity.this);
+                    Intent i = new Intent(android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                            .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, getPackageName())
+                            .putExtra(android.provider.Settings.EXTRA_CHANNEL_ID, Reminders.remindChannel(MainActivity.this));
+                    startActivity(i);
+                } catch (RuntimeException e) {
+                    // keine Einstellungsseite: nichts tun
+                }
+            });
+        }
+
+        /** Keine Erinnerung ist mehr fällig: die stehende Meldung entfernen. */
+        @JavascriptInterface
+        public void clearRemind() {
+            Reminders.clearNotice(MainActivity.this);
         }
 
         /**

@@ -19,14 +19,14 @@ Repo: https://github.com/phone-company/chiffre.git
 # AllowedAPKSigningKeys: 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9
 
 Builds:
-  - versionName: 1.45.52
-    versionCode: 168
-    commit: v1.45.52
+  - versionName: 1.45.54
+    versionCode: 170
+    commit: v1.45.54
     subdir: app
     gradle:
       - yes
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 1.45.52
-CurrentVersionCode: 168
+CurrentVersion: 1.45.54
+CurrentVersionCode: 170

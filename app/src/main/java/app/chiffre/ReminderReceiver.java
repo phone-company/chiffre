@@ -9,6 +9,9 @@ public class ReminderReceiver extends BroadcastReceiver {
 
     static final String ACTION_ALARM = "app.chiffre.notes.ALARM";
     static final String ACTION_TEST = "app.chiffre.notes.TEST";
+    static final String ACTION_SNOOZE = "app.chiffre.notes.SNOOZE";
+    static final String ACTION_DISMISS = "app.chiffre.notes.DISMISS";
+    static final String EXTRA_MODE = "mode";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -17,6 +20,10 @@ public class ReminderReceiver extends BroadcastReceiver {
             Reminders.onAlarm(context);
         } else if (ACTION_TEST.equals(action)) {
             Reminders.onTest(context);
+        } else if (ACTION_SNOOZE.equals(action)) {
+            Reminders.onAction(context, intent.getStringExtra(EXTRA_MODE));
+        } else if (ACTION_DISMISS.equals(action)) {
+            Reminders.onDismiss(context);
         } else if (Intent.ACTION_BOOT_COMPLETED.equals(action)
                 || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
             // Nicht nur den nächsten Alarm stellen: Was während des Ausschaltens oder Updates fällig
