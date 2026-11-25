@@ -116,6 +116,17 @@ print(key.hex()); print(base64.b64encode(ct).decode())
 - **Not protected:** someone who can force your finger onto the sensor. Turn the feature off, or lock the app first, if that is part of your risk.
 - The security of this feature depends on the device. On a device without secure hardware, the Keystore protects less.
 
+## 4a. Without password (optional, Android app only)
+
+- Can be chosen during setup or later under Security. Chiffre then opens without asking.
+- The vault stays encrypted exactly as before (Argon2id, AES-256-GCM). The password is a random 32-byte value (`crypto.getRandomValues`) that nobody knows. It is stored in the app's private preferences, encrypted with an AES-256-GCM key in the **Android Keystore** (alias `chiffre_nolock`, usable without user authentication).
+- **Protected:** someone who reads the app's files (a copy of the storage, a device backup) cannot decrypt anything without this device's Keystore. Chiffre is also excluded from cloud backup and device-to-device transfer.
+- **Not protected:** anyone holding your **unlocked phone** can read the notes. Only a password helps against that.
+- Features that need a password are off in this mode: locking, fingerprint, code after the fingerprint, duress code, deleting after failed attempts.
+- **Backups** are encrypted with a separate **backup password** that you choose (own salt, Argon2id like the vault). It is also kept in the Keystore so the backup folder can be written without asking. Without a backup password there is no backup, because a backup encrypted with the random value would be useless on another device.
+- Switching back to a password re-encrypts notes and images and deletes both Keystore entries. Switching to "without password" requires the current password.
+- In this mode, "Delete vault" is under Security > Without password (confirmed by typing DELETE). It deletes notes, images and both Keystore entries, and Chiffre then starts as on first launch.
+
 ## 5. Runtime protections of the Android app
 
 - `FLAG_SECURE`: screenshots, screen recording and the preview in the app overview are blocked.

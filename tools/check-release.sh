@@ -2,6 +2,7 @@
 # Prüft vor einem Release, ob alles zusammenpasst. Aufruf aus dem Projektordner:
 #   tools/check-release.sh                      prüft den Ordner
 #   tools/check-release.sh chiffre-update-X.zip prüft zusätzlich den Inhalt des Zips auf Geheimnisse
+#   tools/check-release.sh --fast               ohne Android Lint (geht schneller)
 # Checks a release for consistency. Run from the project folder. Needs python3 (node and clang are optional).
 cd "$(dirname "$0")/.." || exit 2
 exec python3 - "$@" <<'PYEOF'
@@ -69,6 +70,32 @@ ext = re.findall(r'<(?:script|link|img|iframe)[^>]+(?:src|href)="(https?://[^"]+
 check("index.html: keine fremden Skripte, Stile, Bilder oder Rahmen", not ext, ext[:3])
 check("MainActivity: kein Internet-Zugriff im Java-Code", not re.search(r'HttpURLConnection|java\.net\.URL\b|OkHttp|Socket\(', read("app/src/main/java/app/chiffre/MainActivity.java")))
 check("Content-Security-Policy: kein 'unsafe-eval' (nur 'wasm-unsafe-eval')", "'unsafe-eval'" not in html and "default-src 'none'" in html)
+
+# Android Lint (prüft den Java-Teil, das Manifest und die Ressourcen). Dauert ein bis zwei Minuten.
+# Überspringen mit --fast.
+if "--fast" in sys.argv:
+    print("INFO    Android Lint übersprungen (--fast)")
+elif not os.path.exists("gradlew"):
+    print("INFO    gradlew fehlt, Android Lint übersprungen")
+else:
+    import xml.etree.ElementTree as ET
+    print("INFO    Android Lint läuft …")
+    r = subprocess.run(["./gradlew", "-q", "lintRelease"], capture_output=True, text=True)
+    rep = "app/build/reports/lint-results-release.xml"
+    if not os.path.exists(rep):
+        check("Android Lint: Bericht erstellt", False, (r.stderr or r.stdout).strip()[-300:])
+    else:
+        issues = ET.parse(rep).getroot().findall("issue")
+        def where(i):
+            loc = i.find("location")
+            return "%s (%s:%s)" % (i.get("id"), os.path.basename(loc.get("file", "")) if loc is not None else "?", loc.get("line", "") if loc is not None else "")
+        errs = [where(i) for i in issues if i.get("severity") in ("Error", "Fatal")]
+        warns = [i for i in issues if i.get("severity") == "Warning"]
+        check("Android Lint: keine Fehler", not errs, "; ".join(errs[:5]))
+        if warns:
+            ids = {}
+            for i in warns: ids[i.get("id")] = ids.get(i.get("id"), 0) + 1
+            print("INFO    Android Lint: %d Warnungen (%s). Bericht: app/build/reports/lint-results-release.html" % (len(warns), ", ".join("%s %d" % kv for kv in sorted(ids.items(), key=lambda kv: -kv[1])[:6])))
 
 # Geheimnisse
 forbidden = re.compile(r'(^|/)(keystore\.properties|local\.properties|[^/]*\.(jks|keystore|p12|pem|env))$')

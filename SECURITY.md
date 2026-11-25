@@ -34,6 +34,7 @@ Only the latest version in [Releases](https://github.com/phone-company/chiffre/r
 - The code after the fingerprint and the panic code have 4 to 8 digits. They do not stop someone who works on a copy of the data, because 4 to 8 digits are guessed quickly offline.
 - Metadata: the expiry and reminder times of notes (only times, never text) are stored unencrypted in the app's private storage for the reminders. The approximate size of the vault is visible as well.
 - After you enter it, the key stays in memory until the app locks.
+- In the optional mode "without password" (Android app only) Chiffre opens without asking. The notes stay encrypted and are protected against copied files, but anyone holding your unlocked phone can read them.
 
 ### Changing the password
 
@@ -71,6 +72,7 @@ Gepflegt wird nur die jeweils neueste Version, die unter [Releases](https://gith
 - Der Code nach dem Fingerabdruck und der Zerstörungscode haben 4 bis 8 Ziffern. Sie halten niemanden auf, der an einer Kopie der Daten arbeitet, denn 4 bis 8 Ziffern sind offline schnell erraten.
 - Metadaten: Die Ablaufzeitpunkte und Erinnerungszeiten der Notizen (nur Uhrzeiten, nie Text) liegen für die Erinnerungen unverschlüsselt im privaten App-Speicher. Auch die ungefähre Größe des Tresors ist sichtbar.
 - Nach der Eingabe liegt der Schlüssel im Arbeitsspeicher, bis die App sich sperrt.
+- In der wählbaren Einstellung „Ohne Passwort“ (nur Android-App) öffnet sich Chiffre ohne Abfrage. Die Notizen bleiben verschlüsselt und gegen kopierte Dateien geschützt, aber wer dein entsperrtes Handy in der Hand hat, kann sie lesen.
 
 ### Passwort ändern
 

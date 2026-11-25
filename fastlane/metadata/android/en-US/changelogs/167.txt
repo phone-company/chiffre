@@ -1,0 +1,1 @@
+Checklists: an unchecked item returns to its old place, "Check all" and "Uncheck all", text and lists mixed in one note. New "Compact" view with two lines per note. Yearly repeating reminders. Calmer interface: times and dates wrap cleanly.

@@ -23,8 +23,8 @@ android {
         minSdk = 26
         targetSdk = 36
         // Bei jeder neuen Version beide Werte erhöhen. Wörtliche Zahlen, damit F-Droid sie lesen kann.
-        versionCode = 166
-        versionName = "1.45.50"
+        versionCode = 168
+        versionName = "1.45.52"
     }
 
     signingConfigs {
@@ -48,6 +48,14 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    // Android Lint: tools/check-release.sh wertet den Bericht aus (Fehler brechen das Release ab, Warnungen werden gezeigt).
+    // Ändert nichts an der APK.
+    lint {
+        abortOnError = false
+        xmlReport = true
+        htmlReport = true
     }
 
     // Keine von Google verschlüsselten Abhängigkeitsdaten in der APK (F-Droid-Vorgabe).

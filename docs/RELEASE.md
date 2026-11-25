@@ -40,13 +40,13 @@ Im Terminal im Projektordner:
 ```
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 ./gradlew assembleRelease
-cp app/build/outputs/apk/release/app-release.apk chiffre-1.45.50.apk
+cp app/build/outputs/apk/release/app-release.apk chiffre-1.45.52.apk
 ```
 
 Prüfen, ob die APK signiert ist und mit welchem Zertifikat (der Pfad zu `apksigner` hängt von deiner Build-Tools-Version ab):
 
 ```
-~/Library/Android/sdk/build-tools/<VERSION>/apksigner verify --print-certs chiffre-1.45.50.apk
+~/Library/Android/sdk/build-tools/<VERSION>/apksigner verify --print-certs chiffre-1.45.52.apk
 ```
 
 Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
@@ -54,7 +54,7 @@ Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
 ## 4. Auf das GrapheneOS-Gerät installieren
 
 - Kopiere die APK per USB-Kabel auf das Handy (Modus „Dateiübertragung“) und öffne sie in der Dateien-App. GrapheneOS fragt, ob diese Quelle Apps installieren darf. Erlaube das nur für diesen Vorgang und nimm die Berechtigung danach unter **Einstellungen > Apps > Spezieller App-Zugriff > Unbekannte Apps installieren** wieder zurück.
-- Oder per adb, wenn du USB-Debugging an hast: `adb install -r chiffre-1.45.50.apk`
+- Oder per adb, wenn du USB-Debugging an hast: `adb install -r chiffre-1.45.52.apk`
 
 ## 5. Updates veröffentlichen
 
@@ -62,7 +62,7 @@ Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
 2. Ein Eintrag in `fastlane/metadata/android/de-DE/changelogs/` und `en-US/changelogs/` mit dem Namen `<versionCode>.txt`.
 3. Vor dem Update in der alten Version eine Sicherung anlegen.
 4. Bauen wie in Schritt 3, über die alte Version installieren. Die Notizen bleiben erhalten, weil der Schlüssel derselbe ist.
-5. Vor dem Veröffentlichen `tools/check-release.sh` laufen lassen (mit dem Zip als Argument, wenn du eines hast). Es prüft Versionsnummern an allen Stellen, die Changelogs, ob das Argon2-Modul in `index.html` dem aus `tools/argon2/` entspricht, das Versprechen „kein Internet“ und ob Schlüssel oder Passwörter im Paket stecken. Mit `--rebuild` baut es das Argon2-Modul zusätzlich neu und vergleicht. `tools/a11y-check.py` prüft Kontrast, Beschriftungen und große Schrift.
+5. Vor dem Veröffentlichen `tools/check-release.sh` laufen lassen (mit dem Zip als Argument, wenn du eines hast). Es prüft Versionsnummern an allen Stellen, die Changelogs, ob das Argon2-Modul in `index.html` dem aus `tools/argon2/` entspricht, das Versprechen „kein Internet“, ob Schlüssel oder Passwörter im Paket stecken und lässt Android Lint über den Java-Teil, das Manifest und die Ressourcen laufen (Fehler brechen ab, Warnungen werden mit Anzahl gezeigt, `--fast` überspringt Lint). Mit `--rebuild` baut es das Argon2-Modul zusätzlich neu und vergleicht. `tools/a11y-check.py` prüft Kontrast, Beschriftungen und große Schrift.
 
 ## 6. Auf GitHub veröffentlichen
 
@@ -80,13 +80,13 @@ Der angezeigte SHA-256-Wert muss zum Fingerabdruck aus Schritt 1 passen.
    ```
    Prüfe die Liste. **Weder `keystore.properties` noch eine `.jks`-Datei dürfen darin auftauchen.** Die `.gitignore` schließt sie aus, aber kontrolliere es.
    ```
-   git commit -m "Chiffre 1.45.50"
+   git commit -m "Chiffre 1.45.52"
    git remote add origin https://github.com/BENUTZERNAME/chiffre.git
    git push -u origin main
-   git tag v1.45.50
-   git push origin v1.45.50
+   git tag v1.45.52
+   git push origin v1.45.52
    ```
-4. Auf GitHub unter **Releases > Draft a new release** den Tag `v1.45.50` wählen, `chiffre-1.45.50.apk` anhängen und den SHA-256-Fingerabdruck in die Beschreibung schreiben. Trage ihn auch in der `README.md` ein.
+4. Auf GitHub unter **Releases > Draft a new release** den Tag `v1.45.52` wählen, `chiffre-1.45.52.apk` anhängen und den SHA-256-Fingerabdruck in die Beschreibung schreiben. Trage ihn auch in der `README.md` ein.
 5. Optional, für die Browser-Version: **Settings > Pages > Source: GitHub Actions**. Der Workflow in `.github/workflows/pages.yml` veröffentlicht dann den Ordner `app/src/main/assets`.
 
 Ob du die `applicationId` ändern willst, entscheide **vor dem ersten Release**. Sie steht in `app/build.gradle.kts`. Eine Änderung später macht aus der App eine neue, andere App. Üblich ist `io.github.BENUTZERNAME.chiffre`.

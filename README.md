@@ -17,8 +17,10 @@ Encrypted notes with an expiry date. Every note gets an expiry date when you cre
 - Plain-text export (Advanced): all notes as one Markdown file for any text editor or other notes apps. It is not encrypted, so the app asks for your password and a confirmation first. Images, drawings and read-and-gone notes are left out
 - Notes that delete themselves after reading (after closing or after one hour, "Advanced")
 - Optional: wipe the vault after 5, 10 or 20 wrong passwords (off by default)
-- Checklists with boxes: finished items move down (can be switched off), sub-items by indenting, items can be moved with arrow buttons in "Advanced", delete all finished items at once. Every note has its own title, tags with #keyword
+- Checklists with boxes, also mixed with normal text in the same note: finished items move down (can be switched off) and return to their old place when unchecked, "Uncheck all" restores the original list, sub-items by indenting, items can be moved with arrow buttons in "Advanced", delete all finished items at once. Every note has its own title, tags with #keyword
 - Search across notes (only in the unlocked vault, the search text is not stored) and, in "Advanced", also inside a note; "Undo" after deleting, sorting by expiry or latest edit
+- Note list as list, tiles or compact (two lines per note)
+- Optional "without password" (Android app only): Chiffre opens without asking, notes stay encrypted, the key is kept in the Android Keystore. Protects against copied files, not against someone holding your unlocked phone. Backups get their own backup password
 - Feature set "Simple" or "Advanced" (Settings > Appearance): new vaults start simple, "Advanced" shows additional features such as search inside a note, repeating reminders and the arrows for sub-items in checklists. Existing vaults keep everything
 - Drawings with your finger, also without text; encrypted like the note
 - Images on notes: from the gallery or taken directly, scaled down and encrypted
@@ -40,7 +42,7 @@ Requires Android 8.0 (API 26) or newer.
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-You can check it with `apksigner verify --print-certs chiffre-1.45.50.apk`. It shows the same value in lowercase and without colons:
+You can check it with `apksigner verify --print-certs chiffre-1.45.52.apk`. It shows the same value in lowercase and without colons:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9

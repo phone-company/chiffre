@@ -17,8 +17,10 @@ Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Abl
 - Klartext-Export (Erweitert): alle Notizen als eine Markdown-Datei für jeden Texteditor oder andere Notiz-Apps. Sie ist nicht verschlüsselt, deshalb fragt die App vorher nach Passwort und Bestätigung. Bilder, Zeichnungen und Lese-und-weg-Notizen bleiben draußen
 - Notizen, die sich nach dem Lesen selbst löschen (nach dem Schließen oder nach einer Stunde, Modus Erweitert)
 - Optional: Tresor nach 5, 10 oder 20 falschen Passwörtern löschen (standardmäßig aus)
-- Checklisten mit Kästchen: Erledigtes rutscht nach unten (abschaltbar), Unterpunkte durch Einrücken, Punkte lassen sich im Modus „Erweitert“ per Pfeiltasten verschieben, erledigte auf einmal löschen. Jede Notiz mit eigenem Titel, Etiketten per #Stichwort
+- Checklisten mit Kästchen, auch gemischt mit normalem Text in einer Notiz: Erledigtes rutscht nach unten (abschaltbar) und kehrt beim Entfernen des Hakens an seinen alten Platz zurück, „Alle Haken entfernen“ stellt die Ursprungsliste wieder her, Unterpunkte durch Einrücken, Punkte lassen sich im Modus „Erweitert“ per Pfeiltasten verschieben, erledigte auf einmal löschen. Jede Notiz mit eigenem Titel, Etiketten per #Stichwort
 - Suche in den Notizen (nur im entsperrten Tresor, der Suchtext wird nicht gespeichert) und, im Funktionsumfang „Erweitert“, auch innerhalb einer Notiz; „Rückgängig“ nach dem Löschen, Sortierung nach Ablauf, Neueste oder Farbe
+- Notizenliste als Liste, Kacheln oder kompakt (zwei Zeilen je Notiz)
+- Wahlweise „Ohne Passwort“ (nur Android-App): Chiffre öffnet sich ohne Abfrage, die Notizen bleiben verschlüsselt, der Schlüssel liegt im Android-Keystore. Schützt gegen ausgelesene Dateien, nicht gegen jemanden mit deinem entsperrten Handy. Sicherungen bekommen ein eigenes Sicherungspasswort
 - Funktionsumfang „Einfach“ oder „Erweitert“ (Einstellungen > Aussehen): Neue Tresore starten einfach, „Erweitert“ blendet zusätzliche Funktionen ein, etwa Suche in der Notiz, wiederkehrende Erinnerungen und die Pfeile für Unterpunkte in Checklisten. Bestehende Tresore behalten alles
 - Zeichnungen mit dem Finger, auch ohne Text; verschlüsselt wie die Notiz
 - Bilder an Notizen: aus der Galerie oder direkt aufgenommen, verkleinert und verschlüsselt
@@ -40,7 +42,7 @@ Voraussetzung: Android 8.0 (API 26) oder neuer.
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.50.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
+Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.52.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9

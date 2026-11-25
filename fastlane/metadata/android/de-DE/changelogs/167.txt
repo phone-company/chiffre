@@ -1,0 +1,1 @@
+Checklisten: Ein Punkt kehrt beim Entfernen des Hakens an seinen alten Platz zurück, „Alle abhaken“ und „Alle Haken entfernen“, Text und Listen gemischt in einer Notiz. Neue Ansicht „Kompakt“ mit zwei Zeilen je Notiz. Erinnerungen jährlich wiederholen. Ruhigere Oberfläche: Zeitangaben und Daten brechen sauber um.

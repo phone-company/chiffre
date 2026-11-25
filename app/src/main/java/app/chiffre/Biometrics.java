@@ -1,5 +1,6 @@
 package app.chiffre;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
@@ -224,6 +225,7 @@ final class Biometrics {
             return;
         }
         prompt(a, a.getString(R.string.bio_title_enable), cipher, new Authed() {
+            @SuppressLint("ApplySharedPref")   // bewusst commit(): erst gespeichert, dann "eingerichtet" melden
             @Override
             public void onSuccess(byte[] unused) {
                 Cipher c = authed != null ? authed : cipher;

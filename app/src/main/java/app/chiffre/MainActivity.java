@@ -144,10 +144,8 @@ public class MainActivity extends Activity {
         // Letzte Hintergrundfarbe der Seite sofort malen, damit beim Start nichts aufblitzt
         applyStoredLook();
         // Notizinhalt gehört nicht dem Autofill-Dienst des Systems; das spart außerdem den Aufbau beim ersten Fokus im Textfeld
-        if (Build.VERSION.SDK_INT >= 26) {
-            root.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
-            web.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
-        }
+        root.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
+        web.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
         applyInsets(root);
 
         configureWebView();
@@ -181,7 +179,7 @@ public class MainActivity extends Activity {
             View decor = getWindow().getDecorView();
             int flags = decor.getSystemUiVisibility();
             int mask = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            if (Build.VERSION.SDK_INT >= 26) mask |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            mask |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
             decor.setSystemUiVisibility(dark ? (flags & ~mask) : (flags | mask));
         } catch (RuntimeException e) {
             // Optik ist nicht wichtig genug, um den Start zu stören
@@ -541,7 +539,7 @@ public class MainActivity extends Activity {
                 View decor = getWindow().getDecorView();
                 int flags = decor.getSystemUiVisibility();
                 int mask = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-                if (Build.VERSION.SDK_INT >= 26) mask |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                mask |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
                 decor.setSystemUiVisibility(light ? (flags | mask) : (flags & ~mask));
             });
         }
@@ -665,6 +663,22 @@ public class MainActivity extends Activity {
                     // die einzelnen Schritte oben sind schon erledigt
                 }
             });
+        }
+
+        /** "Ohne Passwort" (siehe NoLock): Geheimnis ablegen, lesen, löschen. Fächer "vault" und "backup". */
+        @JavascriptInterface
+        public boolean noLockSet(String slot, String secret) {
+            return NoLock.put(MainActivity.this, slot, secret);
+        }
+
+        @JavascriptInterface
+        public String noLockGet(String slot) {
+            return NoLock.get(MainActivity.this, slot);
+        }
+
+        @JavascriptInterface
+        public void noLockClear(String slot) {
+            NoLock.clear(MainActivity.this, slot);
         }
 
         @JavascriptInterface
@@ -1203,7 +1217,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Zurück schließt zuerst die Einstellungen in der Web-App, sonst verhält sich die App wie üblich. */
+    /**
+     * Zurück bis Android 12: schließt zuerst Menüs und Notizen in der Web-App, sonst verhält sich die App wie üblich.
+     * Ab Android 13 läuft Zurück über OnBackInvokedCallback (updateBack), dort ruft Android diese Methode nicht auf.
+     */
+    @SuppressLint("GestureBackNavigation")
+    @SuppressWarnings("deprecation")
     @Override
     public void onBackPressed() {
         if (web == null) {

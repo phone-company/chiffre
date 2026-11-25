@@ -116,6 +116,17 @@ print(key.hex()); print(base64.b64encode(ct).decode())
 - **Nicht geschützt:** Wer deinen Finger auf den Sensor zwingen kann. Schalte die Funktion ab oder sperre die App vorher, wenn das zu deinem Risiko gehört.
 - Die Sicherheit dieser Funktion hängt am Gerät. Ohne Sicherheits-Hardware schützt der Keystore weniger.
 
+## 4a. Ohne Passwort (optional, nur in der Android-App)
+
+- Beim Einrichten oder später unter Sicherheit wählbar. Chiffre öffnet sich dann ohne Abfrage.
+- Der Tresor bleibt unverändert verschlüsselt (Argon2id, AES-256-GCM). Als Passwort dient ein Zufallswert aus 32 Byte (`crypto.getRandomValues`), den niemand kennt. Er liegt mit einem AES-256-GCM-Schlüssel im **Android Keystore** verschlüsselt (Alias `chiffre_nolock`, ohne Anmeldung nutzbar) in den privaten Einstellungen der App.
+- **Geschützt:** Wer die Dateien der App ausliest (Kopie des Speichers, Sicherung des Geräts), kann ohne den Keystore dieses Geräts nichts entschlüsseln. Chiffre ist außerdem von der Cloud-Sicherung und der Übertragung auf ein neues Gerät ausgenommen.
+- **Nicht geschützt:** Wer dein **entsperrtes Handy** in der Hand hat, kann die Notizen lesen. Gegen diesen Fall hilft nur ein Passwort.
+- Was ein Passwort voraussetzt, ist in diesem Modus aus: Sperre, Fingerabdruck, Code nach dem Fingerabdruck, Zerstörungscode, Löschen nach Fehlversuchen.
+- **Sicherungen** werden mit einem eigenen **Sicherungspasswort** verschlüsselt, das du festlegst (eigener Salt, Argon2id wie der Tresor). Es liegt ebenfalls im Keystore, damit der Sicherungsordner ohne Abfrage schreiben kann. Ohne Sicherungspasswort gibt es keine Sicherung, denn eine mit dem Zufallswert verschlüsselte Sicherung wäre auf einem anderen Gerät unbrauchbar.
+- Der Wechsel zurück zu einem Passwort verschlüsselt Notizen und Bilder neu und löscht beide Einträge im Keystore. Der Wechsel zu „ohne Passwort“ verlangt das aktuelle Passwort.
+- „Tresor löschen“ steht in diesem Modus unter Sicherheit > Ohne Passwort (mit Bestätigung durch das Wort LÖSCHEN). Es löscht Notizen, Bilder und beide Einträge im Keystore, danach beginnt Chiffre wie beim ersten Start.
+
 ## 5. Schutz zur Laufzeit in der Android-App
 
 - `FLAG_SECURE`: Screenshots, Bildschirmaufnahmen und die Vorschau in der App-Übersicht sind gesperrt.
