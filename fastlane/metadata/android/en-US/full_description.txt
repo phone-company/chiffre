@@ -19,4 +19,4 @@ Chiffre is a plain notes app with one twist: every note gets an expiry date when
 • Simple or advanced: new vaults start plain, you switch on extra features in the settings when you want them
 • Light and dark theme. The interface is available in German and English.
 
-Important: the password cannot be reset. Without it the notes cannot be read. The encryption uses standard methods, plus an own Argon2id implementation, and has not been independently audited. Chiffre is a hobby project and the source code is open.
+Important: the password cannot be reset. Without it the notes cannot be read. The encryption uses standard methods, plus Argon2id from the official reference implementation, and has not been independently audited. Chiffre is a hobby project and the source code is open.

@@ -1,6 +1,6 @@
 # Chiffre
 
-[English](README.md) | [Deutsch](README.de.md)
+[English](README.md) | [Deutsch](README.de.md) | Website: [chiffre.me](https://chiffre.me)
 
 Verschlüsselte Notizen mit Ablaufdatum. Jede Notiz bekommt beim Anlegen ein Ablaufdatum. Läuft es ab, fragt die App, ob die Notiz bleiben oder gelöscht werden soll. Pro Notiz lässt sich auch festlegen, dass sie nach dem Ablauf ohne Nachfrage gelöscht wird. So sammelt sich nicht jahrelang an, was längst erledigt ist.
 
@@ -45,7 +45,7 @@ Voraussetzung: Android 8.0 (API 26) oder neuer.
 30:62:23:26:8B:B1:1A:DF:8F:1C:16:6B:C1:CD:DB:27:3B:54:4E:F8:75:18:8A:BC:DA:EB:30:9D:ED:7A:FC:F9
 ```
 
-Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.54.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
+Prüfen kannst du ihn mit `apksigner verify --print-certs chiffre-1.45.55.apk`. Dort steht derselbe Wert klein geschrieben und ohne Doppelpunkte:
 
 ```
 306223268bb11adf8f1c166bc1cddb273b544ef875188abcdaeb309ded7afcf9

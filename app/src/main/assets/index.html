@@ -793,6 +793,8 @@ body.tidy #pageWrite .time-hint { background: var(--wbg, var(--sc)); }
 .th-go svg { width: 18px; height: 18px; flex: none; fill: currentColor; }
 .th-l { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .th-x { width: 36px; height: 36px; flex: none; border: 0; border-radius: 18px; background: none; color: inherit; font-size: calc(20px*var(--fs)); line-height: 1; opacity: 0.7; cursor: pointer; }
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }   /* eigenes × reicht */
+mark.hit { background: color-mix(in srgb, #e9b85c 55%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
 .th-go:focus-visible, .th-x:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 body:has(.time-hint.on) .toast { bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }   /* die Meldung unten verdeckt den Vorschlag nicht */
 body:has(.time-hint.on ~ .ck-tools.on) .toast { bottom: calc(204px + env(safe-area-inset-bottom, 0px)); }
@@ -1531,6 +1533,11 @@ html.simple .ico > summary > svg { display: none; }
             <button class="btn small" type="button" id="aboutMailCopy" style="margin-top:8px">Kopieren</button>
           </div>
           <div>
+            <p class="sublabel" style="margin-bottom:4px">Website</p>
+            <p id="aboutWeb" class="sel"></p>
+            <button class="btn small" type="button" id="aboutWebCopy" style="margin-top:8px">Kopieren</button>
+          </div>
+          <div>
             <p class="sublabel" style="margin-bottom:4px">Quellcode</p>
             <p id="aboutRepo" class="sel"></p>
             <button class="btn small" type="button" id="aboutRepoCopy" style="margin-top:8px">Kopieren</button>
@@ -1966,7 +1973,7 @@ function timeHint(ta, getRemind, setRemind) {
     wrap.classList.toggle("on", show);
   };
   const soon = () => { clearTimeout(timer); timer = setTimeout(upd, 250); };
-  ta.addEventListener("input", soon); ta.addEventListener("focus", soon); ta.addEventListener("blur", () => setTimeout(upd, 0));
+  ta.addEventListener("input", soon); ta.addEventListener("blur", () => setTimeout(upd, 0));   // nur beim Tippen, nicht schon beim Öffnen einer bestehenden Notiz
   go.addEventListener("click", () => { if (!cur) return; const r = cur; setRemind(r.ts); haptic("confirm"); skip.add(r.text.trim() + "|" + r.ts); upd(); });
   x.addEventListener("click", () => { if (cur) skip.add(cur.text.trim() + "|" + cur.ts); upd(); });
   wrap._upd = upd;
@@ -2419,13 +2426,40 @@ function joinTitle(title, body) {
   const t = title.replace(/\s+/g, " ").trim();
   return t ? "# " + t + (body.trim() ? "\n" + body : "") : body;
 }
-function plainNode(n) {
+function plainNode(n, isOpen) {
   const lines = n.text.split("\n");
   const i = lines.findIndex(x => x.trim());
   const m = i >= 0 ? HEAD_LINE.exec(lines[i]) : null;
-  if (!m) return h("span", { class: "note-text" }, n.text);
+  if (!m) return h("span", { class: "note-text" }, isOpen ? n.text : hitSnippet(n.text));
   const rest = lines.slice(i + 1).join("\n").replace(/^\n+/, "");
-  return h("span", { class: "note-text" }, h("span", { class: "nh" }, m[1]), rest ? h("span", null, rest) : null);
+  return h("span", { class: "note-text" }, h("span", { class: "nh" }, m[1]), rest ? h("span", null, isOpen ? rest : hitSnippet(rest)) : null);
+}
+/* Suche: Treffer im Notiztext hervorheben (wie mit einem Textmarker). Steht der Treffer weit hinten, zeigt die Vorschau die Stelle mit dem Treffer. */
+function searchTerm() { return searchQ.trim().toLowerCase(); }
+function hitSnippet(text) {
+  const q = searchTerm(); if (!q) return text;
+  const at = text.toLowerCase().indexOf(q);
+  if (at < 120) return text;   // steht ohnehin in der Vorschau
+  let from = text.lastIndexOf("\n", at) + 1;   // Anfang der Zeile mit dem Treffer, höchstens 50 Zeichen davor
+  if (at - from > 50) { from = text.indexOf(" ", at - 50) + 1; if (from <= 0 || from > at) from = at; }
+  return "… " + text.slice(from);
+}
+function markHits(el) {
+  const q = searchTerm(); if (!el || !q) return el;
+  const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), list = [];
+  while (walk.nextNode()) if (walk.currentNode.nodeValue.toLowerCase().includes(q)) list.push(walk.currentNode);
+  for (const t of list) {
+    const v = t.nodeValue, low = v.toLowerCase(), frag = document.createDocumentFragment();
+    let pos = 0, at;
+    while ((at = low.indexOf(q, pos)) >= 0) {
+      if (at > pos) frag.append(v.slice(pos, at));
+      frag.append(h("mark", { class: "hit" }, v.slice(at, at + q.length)));
+      pos = at + q.length;
+    }
+    if (pos < v.length) frag.append(v.slice(pos));
+    t.replaceWith(frag);
+  }
+  return el;
 }
 /* Checklisten: Unterpunkte (Einrücken um zwei Leerzeichen), Verschieben, Erledigte nach unten */
 const CK_MAXL = 3;
@@ -3224,9 +3258,13 @@ function noteCard(n, now, expired, probe) {
         else { readId = n.id; openId = null; }
         render();
         if (openId === n.id) focusEditor(n.id);
+        else if (searchTerm()) requestAnimationFrame(() => {   // beim Lesen gleich zum ersten Treffer
+          const mk = document.querySelector('li.note.open mark.hit');
+          if (mk) mk.scrollIntoView({ block: "center", behavior: reducedMotion() ? "auto" : "smooth" });
+        });
       }));
     } },
-    n.text.trim() ? (isChecklist(n.text) ? checklistNode(n, isOpen) : plainNode(n)) : null,
+    n.text.trim() ? markHits(isChecklist(n.text) ? checklistNode(n, isOpen) : plainNode(n, isOpen)) : null,
     n.draw ? drawSvg(n.draw, "draw-prev") : null,
     thumbsNode(n, isOpen),
     noteRow(n, now),
@@ -5754,7 +5792,7 @@ function refreshNewDraw() {
   $("drawNew").textContent = tr(newDraw ? "Zeichnung bearbeiten" : "Zeichnen");
   $("addBtn").disabled = !($("composer").value.trim() || $("titleNew").value.trim() || newDraw || newImgs.length);
 }
-const ABOUT = { version: "1.45.54", name: "Andree Wijchers", mail: "chiffre@tuta.com", repo: "github.com/phone-company/chiffre" };
+const ABOUT = { version: "1.45.55", name: "Andree Wijchers", mail: "chiffre@tuta.com", web: "chiffre.me", repo: "github.com/phone-company/chiffre" };
 function copyPlain(text) {
   const n = window.ChiffreNative;
   if (n && typeof n.copyText === "function") {
@@ -6766,6 +6804,8 @@ function refreshPwNextSafe() { if (!$("pwWrap").hidden) refreshPwNext(); }
   $("aboutRepo").textContent = ABOUT.repo;
   $("aboutMailCopy").addEventListener("click", () => copyPlain(ABOUT.mail));
   $("aboutRepoCopy").addEventListener("click", () => copyPlain(ABOUT.repo));
+  $("aboutWeb").textContent = ABOUT.web;
+  $("aboutWebCopy").addEventListener("click", () => copyPlain("https://" + ABOUT.web));
   $("bkNow").addEventListener("click", () => { openMenu(); $("backup").open = true; $("backup").scrollIntoView({ block: "start" }); });
   $("bkLater").addEventListener("click", () => { lsSet("chiffre.bkSnooze", Date.now() + 3 * DAY); refreshBackupHint(); });
   document.addEventListener("click", e => { if (e.target && e.target.type === "file") pickerUntil = Date.now() + 120000; }, true);

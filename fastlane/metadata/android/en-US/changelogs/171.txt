@@ -1,0 +1,1 @@
+Search: matches are highlighted in the note text, in the list and while reading. If the match is further down, the preview shows that part right away. The time suggestion now only appears while typing, not when opening a note.

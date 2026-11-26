@@ -1,0 +1,1 @@
+Suche: Treffer werden im Notiztext hervorgehoben, in der Liste und beim Lesen. Steht der Treffer weiter hinten, zeigt die Vorschau gleich die passende Stelle. Der Zeitvorschlag erscheint nur noch beim Tippen, nicht schon beim Öffnen einer Notiz.

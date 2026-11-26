@@ -19,4 +19,4 @@ Chiffre ist eine schlichte Notizapp mit einer Besonderheit: Jede Notiz bekommt b
 • Einfach oder erweitert: Neue Tresore starten schlicht, zusätzliche Funktionen schaltest du bei Bedarf in den Einstellungen ein
 • Hell und dunkel im Material-Stil, ab Android 12 mit den Farben deines Hintergrundbilds. Die Oberfläche gibt es auf Deutsch und Englisch.
 
-Wichtig: Das Passwort lässt sich nicht zurücksetzen. Ohne Passwort sind die Notizen nicht lesbar. Die Verschlüsselung nutzt Standardverfahren plus eine eigene Argon2id-Umsetzung und wurde nicht unabhängig geprüft. Chiffre ist ein Hobbyprojekt, der Quellcode ist offen.
+Wichtig: Das Passwort lässt sich nicht zurücksetzen. Ohne Passwort sind die Notizen nicht lesbar. Die Verschlüsselung nutzt Standardverfahren, dazu Argon2id aus der offiziellen Referenzimplementierung, und wurde nicht unabhängig geprüft. Chiffre ist ein Hobbyprojekt, der Quellcode ist offen.
